@@ -197,6 +197,57 @@ Apply: extract only generic methodology (equations, input ranges, worked
 examples → TDD fixtures); deny-list scan before archiving; never copy the
 raw workbook; every code artifact records its source-workbook mapping.
 
+## Structured data & model files (CSV / delimited / solver ASCII)
+
+**GP-32 — Probe dialect and validate field counts at ingestion.**
+Why: extra delimiters in a value silently shift every downstream column
+while the file still "parses"; an ad-hoc pipe-delimited format corrupted
+the first time content contained a `|`; mixed line endings rewrote
+themselves through text-mode I/O (B3).
+Apply: detect delimiter/quoting/encoding/line-endings per file; assert
+per-row field count == header count; generate delimited output only through
+a real CSV writer, never string concatenation.
+
+**GP-33 — Validate content parity, not row counts.**
+Why: a row-count-only validator accepted a header-only CSV paired with a
+non-empty sibling artifact — matching shapes, missing data.
+Apply: compare cell contents or deterministic per-row hashes between
+artifacts that must agree.
+
+**GP-34 — Conventions are data: capture units, signs, and frames in a
+provenance sidecar.**
+Why: a dataset with negative lever-arm + positive force columns produced
+flipped-sign moments downstream; it was intentional notation, documented
+nowhere — indistinguishable from a defect.
+Apply: every ingested dataset ships a sidecar recording per-column units,
+sign conventions, coordinate frames, and producer quirks.
+
+**GP-35 — Estimate density before committing digitization effort.**
+Why: one standard with 166 tables + 95 figures cost ~10× a sibling with 2
+figures; document count predicts nothing.
+Apply: scan table/figure/column density first; budget and tier by density.
+
+**GP-36 — Solver decks are build artifacts: parse to externalized config,
+regenerate, round-trip.**
+Why: hand-edited or hardcoded input decks serve one project; an
+industry-grade deliverable must be re-targetable by editing reviewable YAML
+(materials, thresholds, safety classes, data locations) with zero code
+changes.
+Apply: deck → parsed YAML config → regenerated deck must round-trip to
+identity; the config is the reviewed, git-tracked artifact. Keep the
+parse/extract path runnable without the solver license — only execution
+needs it.
+
+**GP-37 — Defaults need a ledger; outputs need sanity gates.**
+Why: a parser that silently injected default values had to have them
+stripped — assumed inputs that aren't surfaced poison downstream trust;
+solver outputs consumed without range/coverage checks do the same from the
+other end.
+Apply: every assumed/defaulted input is provenance-tagged in an assumption
+ledger surfaced with results; outputs pass physical-range and coverage
+gates before anyone consumes them. (Defaults are fine when recorded,
+forbidden when silent.)
+
 ## Governance
 
 **GP-25 — Raw licensed sources never enter the repo.**
@@ -212,4 +263,4 @@ it; public/private routing enforced by frontmatter + pre-commit check.
 
 ---
 
-*Next ID: GP-32.*
+*Next ID: GP-38.*

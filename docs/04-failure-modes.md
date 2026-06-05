@@ -58,6 +58,18 @@ them all.
 | D4 | **Keyword-based sheet classification false positives** | Sheet/file names lie about content | Spot-check of classified inventory | Classify on scanned structure (formula density, function mix), not names |
 | D5 | **Client data carried forward with the calculation** | Logic and confidential inputs are interleaved in legacy workbooks | Deny-list scan | Extract generic methodology only; scan before archiving; raw workbook never copied (GP-31) |
 
+## E. Structured-data & model-file defects (CSV / delimited / solver lanes)
+
+| # | Failure mode | Root cause | Detected by | Mitigation |
+|---|---|---|---|---|
+| E1 | **Silent column shift** — all downstream fields of a row off by one | Extra delimiter inside a value; field-count overflow | Field-count audit vs header | Per-row field-count assertion at ingestion (GP-32) |
+| E2 | **Header-only artifact passes validation** | Validator compared row counts, not contents | Content audit | Cell-content or row-hash parity checks (GP-33) |
+| E3 | **Ad-hoc delimiter corruption** | `\|`-delimited shell format met content containing `\|` | Reparse failures | Real CSV writer/reader; keyed structures in shell (GP-32) |
+| E4 | **Sign-convention misread** — flipped moments downstream | Intentional notation (negative lever-arm) documented nowhere | Downstream physics check | Convention sidecar with units/signs/frames (GP-34) |
+| E5 | **One parser, two export formats** | Solvers emit native (block-marked, multi-sheet) and pipeline (clean-column) formats for the same data | Parse failures on the second variant | One parser per format, auto-detected by header inspection, never filename |
+| E6 | **Block-marked listing parsed as flat table** | Text header rows delimit matrix blocks (e.g., per-frequency); flat parse interleaves headers with values | Value-range audit | Block-aware parsing; same defect class as A8 arriving through a "clean" channel |
+| E7 | **Silent solver-input defaults** | Parser injected engineering defaults with no record | Provenance audit | Assumption ledger; defaults recorded and surfaced or refused (GP-37) |
+
 ## The meta-lesson
 
 > **Deterministic checks catch structural problems. Only vision catches value

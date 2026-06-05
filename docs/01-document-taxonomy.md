@@ -34,6 +34,9 @@ This taxonomy has four independent axes:
 | **Excel calculation workbook** | Live formulas, named ranges, cross-sheet graphs, macros | D2 logic → code + tests | The formula graph is the asset, not the cell values — see [09-office-formats.md](09-office-formats.md) |
 | **Word report / specification** | Styled prose + explicit XML tables + tracked changes | L1–L3 + D3 template | Tables are explicit structures (more reliable than PDF detection); extract the report template once per family |
 | **PowerPoint deck** | Narrative skeleton, speaker notes, pasted-image tables | D3 reporting concepts | Highly selective; pasted tables route to the vision lane like PDF figures |
+| **CSV / delimited data file** | "Already structured" — silently fragile | L3–L4 + convention sidecar | Probe dialect, validate field counts, capture units/sign conventions — see [10-structured-data-and-model-files.md](10-structured-data-and-model-files.md) |
+| **Analysis-model input deck** (solver ASCII/keyword files) | Model definition = engineering decisions | D2 logic → externalized YAML config | Parse to config, regenerate the deck; assumption ledger for defaults |
+| **Solver output listing / export** | Block-marked text structure, multi-format per solver | L2–L4 | Auto-detect format by header inspection; sanity-gate values before use |
 | **Web article / post** (blog, LinkedIn) | Short, ephemeral, link-rotted | L1 + archived source | Archive the source off-repo; cite filename not private path |
 | **Catalog / brochure / minutes / newsletter** | Marketing or administrative | **Filter out pre-ingest** | Junk filter on filename + content keywords |
 
@@ -114,6 +117,9 @@ much to trust it.
 | Excel calc workbook | ✓ | formula dump | formula graph + worked examples | cached-value classification | re-execution vs `cached_ok` cells | ported code + tests |
 | Word report | ✓ | ✓ | XML tables | ✓ | high-value tables | report template |
 | PowerPoint deck | ✓ | notes + claims | — | — | pasted tables via vision | reporting concepts |
+| CSV / delimited | ✓ | n/a (born structured) | dialect-probed parse | field-count + content-hash | convention sidecar reviewed | joined datasets |
+| Solver input deck | ✓ | raw deck text | parsed parameters | round-trip identity check | config ↔ deck regeneration | YAML config library |
+| Solver output | ✓ | listing text | block-aware parse | format auto-detection | sanity gates + cross-format parity | results database |
 | Web article | ✓ | ✓ | — | — | — | link only |
 
 ---

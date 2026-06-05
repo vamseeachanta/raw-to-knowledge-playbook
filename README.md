@@ -1,9 +1,11 @@
 # LLM Document-Ingestion Playbook
 
-A field-tested methodology for turning large corpora of technical documents —
-PDFs (engineering standards, codes, papers, reports) **and live Office
-artifacts** (Excel calculation workbooks, Word reports, PowerPoint decks) —
-into a verified, citable, LLM-queryable knowledge base — using a
+A field-tested methodology for turning large corpora of technical sources —
+PDFs (engineering standards, codes, papers, reports), **live Office
+artifacts** (Excel calculation workbooks, Word reports, PowerPoint decks),
+and **machine-oriented files** (CSV/delimited data, analysis-solver input
+decks and output listings) — into a verified, citable, LLM-queryable
+knowledge base — using a
 **multi-agent pipeline** that combines deterministic extraction tools with
 LLM-based verification and review.
 
@@ -55,6 +57,7 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/07-data-governance.md](docs/07-data-governance.md) | Provenance, licensing firewall, public/private routing, citation contracts |
 | [docs/08-skills-catalog.md](docs/08-skills-catalog.md) | Reusable agent skills built for this work and how they're structured |
 | [docs/09-office-formats.md](docs/09-office-formats.md) | Excel/Word/PowerPoint: extracting calculation logic and reporting formats, not just content |
+| [docs/10-structured-data-and-model-files.md](docs/10-structured-data-and-model-files.md) | CSV/delimited files and solver ASCII formats: dialect probing, convention sidecars, deck→config round-trips |
 
 ## Who this is for
 

@@ -136,6 +136,7 @@ evidence).
 | Word report/spec | prose + explicit tables | embedded objects → Excel lane | **report template** (extract once per family) | Single-shot per family |
 | PowerPoint deck | notes + key claims | n/a | **reporting concepts** (narrative + visuals) | Single-shot, highly selective |
 | PDF (docs 01–04) | text + tables | n/a | n/a | Iterative campaign |
+| CSV / delimited / solver files ([doc 10](10-structured-data-and-model-files.md)) | values + results | solver decks → config | per-producer layouts | Per-format-family parsers, auto-detected |
 
 The common thread with the PDF lane is unchanged: **deterministic tools
 extract; everything enters provisional; verification re-derives the result
