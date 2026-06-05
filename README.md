@@ -1,18 +1,21 @@
-# LLM Document-Ingestion Playbook
+# Raw-to-Knowledge Playbook
 
-A field-tested methodology for turning large corpora of technical sources —
-PDFs (engineering standards, codes, papers, reports), **live Office
-artifacts** (Excel calculation workbooks, Word reports, PowerPoint decks),
-and **machine-oriented files** (CSV/delimited data, analysis-solver input
-decks and output listings) — into a verified, citable, LLM-queryable
-knowledge base — using a
-**multi-agent pipeline** that combines deterministic extraction tools with
-LLM-based verification and review.
+A field-tested methodology for turning a heterogeneous archive of raw
+sources — PDFs (engineering standards, codes, papers, reports), **live
+Office artifacts** (calculation and data Excel, Word reports, PowerPoint
+decks), **machine-oriented files** (CSV/delimited data, analysis-solver
+input decks and output listings), and **imagery** (photographs to be
+described, scanned documents to be OCR-interpreted) — into a verified,
+citable, LLM-queryable knowledge base — using a **multi-agent pipeline**
+that combines deterministic extraction tools with LLM-based verification
+and review.
 
 For frozen formats (PDF) the target is *content*; for live formats the
 pipeline also extracts **calculation logic** (formula graphs → tested code)
 and **reporting concepts** (report/template structure) — three distinct
-extraction dimensions (see docs 01 and 09).
+extraction dimensions (see docs 01 and 09). For imagery there is nothing to
+copy at all: photos and scans are **described/interpreted**, and the
+playbook keeps that trust distinction explicit end-to-end (doc 11).
 
 Everything here was distilled from a real, ongoing ingestion campaign:
 
@@ -58,6 +61,7 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/08-skills-catalog.md](docs/08-skills-catalog.md) | Reusable agent skills built for this work and how they're structured |
 | [docs/09-office-formats.md](docs/09-office-formats.md) | Excel/Word/PowerPoint: extracting calculation logic and reporting formats, not just content |
 | [docs/10-structured-data-and-model-files.md](docs/10-structured-data-and-model-files.md) | CSV/delimited files and solver ASCII formats: dialect probing, convention sidecars, deck→config round-trips |
+| [docs/11-imagery-and-scans.md](docs/11-imagery-and-scans.md) | Photographs (described, not extracted) and scanned documents (OCR as labeled interpretation) |
 
 ## Who this is for
 

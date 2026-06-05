@@ -248,6 +248,28 @@ ledger surfaced with results; outputs pass physical-range and coverage
 gates before anyone consumes them. (Defaults are fine when recorded,
 forbidden when silent.)
 
+## Imagery & scans
+
+**GP-38 — Images are described, never "extracted"; label the
+interpretation.**
+Why: OCR and vision descriptions are model interpretations, not copies —
+mixing them with deterministically-extracted text launders guesses into
+trusted-looking content; an image-only document once paginated 73 pages of
+noise into the wiki before the word-count gate existed.
+Apply: route no-text-layer sources to the description lane; output carries
+`extraction_policy: described`/`ocr-interpreted`, falsifiable observations
+separated from inference, and verbatim transcription of any legible
+in-image text (the only checkable part). Verify with an independent second
+description pass.
+
+**GP-39 — Classify Excel as data vs calculation vs canvas by scanned
+structure, not filename.**
+Why: filenames lie (D4); the three variants route to entirely different
+lanes (delimited-data parsing vs formula→code vs describe-only).
+Apply: auto-scan formula density, image count, and function mix per
+workbook; route accordingly (data → doc 10 lane, calculation → doc 09
+lane, image-canvas → doc 11 lane).
+
 ## Governance
 
 **GP-25 — Raw licensed sources never enter the repo.**
@@ -263,4 +285,4 @@ it; public/private routing enforced by frontmatter + pre-commit check.
 
 ---
 
-*Next ID: GP-38.*
+*Next ID: GP-40.*

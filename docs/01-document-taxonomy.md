@@ -1,4 +1,4 @@
-# Document Taxonomy: Types × Extraction Levels × Storage × Method
+# Source Taxonomy: Types × Extraction Levels × Storage × Method
 
 The single most important design decision in a document-ingestion pipeline is
 recognizing that **different document types deserve different extraction
@@ -29,9 +29,10 @@ This taxonomy has four independent axes:
 | **Project / regulatory report** | Mixed prose + data, often client-confidential | L1–L4 | Route through confidentiality firewall first |
 | **Form / blank template** | Proforma grids, no filled data | **Reject at L3** | Structurally table-like but carries zero data — the #1 false positive |
 | **Figure/chart-dominant doc** | Imagery is the content | L0–L2 caption-only | Queue figures for a separate vision pass; text extraction is noise |
-| **Scanned / image-only PDF** | No text layer | L0, or OCR→L1 with low trust | Word-count gate detects these; don't paginate noise into the wiki |
-| **Datasheet / spreadsheet export** | Tabular by construction | L2–L4 | Often cleaner than PDF tables; verify units columns; expect dual export layouts within one source family |
-| **Excel calculation workbook** | Live formulas, named ranges, cross-sheet graphs, macros | D2 logic → code + tests | The formula graph is the asset, not the cell values — see [09-office-formats.md](09-office-formats.md) |
+| **Scanned / image-only document** | No text layer — a photograph of a document | L0 stub, or OCR marked `ocr-interpreted` | Word-count gate detects these; OCR output is interpretation, never `raw-extracted` — see [11-imagery-and-scans.md](11-imagery-and-scans.md) |
+| **Photograph** (site/facility/equipment/survey) | Pixels evidence a claim; no extractable text | Described, not extracted | Structured description record (falsifiable observations + verbatim legible text + capture metadata); dated series beat single frames — see [11-imagery-and-scans.md](11-imagery-and-scans.md) |
+| **Data Excel / delimited export** (datasets, logs, datasheets) | Tabular by construction | L2–L4 | Born-structured *content* — parse like delimited data (doc 10): dialect probing, convention sidecar; expect dual export layouts within one source family |
+| **Calculation Excel** (engineering workbooks) | Live formulas, named ranges, cross-sheet graphs, macros | D2 logic → code + tests | The formula graph is the asset, not the cell values — see [09-office-formats.md](09-office-formats.md); classify data-vs-calc by scanned structure, not filename |
 | **Word report / specification** | Styled prose + explicit XML tables + tracked changes | L1–L3 + D3 template | Tables are explicit structures (more reliable than PDF detection); extract the report template once per family |
 | **PowerPoint deck** | Narrative skeleton, speaker notes, pasted-image tables | D3 reporting concepts | Highly selective; pasted tables route to the vision lane like PDF figures |
 | **CSV / delimited data file** | "Already structured" — silently fragile | L3–L4 + convention sidecar | Probe dialect, validate field counts, capture units/sign conventions — see [10-structured-data-and-model-files.md](10-structured-data-and-model-files.md) |
@@ -113,7 +114,8 @@ much to trust it.
 | Report | ✓ | ✓ | ✓ | ✓ | high-value tables | per-need |
 | Form / template | — | — | (auto-extracted) | **reject here** | — | — |
 | Figure-dominant | ✓ | caption-only | queue figures | no-csv bucket | vision pass | — |
-| Scanned | ✓ | OCR, low trust | — | — | — | — |
+| Scanned doc | ✓ | OCR (`ocr-interpreted`) | OCR'd tables (expect high reject) | ✓ | vision/manual digitization | — |
+| Photograph | ✓ | description record | legible-text transcription | — | independent second description | evidence timelines |
 | Excel calc workbook | ✓ | formula dump | formula graph + worked examples | cached-value classification | re-execution vs `cached_ok` cells | ported code + tests |
 | Word report | ✓ | ✓ | XML tables | ✓ | high-value tables | report template |
 | PowerPoint deck | ✓ | notes + claims | — | — | pasted tables via vision | reporting concepts |
