@@ -1,9 +1,16 @@
 # LLM Document-Ingestion Playbook
 
-A field-tested methodology for turning large corpora of technical PDF documents
-(engineering standards, codes, papers, reports) into a verified, citable,
-LLM-queryable knowledge wiki — using a **multi-agent pipeline** that combines
-deterministic extraction tools with LLM-based verification and review.
+A field-tested methodology for turning large corpora of technical documents —
+PDFs (engineering standards, codes, papers, reports) **and live Office
+artifacts** (Excel calculation workbooks, Word reports, PowerPoint decks) —
+into a verified, citable, LLM-queryable knowledge base — using a
+**multi-agent pipeline** that combines deterministic extraction tools with
+LLM-based verification and review.
+
+For frozen formats (PDF) the target is *content*; for live formats the
+pipeline also extracts **calculation logic** (formula graphs → tested code)
+and **reporting concepts** (report/template structure) — three distinct
+extraction dimensions (see docs 01 and 09).
 
 Everything here was distilled from a real, ongoing ingestion campaign:
 
@@ -13,6 +20,7 @@ Everything here was distilled from a real, ongoing ingestion campaign:
 | Tables extracted to CSV | ~18,300 |
 | Publishers ingested | 13 (ISO, API, ASTM, BSI, DNV, IEC, NORSOK, NACE, NEMA, HSE, MIL, SNAME, OnePetro) |
 | Vision-verification batches run | 80+ (≈450 tables verified cell-by-cell) |
+| Excel calculation workbooks inventoried | 4,100+ (tiered for logic→code conversion; 656K+ formulas extracted in pilots) |
 | Automation cadence | 6-hourly resumable cron, one PR per tick |
 | Agent providers used | 3 (Claude for orchestration/verification, Codex for bulk dispatch/review, Gemini for review fallback) |
 
@@ -46,6 +54,7 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/06-multi-agent-orchestration.md](docs/06-multi-agent-orchestration.md) | Splitting work across agent providers; concurrency, serialization, adversarial review |
 | [docs/07-data-governance.md](docs/07-data-governance.md) | Provenance, licensing firewall, public/private routing, citation contracts |
 | [docs/08-skills-catalog.md](docs/08-skills-catalog.md) | Reusable agent skills built for this work and how they're structured |
+| [docs/09-office-formats.md](docs/09-office-formats.md) | Excel/Word/PowerPoint: extracting calculation logic and reporting formats, not just content |
 
 ## Who this is for
 

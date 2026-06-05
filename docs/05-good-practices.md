@@ -157,6 +157,46 @@ bit; re-derivation is expensive.
 Apply: one fact per memory file; promote recurring workflows into versioned,
 parameterized skills (see [08-skills-catalog.md](08-skills-catalog.md)).
 
+## Office formats (Excel / Word / PowerPoint)
+
+**GP-27 — Inventory and tier workbooks before converting any.**
+Why: a corpus scan surfaced 4,100+ legacy calculation workbooks; converting
+in encounter-order wastes budget on low-value/high-complexity files.
+Apply: auto-scan every workbook (sheets, dimensions, formula counts,
+function histogram, cross-sheet references) → rank by priority (P0–P2) ×
+complexity tier (1–6) → budget extraction effort per tier; keep a registry.
+
+**GP-28 — Cached Excel values are not ground truth.**
+Why: workbooks saved without recalculation carry stale/missing cached
+results, which silently corrupts cached-value-as-oracle testing.
+Apply: classify cells `cached_ok` / `cached_missing` / `cached_suspect`;
+emit test assertions only for `cached_ok`; verify ported code by
+re-execution against those cells.
+
+**GP-29 — Extract the algorithm, not the cells.**
+Why: pattern detection on row/column-repeated formula regions yielded
+2.5×–44× compression (loops instead of cell-by-cell transliteration) —
+and the compression ratio doubles as a conversion-effort estimator.
+Apply: detect repetition patterns before code generation; a 500-row formula
+column is one loop.
+
+**GP-30 — Integrate extractions before extracting more.**
+Why: a pilot extracted 656K+ formulas from 6 workbooks; outputs sat as
+unintegrated stubs while thousands more workbooks queued — extraction
+outpaces integration by orders of magnitude.
+Apply: wire each extraction into live, tested code before widening the
+funnel; measure progress by integrated calculations, not extracted
+formulas.
+
+**GP-31 — Strip client context, keep methodology, with round-trip
+traceability.**
+Why: legacy workbooks mix validated engineering logic with
+client-confidential data — carrying raw files forward creates legal/IP
+risk; losing the source link destroys provenance.
+Apply: extract only generic methodology (equations, input ranges, worked
+examples → TDD fixtures); deny-list scan before archiving; never copy the
+raw workbook; every code artifact records its source-workbook mapping.
+
 ## Governance
 
 **GP-25 — Raw licensed sources never enter the repo.**
@@ -172,4 +212,4 @@ it; public/private routing enforced by frontmatter + pre-commit check.
 
 ---
 
-*Next ID: GP-27.*
+*Next ID: GP-32.*

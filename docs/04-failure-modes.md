@@ -48,6 +48,16 @@ them all.
 | C6 | **Git races under heavy parallelism** | 60+ concurrent git processes; chained `add && commit` | 19-minute D-state hang | Atomic per-file commits (`git commit -- <path>`), orchestrator serializes all git, workers write files only |
 | C7 | **Sparse-worktree silent drops** | `git add` skips paths outside the sparse cone without error | Committed tree ≠ disk | `git add --sparse` + verify with `git show HEAD:<path>`, set-equality not counts |
 
+## D. Office-format defects (Excel / Word lanes)
+
+| # | Failure mode | Root cause | Detected by | Mitigation |
+|---|---|---|---|---|
+| D1 | **Stale cached values used as test oracles** | Workbook saved without recalculation; cached results missing or outdated | Re-execution mismatch audit | Classify cells `cached_ok`/`cached_missing`/`cached_suspect`; assert only `cached_ok` (GP-28) |
+| D2 | **Extraction-stub pileup** — formulas extracted at scale but never integrated | Extraction is fast and satisfying; integration is slow | Backlog audit (656K formulas, 0 wired in) | Integrate-before-extract-more gate (GP-30) |
+| D3 | **Dual export layouts from one source** — same tool emits block-matrix and flat-table XLSX | Exporter version/mode differences | Parse failures on the second variant | Probe structure per file; dual-path parser; never assume one layout per family |
+| D4 | **Keyword-based sheet classification false positives** | Sheet/file names lie about content | Spot-check of classified inventory | Classify on scanned structure (formula density, function mix), not names |
+| D5 | **Client data carried forward with the calculation** | Logic and confidential inputs are interleaved in legacy workbooks | Deny-list scan | Extract generic methodology only; scan before archiving; raw workbook never copied (GP-31) |
+
 ## The meta-lesson
 
 > **Deterministic checks catch structural problems. Only vision catches value

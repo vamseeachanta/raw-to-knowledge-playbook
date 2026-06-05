@@ -5,11 +5,18 @@ recognizing that **different document types deserve different extraction
 depths, storage forms, and processing methods**. Treating every PDF the same
 way wastes effort on junk and under-extracts the valuable material.
 
-This taxonomy has three independent axes:
+This taxonomy has four independent axes:
 
 1. **Document type** — what the document *is*
-2. **Extraction level (L0–L5)** — how deep you go
-3. **Method** — single-shot vs iterative processing
+2. **Extraction dimension (D1–D3)** — *what kind of value* you extract:
+   **D1 content** (data, prose), **D2 logic** (calculations: formulas,
+   dependency graphs, macros), **D3 format** (report/template structure,
+   reporting concepts). Frozen formats (PDF) only have D1; live Office
+   formats carry all three — see
+   [09-office-formats.md](09-office-formats.md).
+3. **Extraction level (L0–L5)** — how deep you go (each dimension climbs
+   the ladder independently)
+4. **Method** — single-shot vs iterative processing
 
 ---
 
@@ -23,7 +30,10 @@ This taxonomy has three independent axes:
 | **Form / blank template** | Proforma grids, no filled data | **Reject at L3** | Structurally table-like but carries zero data — the #1 false positive |
 | **Figure/chart-dominant doc** | Imagery is the content | L0–L2 caption-only | Queue figures for a separate vision pass; text extraction is noise |
 | **Scanned / image-only PDF** | No text layer | L0, or OCR→L1 with low trust | Word-count gate detects these; don't paginate noise into the wiki |
-| **Datasheet / spreadsheet export** | Tabular by construction | L2–L4 | Often cleaner than PDF tables; verify units columns |
+| **Datasheet / spreadsheet export** | Tabular by construction | L2–L4 | Often cleaner than PDF tables; verify units columns; expect dual export layouts within one source family |
+| **Excel calculation workbook** | Live formulas, named ranges, cross-sheet graphs, macros | D2 logic → code + tests | The formula graph is the asset, not the cell values — see [09-office-formats.md](09-office-formats.md) |
+| **Word report / specification** | Styled prose + explicit XML tables + tracked changes | L1–L3 + D3 template | Tables are explicit structures (more reliable than PDF detection); extract the report template once per family |
+| **PowerPoint deck** | Narrative skeleton, speaker notes, pasted-image tables | D3 reporting concepts | Highly selective; pasted tables route to the vision lane like PDF figures |
 | **Web article / post** (blog, LinkedIn) | Short, ephemeral, link-rotted | L1 + archived source | Archive the source off-repo; cite filename not private path |
 | **Catalog / brochure / minutes / newsletter** | Marketing or administrative | **Filter out pre-ingest** | Junk filter on filename + content keywords |
 
@@ -101,6 +111,9 @@ much to trust it.
 | Form / template | — | — | (auto-extracted) | **reject here** | — | — |
 | Figure-dominant | ✓ | caption-only | queue figures | no-csv bucket | vision pass | — |
 | Scanned | ✓ | OCR, low trust | — | — | — | — |
+| Excel calc workbook | ✓ | formula dump | formula graph + worked examples | cached-value classification | re-execution vs `cached_ok` cells | ported code + tests |
+| Word report | ✓ | ✓ | XML tables | ✓ | high-value tables | report template |
+| PowerPoint deck | ✓ | notes + claims | — | — | pasted tables via vision | reporting concepts |
 | Web article | ✓ | ✓ | — | — | — | link only |
 
 ---
