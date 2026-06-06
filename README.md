@@ -62,6 +62,8 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/09-office-formats.md](docs/09-office-formats.md) | Excel/Word/PowerPoint: extracting calculation logic and reporting formats, not just content |
 | [docs/10-structured-data-and-model-files.md](docs/10-structured-data-and-model-files.md) | CSV/delimited files and solver ASCII formats: dialect probing, convention sidecars, deck→config round-trips |
 | [docs/11-imagery-and-scans.md](docs/11-imagery-and-scans.md) | Photographs (described, not extracted) and scanned documents (OCR as labeled interpretation) |
+| [docs/12-tooling-landscape.md](docs/12-tooling-landscape.md) | Vetted OSS tooling per lane — license-verified, with a trust rubric and license-flag register |
+| [docs/13-lane-flowcharts.md](docs/13-lane-flowcharts.md) | One reviewable flowchart per raw data type (master router + 10 lanes, Mermaid) |
 
 ## Who this is for
 
