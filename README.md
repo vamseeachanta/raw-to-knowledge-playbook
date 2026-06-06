@@ -65,6 +65,18 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/12-tooling-landscape.md](docs/12-tooling-landscape.md) | Vetted OSS tooling per lane — license-verified, with a trust rubric and license-flag register |
 | [docs/13-lane-flowcharts.md](docs/13-lane-flowcharts.md) | One reviewable flowchart per raw data type (master router + 10 lanes, Mermaid) |
 
+## Active research program (start here if you're reviewing/researching)
+
+The open questions are tracked as **research briefs in the issues**:
+[Epic #1](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/1)
+fans out to one ultra-research issue per raw format (#2–#11) plus the
+knowledge-store data-formats assessment (#12). Each brief contains the
+baseline (lane doc + flowchart + practices), specific research questions, and
+the expected deliverable shape. Ground rules: claims verified against primary
+sources/benchmarks (not READMEs), licenses screened per the
+[doc 12](docs/12-tooling-landscape.md) trust rubric, and findings land as PRs
+against the lane docs. Suggested order: #2 → #12 → #5.
+
 ## Who this is for
 
 Engineers and teams who want to make a private document corpus *usable* by
