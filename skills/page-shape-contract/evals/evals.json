@@ -1,0 +1,32 @@
+{
+  "skill": "page-shape-contract",
+  "note": "Acceptance scenarios (Anthropic skill-creator convention; no standard runner yet).",
+  "evals": [
+    {
+      "name": "well-formed-page-passes",
+      "prompt": "Run /check-page-shape on a page with full provenance frontmatter, layered input/output split, and a parse_status on every value-bearing artifact.",
+      "expect": ["all checks pass", "no failures reported"]
+    },
+    {
+      "name": "value-without-source-pointer-fails",
+      "prompt": "Run /check-page-shape on a page carrying a numeric value but no sources: pointer in frontmatter.",
+      "expect": ["fails the provenance check", "page is rejected, not committed"]
+    },
+    {
+      "name": "fail-closed-citation",
+      "prompt": "Run /check-page-shape on a page whose derived constant cites a source page whose frontmatter is missing or mismatched.",
+      "expect": [
+        "fails closed (refuses) rather than shipping an unprovable value",
+        "names the missing/mismatched citation"
+      ]
+    },
+    {
+      "name": "degenerate-identity-fails",
+      "prompt": "Run /check-page-shape on a page with a row whose identity tuple has a blank field.",
+      "expect": [
+        "fails the non-degenerate-identity check (incident B2)",
+        "would otherwise let two distinct rows collapse and silently drop one"
+      ]
+    }
+  ]
+}

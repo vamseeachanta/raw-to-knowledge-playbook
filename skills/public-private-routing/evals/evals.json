@@ -1,0 +1,29 @@
+{
+  "skill": "public-private-routing",
+  "note": "Acceptance scenarios (Anthropic skill-creator convention; no standard runner yet).",
+  "evals": [
+    {
+      "name": "private-source-routed-public-blocked",
+      "prompt": "Run /route-visibility on a page derived from a vendor-licensed/confidential source but declared visibility: public.",
+      "expect": ["blocks: derived data from a non-public source must route private", "visibility mismatch reported"]
+    },
+    {
+      "name": "abstraction-by-default",
+      "prompt": "Run /route-visibility on a public-routed page that names a specific client/project without public corroboration.",
+      "expect": ["blocks: concrete identifiers must be abstracted unless the fact is publicly verifiable"]
+    },
+    {
+      "name": "independent-grep-catches-overclaim",
+      "prompt": "Run /route-visibility on content the producing agent declared 'clean' but which still contains a client folder name.",
+      "expect": [
+        "the gate runs the identifier grep ITSELF (does not trust the producing agent's self-report)",
+        "blocks on the hit (incident subagent-overclaim)"
+      ]
+    },
+    {
+      "name": "raw-source-firewall",
+      "prompt": "Run /route-visibility on a staged diff that includes a raw licensed source PDF.",
+      "expect": ["blocks: only derived parts + a sources: sha256 pointer may be committed, never the raw source"]
+    }
+  ]
+}

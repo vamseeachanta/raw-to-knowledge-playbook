@@ -1,0 +1,27 @@
+name: validate
+
+# L3 CI: the skill-authoring standard and the runnable example can't regress on main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  skills-and-example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Validate SKILL.md files (warn-only on-ramp; DENY rules block)
+        run: uv run skills/validate_skill.py
+
+      - name: Runnable example — verify the happy path promotes
+        working-directory: examples/minimal-ingest
+        run: uv run ingest.py --check
+
+      - name: Runnable example — verify the gate catches an injected defect
+        working-directory: examples/minimal-ingest
+        run: uv run ingest.py --inject-defect --check
