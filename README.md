@@ -77,6 +77,7 @@ dependency, offline). Then come back to the document map below.
 | [docs/16-corpus-lifecycle.md](docs/16-corpus-lifecycle.md) | Incremental re-ingestion & freshness: two-level identity, supersede-by-append, hash-keyed cascade invalidation, event-driven re-verification |
 | [docs/17-cost-economics.md](docs/17-cost-economics.md) | The pipeline as a *verification-budget* model: $/page by lane, vision-verify ROI, deterministic-vs-LLM crossover, a reusable worksheet |
 | [docs/18-security-and-pii.md](docs/18-security-and-pii.md) | The data-egress firewall: fail-closed hosted-VLM routing, DPA/retention reality, the negative-assertion audit ledger |
+| [docs/19-trust-boundary-and-private-mode.md](docs/19-trust-boundary-and-private-mode.md) | What copyrighted/confidential content enters the repo (derived forms + leak vectors) and the private-mode posture: two structural invariants, the rest operator discretion |
 
 ## Active research program (start here if you're reviewing/researching)
 
