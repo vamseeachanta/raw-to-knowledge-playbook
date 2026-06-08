@@ -1,0 +1,5 @@
+Grade,Yield (MPa),Tensile (MPa),Allow. Stress (MPa),Temp Limit (C)
+X52,359,455,215,120
+X60,414,517,248,120
+X65,448,531,269,150
+X70,483,565,290,150

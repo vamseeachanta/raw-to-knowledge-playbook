@@ -47,6 +47,14 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
    pages against extracted CSVs cell-by-cell; reviewer agents adversarially
    audit pipeline code; orchestrator agents batch and serialize the work.
 
+## Start here
+
+New to this? **Run the core idea before reading the docs.**
+[`QUICKSTART.md`](QUICKSTART.md) walks you through a real extract → provisional →
+verify → promote loop on one table in ~15 minutes, backed by the runnable
+[`examples/minimal-ingest/`](examples/minimal-ingest/) (one permissive
+dependency, offline). Then come back to the document map below.
+
 ## Document map
 
 | Doc | Contents |
@@ -64,6 +72,8 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/11-imagery-and-scans.md](docs/11-imagery-and-scans.md) | Photographs (described, not extracted) and scanned documents (OCR as labeled interpretation) |
 | [docs/12-tooling-landscape.md](docs/12-tooling-landscape.md) | Vetted OSS tooling per lane — license-verified, with a trust rubric and license-flag register |
 | [docs/13-lane-flowcharts.md](docs/13-lane-flowcharts.md) | One reviewable flowchart per raw data type (master router + 10 lanes, Mermaid) |
+| [docs/14-chunking-and-embedding.md](docs/14-chunking-and-embedding.md) | Verified store → retrievable: structure-aware chunking, the embedding numeracy gap, carrying `parse_status` into chunks |
+| [docs/15-retrieval-evaluation.md](docs/15-retrieval-evaluation.md) | The answer-side trust gate: faithfulness/citation metrics, judge bias, golden sets, per-tick CI regression eval |
 | [docs/16-corpus-lifecycle.md](docs/16-corpus-lifecycle.md) | Incremental re-ingestion & freshness: two-level identity, supersede-by-append, hash-keyed cascade invalidation, event-driven re-verification |
 | [docs/17-cost-economics.md](docs/17-cost-economics.md) | The pipeline as a *verification-budget* model: $/page by lane, vision-verify ROI, deterministic-vs-LLM crossover, a reusable worksheet |
 | [docs/18-security-and-pii.md](docs/18-security-and-pii.md) | The data-egress firewall: fail-closed hosted-VLM routing, DPA/retention reality, the negative-assertion audit ledger |

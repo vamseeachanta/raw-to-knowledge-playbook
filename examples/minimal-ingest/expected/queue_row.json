@@ -1,0 +1,9 @@
+{
+  "table_id": "EX-001-table-3",
+  "csv_path": "out/provisional.csv",
+  "source_page": 1,
+  "parse_status": "verified",
+  "defect_class": null,
+  "verifier": "vision-stub (ground-truth diff)",
+  "verification_notes": "all cells match source"
+}

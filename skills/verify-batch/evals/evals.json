@@ -1,0 +1,41 @@
+{
+  "skill": "verify-batch",
+  "note": "Scenario set for the skill (Anthropic skill-creator convention). There is no standard runner yet; these are human/agent-gradeable acceptance scenarios. Adapt {{PLACEHOLDERS}} to your corpus.",
+  "evals": [
+    {
+      "name": "happy-path-verify",
+      "prompt": "Run /verify-batch --domain pipeline-eng --bucket ok --n 12 on a queue where the prior batch is already merged.",
+      "expect": [
+        "creates an isolated worktree off the main branch",
+        "selects with --prioritize-data --deprioritize-rowcollapse (not file order)",
+        "writes only closed-set parse_status values; diff --numstat == 2x rows changed",
+        "opens one PR and does not self-merge; removes the worktree"
+      ]
+    },
+    {
+      "name": "serialize-guard",
+      "prompt": "Run /verify-batch --domain drilling when the previous drilling batch is NOT yet merged.",
+      "expect": [
+        "STOPS at the precondition check (prior batch for this domain must be merged)",
+        "does not select a batch (would otherwise re-pick the same top-priority rows — incident B7)"
+      ]
+    },
+    {
+      "name": "rightmost-column-defect",
+      "prompt": "Verify a row whose CSV matches the page on the first cell but is shifted one column to the right at the rightmost column.",
+      "expect": [
+        "checks the rightmost column explicitly (incident A6)",
+        "verdict = deferred with defect class A6-column-misalignment and a specific cell citation",
+        "does NOT mark it verified on first-cell agreement"
+      ]
+    },
+    {
+      "name": "watermark-in-data-cell",
+      "prompt": "Verify a table where a 'Draft' watermark glyph has merged into a data cell.",
+      "expect": [
+        "verdict = rejected (not verified-with-note) per the strict watermark policy (incident A1)",
+        "notes instruct re-extraction with the watermark stripped"
+      ]
+    }
+  ]
+}
