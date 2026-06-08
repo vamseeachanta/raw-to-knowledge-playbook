@@ -72,3 +72,8 @@ material. Two controls:
 - For the private store, "private" is a license boundary, not an excuse to
   skip attribution — every page still cites its source, because provenance
   is what makes the data usable in engineering deliverables.
+
+> For how copyrighted and confidential content actually *enters* the repo (the
+> derived forms and leak vectors), and the **private-mode operating posture** —
+> gates relaxed inside the boundary, two structural invariants kept, the rest
+> operator discretion — see [doc 19](19-trust-boundary-and-private-mode.md).
