@@ -47,6 +47,14 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
    pages against extracted CSVs cell-by-cell; reviewer agents adversarially
    audit pipeline code; orchestrator agents batch and serialize the work.
 
+## Start here
+
+New to this? **Run the core idea before reading the docs.**
+[`QUICKSTART.md`](QUICKSTART.md) walks you through a real extract → provisional →
+verify → promote loop on one table in ~15 minutes, backed by the runnable
+[`examples/minimal-ingest/`](examples/minimal-ingest/) (one permissive
+dependency, offline). Then come back to the document map below.
+
 ## Document map
 
 | Doc | Contents |
