@@ -1,17 +1,18 @@
 ---
 name: public-private-routing
 description: >
-  Enforce the firewall between a public knowledge store and per-client private
-  stores: declare visibility in frontmatter, abstract client/project identifiers
-  by default, and run a publish-time grep against a maintained identifier list
-  before any content crosses the private boundary. Use before committing or
-  publishing any page, and as a pre-commit/CI gate.
-trigger: "/route-visibility <path-or-diff>"
-enforcement_level: L3   # pre-commit + CI deny-list scan
-params:
-  target: { type: string, doc: "file, directory, or staged diff to screen" }
-incident_refs: [B-screening, subagent-overclaim]
-status: template
+  Enforces the firewall between a public knowledge store and per-client private
+  stores by checking declared visibility, abstracting client/project identifiers
+  by default, and running an independent publish-time grep against a maintained
+  identifier list. Use before committing or publishing any page, and as a pre-commit/CI gate.
+license: CC-BY-4.0
+compatibility: Requires a maintained identifier deny-list and pages declaring visibility/client frontmatter; wires into pre-commit + CI
+metadata:
+  version: "1.0"
+  enforcement_level: L3            # pre-commit + CI deny-list scan
+  status: template
+  incident_refs: B-screening,subagent-overclaim
+  params: "target:str"
 ---
 
 # public-private-routing

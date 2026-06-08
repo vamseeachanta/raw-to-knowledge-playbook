@@ -6,10 +6,12 @@ skills as **adaptable templates** — the transferable rules are concrete; the
 corpus-specific paths/commands are `{{PLACEHOLDERS}}` you fill in.
 
 Each `SKILL.md` follows the doc-08 anatomy (Trigger · Preconditions · Steps ·
-Verification · Cleanup · Incident appendix) and carries frontmatter declaring
-its trigger, closed-set params, current `enforcement_level`, and the
-`incident_refs` (failure classes from [doc 04](../docs/04-failure-modes.md))
-that shaped its rules.
+Verification · Cleanup · Incident appendix) and serializes to the open
+**Agent Skills spec** (`name`/`description`/`license`/`compatibility`/`metadata`),
+with our extensions (`enforcement_level`, closed-set `params`, `incident_refs`
+→ [doc 04](../docs/04-failure-modes.md) failure classes) under `metadata`. The
+full contract and the rationale are in
+[AUTHORING-STANDARD.md](AUTHORING-STANDARD.md).
 
 ## Catalog
 
@@ -27,6 +29,19 @@ that shaped its rules.
 that can't be bypassed. Promote a rule up the gradient when violations recur —
 instructions catch intent, hooks catch everything.
 
+## Validate
+
+```bash
+uv run skills/validate_skill.py          # check every SKILL.md (warn/deny tiering)
+uv run skills/validate_skill.py --strict # treat warnings as failures
+```
+
+[`validate_skill.py`](validate_skill.py) is the one-script-three-altitudes
+validator (L2 by hand, L3 as a `repo: local` pre-commit hook or CI Action). It
+fails closed on the open-spec `name`/`description` rules and the required body
+sections; recommended conventions (`license`, `evals/evals.json`, `Preconditions`)
+warn. See [AUTHORING-STANDARD.md](AUTHORING-STANDARD.md).
+
 ## Adapting a template
 
 1. Replace every `{{PLACEHOLDER}}` (paths, selector command, branch names) with
@@ -37,5 +52,6 @@ instructions catch intent, hooks catch everything.
 3. Register any new status value in your queue normalizer's known-set *before*
    first use, or rewrites will mangle it.
 
-> `status: template` in the frontmatter marks a file as not-yet-adapted. A formal
-> skill-file schema + validator is tracked in the strengthening epic (#14).
+> `metadata.status: template` marks a file as not-yet-adapted. The formal
+> skill-file schema + validator (#14) now ships here — see
+> [AUTHORING-STANDARD.md](AUTHORING-STANDARD.md) and `validate_skill.py`.

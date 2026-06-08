@@ -1,19 +1,18 @@
 ---
 name: verify-batch
 description: >
-  Vision-verify the next batch of auto-extracted tables in an ingestion queue:
-  select a density-ranked batch, render source pages, compare each rendered
-  page against its extracted CSV cell-by-cell, write closed-set verdicts with
-  binary-faithful queue I/O, and open one PR per batch. Use when promoting
-  provisional table extractions to a trusted (verified) state.
-trigger: "/verify-batch [--n N] [--bucket ok|flagged|no-csv] [--domain D]"
-enforcement_level: L2   # callable skill + frontmatter/diff-size checking scripts
-params:
-  n:       { type: integer, default: 12, doc: "rows per batch; keep small enough for a human to gate the PR" }
-  bucket:  { type: enum, values: [ok, flagged, no-csv], default: ok }
-  domain:  { type: string, doc: "queue partition to draw from; one queue file per domain" }
-incident_refs: [A1, A6, A7, A9, B3, B5, B6, B7, D-screening]
-status: template   # adapt the {{PLACEHOLDERS}} to your corpus before first run
+  Vision-verifies the next batch of auto-extracted tables against rendered page
+  images and writes closed-set verdicts with binary-faithful queue I/O, one PR
+  per batch. Use when promoting provisional table extractions to a trusted
+  (verified) state, correcting flagged rows, or checking no-csv figures.
+license: CC-BY-4.0
+compatibility: Requires git, Python 3.11+, uv, a vision model, and an ingestion queue with parse_status/structural_status columns
+metadata:
+  version: "1.0"
+  enforcement_level: L2            # callable skill + frontmatter/diff-size checking scripts
+  status: template                 # adapt the {{PLACEHOLDERS}} to your corpus before first run
+  incident_refs: A1,A6,A7,A9,B3,B5,B6,B7
+  params: "n:int=12 | bucket:enum(ok,flagged,no-csv)=ok | domain:str"
 ---
 
 # verify-batch

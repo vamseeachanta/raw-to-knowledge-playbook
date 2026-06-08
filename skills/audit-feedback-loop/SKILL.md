@@ -1,16 +1,18 @@
 ---
 name: audit-feedback-loop
 description: >
-  Maintain an anchored-text feedback inbox for a knowledge store: reviewers
-  attach feedback to exact text anchors, every item carries an explicit
-  resolution state, and nothing is ever silently deleted. Use when collecting,
-  triaging, or resolving review feedback on extracted/generated pages.
-trigger: "/audit-feedback <add|list|resolve> [args]"
-enforcement_level: L1   # callable skill; graduates to L2 when a state validator is added
-params:
-  action: { type: enum, values: [add, list, resolve] }
-incident_refs: [feedback-silent-delete]
-status: template
+  Maintains an anchored-text feedback inbox for a knowledge store where every
+  item attaches to an exact text anchor, carries an explicit resolution state,
+  and is never silently deleted. Use when collecting, triaging, or resolving
+  review feedback on extracted or generated pages.
+license: CC-BY-4.0
+compatibility: Requires a feedback store keyed by stable text anchors; no external dependency
+metadata:
+  version: "1.0"
+  enforcement_level: L1            # callable skill; graduates to L2 when a state validator is added
+  status: template
+  incident_refs: feedback-silent-delete
+  params: "action:enum(add,list,resolve)"
 ---
 
 # audit-feedback-loop

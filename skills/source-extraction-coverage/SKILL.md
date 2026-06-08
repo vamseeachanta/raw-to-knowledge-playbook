@@ -1,18 +1,18 @@
 ---
 name: source-extraction-coverage
 description: >
-  Run doc-type-aware deterministic extraction on a source and make shallow
-  extraction VISIBLE: declare an extraction_estimate before extracting, record
-  the extraction_yield after, and flag any source whose yield falls short of
-  its estimate for re-processing. Use when ingesting any new source file
-  (PDF/DOCX/XLSX/HTML/scanned) into the provisional store.
-trigger: "/extract-source <path> [--type auto|pdf|docx|xlsx|html|scanned]"
-enforcement_level: L2   # callable + frontmatter validator script
-params:
-  path: { type: string, doc: "source file (off-repo, read-only)" }
-  type: { type: enum, values: [auto, pdf, docx, xlsx, html, scanned], default: auto }
-incident_refs: [coverage-2pct, A-defects, D4]
-status: template
+  Runs doc-type-aware deterministic extraction on a source and makes shallow
+  extraction visible by recording an extraction_estimate before and an
+  extraction_yield after, flagging any source whose yield falls short. Use when
+  ingesting a new source file (PDF/DOCX/XLSX/HTML/scanned) into the provisional store.
+license: CC-BY-4.0
+compatibility: Requires a deterministic extractor per doc type (pdfplumber/Docling, python-docx, openpyxl, OCR) and a landing-page frontmatter store
+metadata:
+  version: "1.0"
+  enforcement_level: L2            # callable + frontmatter validator script
+  status: template
+  incident_refs: coverage-2pct,A-defects,D4
+  params: "path:str | type:enum(auto,pdf,docx,xlsx,html,scanned)=auto"
 ---
 
 # source-extraction-coverage

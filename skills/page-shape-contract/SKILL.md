@@ -1,16 +1,18 @@
 ---
 name: page-shape-contract
 description: >
-  Enforce the structural contract for a knowledge-store page: the layered
-  input/output split, required provenance frontmatter, trust labels on every
+  Enforces the structural contract for a knowledge-store page — layered
+  input/output split, provenance frontmatter, trust labels on every
   value-bearing artifact, and the public/private abstraction gate. Use when
   creating or reviewing any wiki/knowledge page before it is committed.
-trigger: "/check-page-shape <page.md>"
-enforcement_level: L3   # pre-commit hook can block a malformed page
-params:
-  page: { type: string }
-incident_refs: [B2, fail-closed-citation]
-status: template
+license: CC-BY-4.0
+compatibility: Requires pages with provenance frontmatter (visibility/sources/parse_status); pairs with a pre-commit hook for L3
+metadata:
+  version: "1.0"
+  enforcement_level: L3            # pre-commit hook can block a malformed page
+  status: template
+  incident_refs: B2,fail-closed-citation
+  params: "page:str"
 ---
 
 # page-shape-contract
