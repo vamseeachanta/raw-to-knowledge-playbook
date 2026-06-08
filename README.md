@@ -74,6 +74,9 @@ dependency, offline). Then come back to the document map below.
 | [docs/13-lane-flowcharts.md](docs/13-lane-flowcharts.md) | One reviewable flowchart per raw data type (master router + 10 lanes, Mermaid) |
 | [docs/14-chunking-and-embedding.md](docs/14-chunking-and-embedding.md) | Verified store → retrievable: structure-aware chunking, the embedding numeracy gap, carrying `parse_status` into chunks |
 | [docs/15-retrieval-evaluation.md](docs/15-retrieval-evaluation.md) | The answer-side trust gate: faithfulness/citation metrics, judge bias, golden sets, per-tick CI regression eval |
+| [docs/16-corpus-lifecycle.md](docs/16-corpus-lifecycle.md) | Incremental re-ingestion & freshness: two-level identity, supersede-by-append, hash-keyed cascade invalidation, event-driven re-verification |
+| [docs/17-cost-economics.md](docs/17-cost-economics.md) | The pipeline as a *verification-budget* model: $/page by lane, vision-verify ROI, deterministic-vs-LLM crossover, a reusable worksheet |
+| [docs/18-security-and-pii.md](docs/18-security-and-pii.md) | The data-egress firewall: fail-closed hosted-VLM routing, DPA/retention reality, the negative-assertion audit ledger |
 
 ## Active research program (start here if you're reviewing/researching)
 
