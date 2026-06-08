@@ -1,0 +1,35 @@
+{
+  "skill": "audit-feedback-loop",
+  "note": "Acceptance scenarios (Anthropic skill-creator convention; no standard runner yet).",
+  "evals": [
+    {
+      "name": "add-anchored-feedback",
+      "prompt": "Run /audit-feedback add attaching a comment to an exact text span on a page.",
+      "expect": [
+        "item records an exact text anchor (page + quoted span or stable id), not 'somewhere on the page'",
+        "initial state = open, with author + timestamp"
+      ]
+    },
+    {
+      "name": "resolve-keeps-the-record",
+      "prompt": "Run /audit-feedback resolve on an open item that a PR has now addressed.",
+      "expect": [
+        "moves to a terminal state (resolved/wontfix/superseded) WITH a reason and a link to the change",
+        "the item stays in the record — it is closed-with-reason, never deleted (incident feedback-silent-delete)"
+      ]
+    },
+    {
+      "name": "no-silent-delete",
+      "prompt": "Attempt to delete a resolved feedback item entirely.",
+      "expect": [
+        "deletion is not allowed; deleted is not a valid state",
+        "state transitions are append-only, preserving the audit trail"
+      ]
+    },
+    {
+      "name": "orphaned-anchor-flagged",
+      "prompt": "Run /audit-feedback list after a page edit removed the text an item was anchored to.",
+      "expect": ["the item with the now-orphaned anchor is surfaced/flagged, not silently lost"]
+    }
+  ]
+}

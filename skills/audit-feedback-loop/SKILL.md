@@ -24,6 +24,11 @@ metadata:
 ## Trigger
 `/audit-feedback <add|list|resolve> [args]`
 
+## Preconditions
+- A feedback store exists keyed by **stable text anchors** (page + quoted span or
+  stable id) that survive edits well enough to re-resolve.
+- The pages under review are committed (or staged) so anchors point at durable text.
+
 ## Closed-set resolution states
 `open` → `acknowledged` → `resolved` | `wontfix` | `superseded`
 (Never `deleted`. A resolved item is *closed with a reason*, kept for audit.)

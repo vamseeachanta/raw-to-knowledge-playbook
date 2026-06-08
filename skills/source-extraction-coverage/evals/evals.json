@@ -1,0 +1,32 @@
+{
+  "skill": "source-extraction-coverage",
+  "note": "Acceptance scenarios (Anthropic skill-creator convention; no standard runner yet). Adapt {{PLACEHOLDERS}} to your corpus.",
+  "evals": [
+    {
+      "name": "estimate-then-yield-happy",
+      "prompt": "Run /extract-source on a born-digital text PDF after declaring an extraction_estimate.",
+      "expect": [
+        "extraction_estimate is written to frontmatter BEFORE extraction",
+        "extraction is deterministic (pdfplumber/Docling), not an LLM bulk pass",
+        "extraction_yield recorded after; yield ~ matches estimate, source not flagged shallow"
+      ]
+    },
+    {
+      "name": "shallow-extraction-caught",
+      "prompt": "Run /extract-source on an image-only PDF routed (wrongly) through the text recipe.",
+      "expect": [
+        "extraction_yield << extraction_estimate (the 2%-coverage signature)",
+        "source marked extraction: shallow and queued for the scanned/OCR recipe",
+        "it does NOT pass as 'done' into the trusted set"
+      ]
+    },
+    {
+      "name": "classify-by-structure-not-name",
+      "prompt": "Run /extract-source --type auto on a workbook named 'summary.xlsx' that is actually formula-dense.",
+      "expect": [
+        "type/classification is decided on scanned structure (formula density), not the filename (incident D4)",
+        "routes to the xlsx formula-graph recipe, not a data-only read"
+      ]
+    }
+  ]
+}

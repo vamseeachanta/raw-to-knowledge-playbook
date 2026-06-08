@@ -80,10 +80,14 @@ hard gate on day one. Promotion trigger (per doc 08): **violations recur.**
 - **L3 CI:** the same script as a GitHub Action
 
 `--strict` promotes warnings to failures. One component, three altitudes — no
-framework adopted.
+framework adopted. Both L3 wirings now ship in this repo:
+[`.pre-commit-config.yaml`](../.pre-commit-config.yaml) (local hook) and
+[`.github/workflows/validate.yml`](../.github/workflows/validate.yml) (CI, which
+also runs the runnable example's `--check`). CI runs warn-only per the on-ramp;
+flip to `--strict` once it has proven out.
 
 ```yaml
-# .pre-commit-config.yaml (sketch — L3)
+# .pre-commit-config.yaml (shipped at repo root — L3)
 repos:
   - repo: local
     hooks:

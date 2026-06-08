@@ -1,0 +1,14 @@
+# L3 enforcement for the skill-authoring standard (skills/AUTHORING-STANDARD.md).
+# "Instructions catch intent, hooks catch everything." Install once:
+#   uv tool install pre-commit && pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: validate-skills
+        name: validate SKILL.md files against the authoring standard
+        entry: uv run skills/validate_skill.py
+        language: system
+        files: ^skills/.*/(SKILL\.md|evals/evals\.json)$
+        pass_filenames: false
+        # DENY rules (name/description/required sections) block the commit;
+        # recommended rules warn. Add --strict here once warn-only has proven out.
