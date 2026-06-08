@@ -102,9 +102,12 @@ ported Python is hand/agent-written and verified against the oracle on
 | **Florence-2** | MIT | EVALUATE | Cheap captioning/region tasks, not rich description |
 | **PaliGemma 2** | ⚠️ Gemma license (non-OSI) | EVALUATE | Review use restrictions first |
 
-## Lane 7 — Chunking, retrieval & evaluation patterns (doc on L5 enrichment)
+## Lane 7 — Chunking, retrieval & evaluation patterns (docs 14–15)
 
-Patterns to **borrow** (not frameworks to migrate to):
+Expanded with license-screened verdicts and primary-source evidence in
+[doc 14 (chunking & embedding)](14-chunking-and-embedding.md) and
+[doc 15 (retrieval evaluation)](15-retrieval-evaluation.md). Patterns to
+**borrow** (not frameworks to migrate to):
 
 | Component / pattern | Source | License | Why |
 |---|---|---|---|
