@@ -64,6 +64,9 @@ continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 | [docs/11-imagery-and-scans.md](docs/11-imagery-and-scans.md) | Photographs (described, not extracted) and scanned documents (OCR as labeled interpretation) |
 | [docs/12-tooling-landscape.md](docs/12-tooling-landscape.md) | Vetted OSS tooling per lane — license-verified, with a trust rubric and license-flag register |
 | [docs/13-lane-flowcharts.md](docs/13-lane-flowcharts.md) | One reviewable flowchart per raw data type (master router + 10 lanes, Mermaid) |
+| [docs/16-corpus-lifecycle.md](docs/16-corpus-lifecycle.md) | Incremental re-ingestion & freshness: two-level identity, supersede-by-append, hash-keyed cascade invalidation, event-driven re-verification |
+| [docs/17-cost-economics.md](docs/17-cost-economics.md) | The pipeline as a *verification-budget* model: $/page by lane, vision-verify ROI, deterministic-vs-LLM crossover, a reusable worksheet |
+| [docs/18-security-and-pii.md](docs/18-security-and-pii.md) | The data-egress firewall: fail-closed hosted-VLM routing, DPA/retention reality, the negative-assertion audit ledger |
 
 ## Active research program (start here if you're reviewing/researching)
 
