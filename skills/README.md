@@ -27,6 +27,7 @@ full contract and the rationale are in
 | [format-coverage-ledger](format-coverage-ledger/SKILL.md) | Office-ingestion campaign | **L2** | Right extraction lane per office/email format + a ledger of each format's known inherent losses, so a faithful-but-incomplete extract isn't silently trusted |
 | [source-extract-fidelity](source-extract-fidelity/SKILL.md) | Office-ingestion campaign | **L2** | Independent prose-vs-extract review: every page claim traces to the committed extract (a cross-ref is not a quote; a derived number is not "quoted") |
 | [stacked-batch-prs](stacked-batch-prs/SKILL.md) | Office-ingestion campaign | **L2** | One PR per batch on stacked branches (avoid shared-file conflicts) + the merge-cascade-strand guard: verify main's tree after each merge |
+| [xlsx-input-code-output-canary](xlsx-input-code-output-canary/SKILL.md) | Spreadsheet canary | **L2** | Classify XLS/XLSX workbooks before extraction and require input contract + code artifact + verified output proof across a ten-file canary |
 
 > The five **Office-ingestion campaign** skills were distilled from a mixed-office
 > raw-archive ingestion (docx/xlsx/msg/pdf/pptx). Their `incident_refs` use

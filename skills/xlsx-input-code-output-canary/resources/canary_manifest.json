@@ -1,0 +1,116 @@
+{
+  "canary_manifest_version": 1,
+  "description": "Ten online workbook candidates for the XLS/XLSX input-to-code-to-output canary. Raw workbook bytes are never committed; fetch verifies bytes and sha256 into a local cache only.",
+  "workbooks": [
+    {
+      "source_id": "S1-base-xlsx",
+      "category": "simple",
+      "workbook": "base.xlsx",
+      "url": "https://raw.githubusercontent.com/dimastbk/python-calamine/master/tests/data/base.xlsx",
+      "license": "MIT",
+      "bytes": 10896,
+      "sha256": "8506801dfab6c3f0807a0c7d43b7b8703705029a3af24413b10936e3003df7fd",
+      "purpose": "Baseline data-only XLSX parse and normalized table output.",
+      "expected_flags": ["data_only"]
+    },
+    {
+      "source_id": "S2-any-sheets-xlsx",
+      "category": "simple",
+      "workbook": "any_sheets.xlsx",
+      "url": "https://raw.githubusercontent.com/dimastbk/python-calamine/master/tests/data/any_sheets.xlsx",
+      "license": "MIT",
+      "bytes": 14804,
+      "sha256": "fba48e0141f847d80738a4417f0a336cba92e4ac692d8dd7516eac41e32c9e4f",
+      "purpose": "Multiple-sheet inventory and source-addressed output.",
+      "expected_flags": ["multiple_sheets"]
+    },
+    {
+      "source_id": "S3-with-table-xlsx",
+      "category": "simple",
+      "workbook": "WithTable.xlsx",
+      "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/WithTable.xlsx",
+      "license": "Apache-2.0 project release; fixture redistribution remains gated",
+      "bytes": 9400,
+      "sha256": "624b33056b0d2686f4264eb21281fc0245167490463d2fdeb556984c239f7fa8",
+      "purpose": "Native Excel table detection and structured output.",
+      "expected_flags": ["table"]
+    },
+    {
+      "source_id": "S4-merge-cells-xlsx",
+      "category": "simple",
+      "workbook": "merge_cells.xlsx",
+      "url": "https://raw.githubusercontent.com/tafia/calamine/master/tests/merge_cells.xlsx",
+      "license": "MIT",
+      "bytes": 8948,
+      "sha256": "34f6b2779f49991859045791d8be0c5027e09b395f067c4363e38813d1e6431c",
+      "purpose": "Merged-cell/layout hazard; should not flatten without evidence.",
+      "expected_flags": ["merged_cells"]
+    },
+    {
+      "source_id": "S5-date-1904-xlsx",
+      "category": "simple",
+      "workbook": "date_1904.xlsx",
+      "url": "https://raw.githubusercontent.com/tafia/calamine/master/tests/date_1904.xlsx",
+      "license": "MIT",
+      "bytes": 4922,
+      "sha256": "8b9f2b71a46833d7b9d2250d60b3c0948024f3d2b26f38ef990c0f2b2683fe08",
+      "purpose": "Date-system hazard; verify date serial interpretation.",
+      "expected_flags": ["date_1904"]
+    },
+    {
+      "source_id": "C1-cross-sheet-xlsx",
+      "category": "complex",
+      "workbook": "cross_sheet.xlsx",
+      "url": "https://raw.githubusercontent.com/bradbase/xlcalculator/master/tests/resources/cross_sheet.xlsx",
+      "license": "MIT with parser/tokenizer caveat in license file",
+      "bytes": 6682,
+      "sha256": "250b7297c72bbf99b2df8fff06ce6042d889dd54d61be3d0b7358196720bc68e",
+      "purpose": "Cross-sheet formulas and dependency graph extraction.",
+      "expected_flags": ["formula", "cross_sheet_formula"]
+    },
+    {
+      "source_id": "C2-defined-names-xlsx",
+      "category": "complex",
+      "workbook": "defined_names.xlsx",
+      "url": "https://raw.githubusercontent.com/bradbase/xlcalculator/master/tests/resources/defined_names.xlsx",
+      "license": "MIT with parser/tokenizer caveat in license file",
+      "bytes": 8096,
+      "sha256": "0d47dd5df2761a530c7a244cee3606bbe0597174299a78468fdea7454a5570bf",
+      "purpose": "Defined names/named ranges and formula binding.",
+      "expected_flags": ["defined_names"]
+    },
+    {
+      "source_id": "C3-structured-table-refs-xlsx",
+      "category": "complex",
+      "workbook": "evaluate_formula_with_structured_table_references.xlsx",
+      "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/evaluate_formula_with_structured_table_references.xlsx",
+      "license": "Apache-2.0 project release; fixture redistribution remains gated",
+      "bytes": 9198,
+      "sha256": "f460fced2f6bac1f5b4b7d400fd7f2e3ff379af478c01d26388744cefd37a93a",
+      "purpose": "Structured table references inside formulas.",
+      "expected_flags": ["formula", "table"]
+    },
+    {
+      "source_id": "C4-charts-xlsx",
+      "category": "complex",
+      "workbook": "WithThreeCharts.xlsx",
+      "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/WithThreeCharts.xlsx",
+      "license": "Apache-2.0 project release; fixture redistribution remains gated",
+      "bytes": 13841,
+      "sha256": "629b69bd250d9b4e173eb2088eb80b656b7748b0287cd7b0df0c2dc22c6af7b0",
+      "purpose": "Chart/output metadata with formulas and non-tabular artifact inventory.",
+      "expected_flags": ["charts", "formula"]
+    },
+    {
+      "source_id": "C5-protected-workbook-xlsx",
+      "category": "complex",
+      "workbook": "workbookProtection-workbook_password-2013.xlsx",
+      "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/workbookProtection-workbook_password-2013.xlsx",
+      "license": "Apache-2.0 project release; fixture redistribution remains gated",
+      "bytes": 8171,
+      "sha256": "0ca1ab7d0e90087316072f89d181067c91c170f0718b109a8ee20867b23c58c2",
+      "purpose": "Protected workbook edge case; should classify as guarded or unsupported rather than silently extract.",
+      "expected_flags": ["protection"]
+    }
+  ]
+}
