@@ -1,0 +1,29 @@
+{
+  "skill": "lfs-batch-fetch",
+  "evals": [
+    {
+      "name": "happy-path-pointer-to-verified-bytes",
+      "given": "A source file in a partial clone is a 3-line LFS pointer (oid sha256:abc..., size 1048576); git-lfs is not installed and sudo is unavailable.",
+      "when": "The skill parses oid+size, POSTs to <repo>.git/info/lfs/objects/batch with a gh bearer token and the git-lfs Accept header, downloads the signed href to a temp dir, and sha256sums it.",
+      "then": "The download's sha256 equals the pointer oid and its byte count equals size; the verified temp path is handed to the extractor; no binary is inside any repo tree."
+    },
+    {
+      "name": "hash-mismatch-stops",
+      "given": "The Batch API returns a signed URL but the download is truncated (CDN hiccup), so the file's sha256 != the pointer oid.",
+      "when": "The skill runs the mandatory sha256==oid gate.",
+      "then": "It STOPS and reports a verification failure rather than handing a corrupt binary to the extractor; nothing is committed."
+    },
+    {
+      "name": "not-a-pointer-noop",
+      "given": "The target file is the actual binary (not an LFS stub).",
+      "when": "The precondition check inspects the first bytes for the `version https://git-lfs...` header.",
+      "then": "The skill recognizes it is not a pointer and exits as a no-op, telling the caller to extract the file directly."
+    },
+    {
+      "name": "firewall-refuses-in-repo-dest",
+      "given": "A caller passes a --dest path that resolves inside a tracked repo working tree.",
+      "when": "The skill validates the destination against every repo root before downloading.",
+      "then": "It refuses to download to that path and requires a temp dir outside any repo (raw-binary firewall)."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "skill": "format-coverage-ledger",
+  "evals": [
+    {
+      "name": "xlsx-records-formula-loss",
+      "given": "An engineering-calculation workbook is extracted to per-sheet CSV with openpyxl data_only=True.",
+      "when": "The coverage ledger is written.",
+      "then": "The page records captured=computed cell values and KNOWN loss=formulas/named ranges/charts, and is marked completeness:partial queued for a formula-graph lane."
+    },
+    {
+      "name": "pptx-records-diagram-loss",
+      "given": "A results deck whose key content is plotted figures is extracted to slide text + tables.",
+      "when": "The ledger is written.",
+      "then": "It records that diagrams/plots AND speaker notes were not captured and flags the page for image/diagram + notes capture rather than shipping it as complete."
+    },
+    {
+      "name": "msg-records-attachment-drop",
+      "given": "An .msg email thread with attachments is extracted to thread text.",
+      "when": "The ledger is written.",
+      "then": "Attachments are recorded as dropped; the page is partial and the attachments are queued for separate harvesting."
+    },
+    {
+      "name": "no-host-path-committed",
+      "given": "The extractor reads sources under $FDAS_CORPUS rather than a hardcoded /mnt path.",
+      "when": "The diff of any committed page/extract is grepped for host mount paths.",
+      "then": "No absolute host mount path appears; provenance is recorded as corpus-relative-path + sha256."
+    },
+    {
+      "name": "faithful-but-incomplete-not-marked-done",
+      "given": "A docx is extracted faithfully but contains embedded figures the text dump omits.",
+      "when": "The ledger names the image loss.",
+      "then": "The page is not promoted to the trusted/complete set; it carries completeness:partial with the recorded gap."
+    }
+  ]
+}

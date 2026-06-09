@@ -1,0 +1,29 @@
+{
+  "skill": "stacked-batch-prs",
+  "evals": [
+    {
+      "name": "stacking-avoids-index-conflict",
+      "given": "Three batches each add pages and regenerate a shared auto-generated index.",
+      "when": "Each branch is cut off the prior batch's tip and the index is regenerated rather than hand-edited.",
+      "then": "Each PR shows a clean superset index diff with no merge conflict on the shared file."
+    },
+    {
+      "name": "guards-merge-cascade-strand",
+      "given": "A top stacked PR's base is an intermediate branch that has already been merged and deleted.",
+      "when": "After merging, the skill verifies origin/main's tree contains the merged pages.",
+      "then": "It detects the pages are missing from main (stranded), re-targets the PR to main, and re-merges so content reaches main."
+    },
+    {
+      "name": "rejects-hand-edited-index",
+      "given": "A batch hand-edits the index table instead of regenerating it.",
+      "when": "The verification re-runs the index generator.",
+      "then": "The generator output diffs from the committed index, flagging the hand edit as the conflict source to revert."
+    },
+    {
+      "name": "merge-order-bottom-up",
+      "given": "A reviewer is about to merge the newest PR in a 3-PR stack first.",
+      "when": "The merge-order rule is applied.",
+      "then": "The oldest open PR is merged first; higher PRs wait until the one beneath them lands, with bases re-targeted as they move."
+    }
+  ]
+}
