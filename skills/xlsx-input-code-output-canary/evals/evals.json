@@ -1,0 +1,19 @@
+{
+  "evals": [
+    {
+      "name": "data_workbook_requires_normalized_output",
+      "prompt": "Use the XLSX canary skill on a flat data workbook with no formulas.",
+      "expected": "The agent classifies the workbook as data, records source_id/url/sha256 evidence, generates parser/schema code, and emits normalized output proof without treating layout metadata as extracted facts."
+    },
+    {
+      "name": "formula_workbook_requires_code_or_evaluator_proof",
+      "prompt": "Use the XLSX canary skill on a workbook with formulas, cross-sheet references, and named ranges.",
+      "expected": "The agent separates input cells from formula logic, refuses cached values as proof, and requires a code artifact or evaluator adapter before marking output verified."
+    },
+    {
+      "name": "guarded_workbook_defers_explicitly",
+      "prompt": "Use the XLSX canary skill on a protected workbook or workbook with unsupported logic.",
+      "expected": "The agent classifies the workbook as guarded or unsupported and records an explicit deferral reason instead of silently extracting tables."
+    }
+  ]
+}
