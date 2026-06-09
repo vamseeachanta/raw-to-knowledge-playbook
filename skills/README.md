@@ -22,6 +22,17 @@ full contract and the rationale are in
 | [page-shape-contract](page-shape-contract/SKILL.md) | Research skill 1 | **L3** | Structural + provenance + trust-label contract for a well-formed page |
 | [audit-feedback-loop](audit-feedback-loop/SKILL.md) | Research skill 2 | **L1** | Anchored-text feedback inbox with explicit, never-deleted resolution states |
 | [public-private-routing](public-private-routing/SKILL.md) | Research skill 4 | **L3** | Public/private firewall: visibility contract, abstraction-by-default, independent publish-time grep |
+| [content-triage-and-exclusion](content-triage-and-exclusion/SKILL.md) | Office-ingestion campaign | **L2** | Ingest-time triage of a raw archive: classify on content (not extension), value-rank, dedup superseded, hard-exclude PII + third-party-confidential |
+| [lfs-batch-fetch](lfs-batch-fetch/SKILL.md) | Office-ingestion campaign | **L2** | Fetch off-disk Git-LFS pointer binaries via the LFS Batch API + host token (sha256==oid = free verify); no git-lfs or sudo |
+| [format-coverage-ledger](format-coverage-ledger/SKILL.md) | Office-ingestion campaign | **L2** | Right extraction lane per office/email format + a ledger of each format's known inherent losses, so a faithful-but-incomplete extract isn't silently trusted |
+| [source-extract-fidelity](source-extract-fidelity/SKILL.md) | Office-ingestion campaign | **L2** | Independent prose-vs-extract review: every page claim traces to the committed extract (a cross-ref is not a quote; a derived number is not "quoted") |
+| [stacked-batch-prs](stacked-batch-prs/SKILL.md) | Office-ingestion campaign | **L2** | One PR per batch on stacked branches (avoid shared-file conflicts) + the merge-cascade-strand guard: verify main's tree after each merge |
+
+> The five **Office-ingestion campaign** skills were distilled from a mixed-office
+> raw-archive ingestion (docx/xlsx/msg/pdf/pptx). Their `incident_refs` use
+> descriptive slugs for failure modes not yet in the [doc 04](../docs/04-failure-modes.md)
+> A/B/C/D/E table (e.g. `merge-cascade-strand`, `prose-overclaim`,
+> `lfs-pointer-offdisk`); formalizing those into doc 04 is a follow-up.
 
 ## Enforcement gradient (doc 08)
 

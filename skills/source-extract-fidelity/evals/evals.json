@@ -1,0 +1,35 @@
+{
+  "skill": "source-extract-fidelity",
+  "evals": [
+    {
+      "name": "catches-prose-overclaim",
+      "given": "A page extract faithfully captures a table of measured values, but the prose states a conclusion ('this confirms the design is governed by fatigue') that appears nowhere in the source.",
+      "when": "The overclaim sweep asks of each declarative sentence whether the committed extract contains it.",
+      "then": "The conclusion is flagged as unsupported source-claim and must be relabeled as output/analysis or removed; the faithful table is not penalized."
+    },
+    {
+      "name": "cross-reference-is-not-a-quote",
+      "given": "A page renders a value as if quoted, but in the source it is only cross-referenced ('see capacity in the mooring calc'), not stated.",
+      "when": "Quote traceability tries to find the exact span in the committed extract.",
+      "then": "No matching verbatim span exists; the value is flagged as a cross-reference presented as a quote and must be demoted."
+    },
+    {
+      "name": "derived-number-not-quoted",
+      "given": "A page presents a unit-converted figure (kN from a source value in tonnes) as a verbatim quote.",
+      "when": "The reviewer checks derivation_status.",
+      "then": "The figure is marked derived (not quoted); the conversion is shown as derivation, not source text."
+    },
+    {
+      "name": "clause-reorder-defect",
+      "given": "A quoted clause reads more smoothly because two sub-clauses were swapped relative to the source.",
+      "when": "The exact-order rule compares the quote to the extract span.",
+      "then": "The re-ordered quote is flagged as a fidelity defect, not accepted as a paraphrase."
+    },
+    {
+      "name": "hash-gate-blocks-unreproducible-page",
+      "given": "A source's recorded sha256 (in the page's source table / sources/README.md) does not match a recompute of the named source binary.",
+      "when": "The hash gate runs first.",
+      "then": "The page is invalid before any prose is reviewed; it cannot merge until the recorded sha256 reproduces the source."
+    }
+  ]
+}

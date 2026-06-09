@@ -1,0 +1,35 @@
+{
+  "skill": "content-triage-and-exclusion",
+  "evals": [
+    {
+      "name": "excludes-pii-w9-and-payment",
+      "given": "The archive contains a W-9 PDF and an email thread with bank wire details among engineering documents.",
+      "when": "Exclusions are applied before value-ranking.",
+      "then": "Both are routed to EXCLUDED with reason=PII, recorded in the manifest, and never extracted or copied; a grep of the corpus for their identifiers finds nothing."
+    },
+    {
+      "name": "excludes-third-party-confidential",
+      "given": "A vendor deliverable marked 'do NOT send' and another company's conference deck are present.",
+      "when": "The confidentiality exclusion runs fail-closed.",
+      "then": "Both are EXCLUDED with reason=third-party-confidential; when rights to ingest are unclear the default is exclude."
+    },
+    {
+      "name": "classifies-on-content-not-folder",
+      "given": "An engineering memo .docx sits in a folder named 'marketing', and a marketing flyer sits under a project engineering dir.",
+      "when": "Files are classified by sampled content rather than path/extension.",
+      "then": "The memo is kept and value-ranked; the flyer is dropped as marketing noise — the folder name did not decide either."
+    },
+    {
+      "name": "dedups-superseded-revisions",
+      "given": "The same calc report exists as rev_A.docx, rev_B.docx, and report_FINAL2.docx.",
+      "when": "Near-duplicate grouping runs.",
+      "then": "Only the authoritative latest is kept; the others are marked superseded so the corpus holds one canonical copy."
+    },
+    {
+      "name": "drops-code-and-venv-noise",
+      "given": "The raw company repo includes source code, a venv/ directory, lockfiles, and agent scratch files.",
+      "when": "Noise-class triage runs.",
+      "then": "These are dropped wholesale and never reach the extraction lane; only knowledge-bearing documents survive to the keep set."
+    }
+  ]
+}
