@@ -1,0 +1,35 @@
+{
+  "skill": "adversarial-verify-loop",
+  "evals": [
+    {
+      "name": "reviewer-builds-reproducer-for-code-finding",
+      "given": "A pipeline change claims derived output filenames cannot collide; the reviewer suspects a same-stem case the producer did not test.",
+      "when": "Round 1 review demands refutation with runnable evidence.",
+      "then": "The reviewer constructs a synthetic-input reproducer (e.g. monkeypatched parser with two same-stem attachments) demonstrating the overwrite, and files a major finding with file:line and the reproducer — not just an argued scenario."
+    },
+    {
+      "name": "incomplete-fix-fails-next-round",
+      "given": "The producer fixes round 1's collision example by appending an ordinal on first collision, which still collides a generated name with a later real stem.",
+      "when": "Round 2 re-checks the fix by extending the reproducer rather than accepting the fixed example.",
+      "then": "Round 2 returns FAIL with a new reproducer (real stem matching a generated name); the fix that addressed the cited example but not the uniqueness invariant is rejected."
+    },
+    {
+      "name": "pass-requires-rerunning-reviewer-reproducer",
+      "given": "The producer replaces the heuristic with a loop whose exit condition is the uniqueness invariant and claims the finding is resolved.",
+      "when": "The confirming round runs.",
+      "then": "The reviewer re-runs their own round-2 reproducer against HEAD (not a new argument); all synthetic attachments survive at distinct deterministic paths; only then does the round return PASS and the label flip to verified."
+    },
+    {
+      "name": "round-count-is-floor-not-ceiling",
+      "given": "min_rounds=2 and round 2 returned FAIL with one open finding.",
+      "when": "The loop decides whether to terminate.",
+      "then": "The loop continues to round 3 despite the floor being met; it terminates only on a zero-finding PASS round, and the PR's posted round table records all three verdicts."
+    },
+    {
+      "name": "wrong-runner-false-fail-caught",
+      "given": "The reviewer runs a PEP-723 inline-dependency script with bare python and reports missing-dependency failures as a finding.",
+      "when": "The producer checks the recorded run command against the reviewer's command.",
+      "then": "The finding is reclassified as a reviewer-environment error (wrong runner), the exact command (uv run + env vars) is restated in the round prompt, and the round is re-run rather than the change being 'fixed' for a false FAIL."
+    }
+  ]
+}

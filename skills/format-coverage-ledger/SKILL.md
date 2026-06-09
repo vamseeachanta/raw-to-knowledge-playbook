@@ -9,10 +9,10 @@ description: >
 license: CC-BY-4.0
 compatibility: Requires per-format deterministic extractors (python-docx/openpyxl/MSG reader/pdf text/pptx reader), a corpus-root env var, and per-batch manifests
 metadata:
-  version: "1.0"
+  version: "1.1"
   enforcement_level: L2            # callable extraction + a ledger the page must carry
   status: template
-  incident_refs: silent-completeness-gap,formula-loss,diagram-loss,attachment-drop
+  incident_refs: silent-completeness-gap,formula-loss,diagram-loss,attachment-drop,derived-name-collision
   params: "path:str | format:enum(auto,docx,xlsx,msg,pdf,pptx)=auto"
 ---
 
@@ -32,7 +32,7 @@ metadata:
 `/format-coverage-ledger <path> [--format auto|docx|xlsx|msg|pdf|pptx]`
 
 ## Preconditions
-1. The corpus root is referenced via an **env var** (e.g. `$FDAS_CORPUS`), so no
+1. The corpus root is referenced via an **env var** (e.g. `$CORPUS_ROOT`), so no
    host mount path is ever committed; the extractor reads `$ROOT/<relpath>`.
 2. Format is detected by content/structure, not filename (names lie).
 3. Each batch carries a **manifest**; one reusable extractor, per-batch manifests.
@@ -61,6 +61,15 @@ metadata:
    (These are losses of *this lane*, not of the libraries — openpyxl can read
    formulas, extract-msg can read attachments, etc.; a richer lane recovers them.)
 
+   Two richer lanes are now **validated** (pilot campaign, independently
+   verified): **xlsx formulas** — a second `data_only=False` load emits a
+   per-sheet formulas CSV only where formulas exist; and **msg attachments** —
+   inventory-then-recurse per GP-40: every attachment recorded
+   (name + sha256 + size) in the parent extract, format-lane attachments
+   recursed through the same extractors as `<parent>__att-<slug>.*`, images
+   inventory-only. Treat a container format (email) as a distinct ledger row:
+   its lane is not complete until nested content is accounted for.
+
 3. **Provenance on every value.** Each extracted value carries
    `corpus-relative-path + sha256` (the source pointer). Raw binary never
    committed — derived text/CSV + pointer only.
@@ -74,7 +83,7 @@ metadata:
 ## Verification
 - Every extracted page declares a coverage ledger naming the lane's known loss;
   a reviewer rejects a page that omits it (a frontmatter-field validator is the
-  L2 hardening to add — the FDAS campaign enforced this by review, not yet a check).
+  L2 hardening to add — the pilot campaign enforced this by review, not yet a check).
 - No host mount path appears in any committed file (the corpus root is an env
   var); grep the diff to confirm.
 - Every value has a `corpus-relative-path + sha256` pointer; raw binary absent.
