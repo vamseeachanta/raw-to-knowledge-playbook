@@ -70,6 +70,33 @@ them all.
 | E6 | **Block-marked listing parsed as flat table** | Text header rows delimit matrix blocks (e.g., per-frequency); flat parse interleaves headers with values | Value-range audit | Block-aware parsing; same defect class as A8 arriving through a "clean" channel |
 | E7 | **Silent solver-input defaults** | Parser injected engineering defaults with no record | Provenance audit | Assumption ledger; defaults recorded and surfaced or refused (GP-37) |
 
+## F. Raw-archive ingestion & source-extract-fidelity defects (mixed office formats)
+
+Hit ingesting a mixed-office raw archive (docx/xlsx/msg/pdf/pptx → a private
+source-extract wiki). These are the `incident_refs` of the
+[office-ingestion skills](../skills/README.md). Related prior entries: `B8`/`B9`
+(stranded commits, stacked-branch divergence), `D5` (client data carried
+forward), `C5` (nested-agent starvation).
+
+| # | Failure mode | Root cause | Detected by | Mitigation |
+|---|---|---|---|---|
+| `misfiled-grabbag` | The raw "document folder" is a working **company repo** — code/venv/agent/marketing noise mixed with real documents | Source is a live repo, not a curated set | Content triage (classify on structure, not folder/extension) | Triage by content; value-filter code/config/noise out (skill `content-triage-and-exclusion`) |
+| `superseded-dupe` | Many near-identical drafts/revisions of one document ingested as distinct items | No dedup; parallel drafts with different titles | Title/size/text-hash clustering | Keep the latest-dated canonical; catalog the rest, don't ingest |
+| `pii-leak` | PII (TIN, home address, phone) ingested from routine admin/payment files swept in with documents | Admin files share the source folder | Pre-ingest PII scan | Hard-exclude payment/admin threads at triage — never ingest |
+| `third-party-confidential` | Another party's confidential deliverable republished from the archive (e.g. a "do NOT send" vendor deck) | Vendor/partner files sit in the source folder | Folder-signal + provenance review | Ingest only own records; exclude third-party-authored/confidential material |
+| `lfs-pointer-offdisk` | A source binary is a **Git LFS pointer stub**, not the file; naive extraction reads the stub | Sparse/LFS checkout; git-lfs not installed | Pointer-format detection (`oid sha256:`/`size` stub) | Fetch via the LFS Batch API + host token; `sha256==oid` verifies (skill `lfs-batch-fetch`) |
+| `raw-binary-firewall` | Raw source binary committed into a tracked repo — license/confidential bytes leak | Extractor writes the binary, or an LFS fetch lands inside the worktree | Staged-tree grep for binary extensions; path-prefix assertion | Raw binary to a temp dir **outside any repo**; commit only derived text/CSV + a sha256 pointer |
+| `prose-overclaim` | A faithful extract, but the **prose around it claims more than the extract supports** (the dominant defect class) | Author interprets/concludes/summarizes beyond the source | Independent adversarial prose-vs-extract review | Every claim traces to a committed extract; label interpretation as output, not source (skill `source-extract-fidelity`) |
+| `crossref-as-quote` | A value only **cross-referenced** in the source is rendered as if quoted here | Author conflates "see X" with "X states" | Quote traceability (no matching verbatim span) | A cross-reference is not a quote — demote it |
+| `derived-as-quoted` | A computed / unit-converted figure presented as a **verbatim** source quote | Author recomputes, then presents as stated | `derivation_status` check | Derived/converted numbers are `derived`, never quoted |
+| `silent-completeness-gap` | A faithful text/CSV extract **silently hides** that the richest layer was never captured | Text dump drops formulas/diagrams/attachments/images by design | Per-format coverage ledger; format-aware audit | Record each lane's known loss per page; mark `partial` + backlog a richer lane (skill `format-coverage-ledger`) |
+| `formula-loss` | Spreadsheet **calc-logic lost** — only computed values captured (`data_only`) | xlsx text/CSV lane reads values, not formulas | Formula-density probe vs extract | Capture formulas (`data_only=False`) + chart series in a richer lane |
+| `diagram-loss` | Slide/figure **diagrams — often the engineering content — uncaptured** by slide-text extraction | pptx lane walks shape text only; images/charts/notes dropped | Shape-type audit (picture/chart vs text) | Vision/image-capture + chart-data + speaker-notes lane |
+| `attachment-drop` | Email **attachments dropped**; only the body text ingested | msg lane writes header + body only | Attachment-count probe | Recurse attachments through the same pipeline |
+| `shared-file-conflict` | Parallel batch branches collide on a **shared file** (e.g. an auto-generated index) | Each batch regenerates the same shared artifact off main | Merge-conflict on the shared file | Stack batch branches (each off the prior tip); generate the index from frontmatter (skill `stacked-batch-prs`) |
+| `index-hand-edit` | Two batches hand-append rows to a shared **index table** → add/add conflict | Index maintained by hand | Conflict on the index table | Auto-generate the index from per-page frontmatter; never hand-edit it |
+| `merge-cascade-strand` | Top stacked PRs merge into an **already-merged intermediate branch** and strand their content off `main` — silently (every PR shows "merged") | Stacked-PR bases don't retarget to `main` in time | Verify `main`'s **tree** after merging a stack (not just PR status) | Confirm `main` has the top batches' files post-merge; land any stranded superset branch via one PR |
+
 ## The meta-lesson
 
 > **Deterministic checks catch structural problems. Only vision catches value
