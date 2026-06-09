@@ -18,7 +18,10 @@ metadata:
 
 # format-coverage-ledger
 
-> Template skill (doc 09, doc 02, complements `source-extraction-coverage`). Each
+> Template skill (doc 09, doc 02, complements `source-extraction-coverage`).
+> Worked example: [docs/case-studies/format-coverage-audit.md](../../docs/case-studies/format-coverage-audit.md)
+> — a 53-document mixed-office archive scored a mean 63.8% text-only completeness,
+> with diagram decks and formula spreadsheets the most under-captured. Each
 > office/email format hides its most valuable content in a layer that a naive
 > text dump silently discards. A faithful extract is **not** a complete one. This
 > skill pairs a deterministic per-format lane with an explicit **coverage ledger**
