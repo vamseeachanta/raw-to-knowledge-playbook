@@ -325,6 +325,16 @@ it; public/private routing enforced by frontmatter + pre-commit check.
 
 ## Citation & retrieval
 
+**GP-43 — Cite mutable sources with two dates: ingested and last-verified.**
+Why: web sources drift silently; a single citation date conflates "when we
+learned this" with "when we last checked it still holds." Running a two-date
+footnote contract across a multi-hundred-page wiki is what makes stale claims
+visibly stale at review time instead of silently trusted.
+Apply: every footnote citing a URL carries `(ingested YYYY-MM-DD, last
+verified YYYY-MM-DD)`; re-verification refreshes the second date; a
+content-hash change instead invalidates the verification and forces
+supersession (doc 16's cascade rule applied at the source boundary).
+
 **GP-44 — The answer layer may only assert what resolves to a stored, citable record.**
 Why: a client-side model answering over an honest store stitched a fabricated
 sign-off date into an otherwise-correct answer; the store never contained the
