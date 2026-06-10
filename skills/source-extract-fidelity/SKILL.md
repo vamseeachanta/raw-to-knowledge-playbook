@@ -10,11 +10,11 @@ description: >
 license: CC-BY-4.0
 compatibility: Requires the source binary (or its verified temp copy), the committed extract (txt/CSV) + sha256 pointer, and a closed status vocabulary on pages
 metadata:
-  version: "1.0"
+  version: "1.1"
   enforcement_level: L2            # callable second-pass review + traceability checks
   status: template
   incident_refs: prose-overclaim,crossref-as-quote,derived-as-quoted
-  params: "batch:str | round:enum(1,2)=1"
+  params: "batch:str | round:int=1"   # rounds continue until PASS — 2 is a floor, not a ceiling
 ---
 
 # source-extract-fidelity
@@ -70,9 +70,13 @@ metadata:
 5. **Invariant + vocab check.** Confirm raw binary is not committed (only derived
    parts + pointer), private content hasn't crossed to public, and every status
    value is in the closed set (no invented labels).
-6. **Verdict + round 2.** Emit a per-page verdict with cited defects. Round-2
-   review re-checks any page the producer corrected, again adversarially — a
-   "fixed" page often just moved the overclaim.
+6. **Verdict + further rounds until PASS.** Emit a per-page verdict with cited
+   defects. Each later round re-checks what the producer corrected, again
+   adversarially — a "fixed" page often just moved the overclaim, and a code
+   fix can be narrower than the defect class. Two rounds is the **floor**, not
+   the ceiling: the loop ends at a clean PASS, never at a round count (GP-42;
+   one campaign fix needed a third round, caught by a reviewer-built
+   reproducer — see `adversarial-verify-loop`).
 
 ## Verification
 - Every quoted span on every page resolves to an exact location in the committed
@@ -95,3 +99,4 @@ metadata:
 | Derived number ≠ quoted | Computed/converted values are `derived`, never verbatim captures |
 | Clause order must match | Re-ordering a quote silently changes its meaning |
 | Cite a falsifiable defect | When two reviews disagree, the specific-location claim wins over generic approval |
+| Verify until PASS, not for N rounds | A fix can address the cited example but not the invariant; the round that catches it is the loop working |

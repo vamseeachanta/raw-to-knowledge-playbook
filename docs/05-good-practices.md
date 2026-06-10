@@ -77,6 +77,17 @@ Apply: tag the class in queue notes; after an extractor fix, re-extract
 exactly the affected class, mapping by page + in-page order with shape
 preservation as the correctness proof.
 
+**GP-42 — Verify until PASS; the round count is a floor, not a ceiling.**
+Why: a nominally two-round verify took three: round 1 caught the defect
+*class*, round 2 caught the **incompleteness of the fix** — by building an
+executable reproducer (a monkeypatched parser with synthetic inputs) that
+code-reading alone had waved through.
+Apply: re-review every fix adversarially until a clean PASS; ask reviewers
+to build runnable reproducers for code findings; gate the fix on re-running
+the *reviewer's own* reproducer against HEAD. A fix that addresses the cited
+example but not the invariant fails the next round — that is the loop
+working, not the loop failing. (Skill `adversarial-verify-loop`.)
+
 ## Data plumbing
 
 **GP-12 — Union-merge needs append-only; rewrites need dedup-on-write.**
@@ -100,6 +111,18 @@ Why: an unregistered status got mangled by the normalizer; a verdict written
 into the structural column corrupted a batch.
 Apply: register new values before first use; batch prompts hard-specify
 allowed values per column.
+
+**GP-41 — Derived filenames are unique by construction, not by heuristic.**
+Why: slugging attachment names collided derived outputs (`Plan.pptx` and
+`Plan.pdf` both rendering to `plan.txt` → silent overwrite), and the obvious
+patch — append an ordinal on collision — *still* collided a generated name
+with a later real stem (`plan-2`); an adversarial reviewer proved the
+overwrite with a reproducer.
+Apply: generate candidate names in a loop whose **exit condition is the
+uniqueness invariant itself** (exit only on an unused name) — deterministic
+given the same inputs. Do not guard with fail-if-exists in idempotent
+re-run pipelines (every legitimate re-run trips it). Record the final name
+in the parent inventory so each input maps to its surviving output.
 
 ## Automation
 
@@ -197,6 +220,23 @@ Apply: extract only generic methodology (equations, input ranges, worked
 examples → TDD fixtures); deny-list scan before archiving; never copy the
 raw workbook; every code artifact records its source-workbook mapping.
 
+**GP-40 — Containers are formats too: inventory, then recurse.**
+Why: an email lane that extracts header + body silently drops every
+attachment — in the pilot, the one substantive attachment was a slide deck
+holding the quantified comparison the thread's prose only referenced; the
+hash inventory also exposed, for free, the same logo image recurring under
+different filenames across threads.
+Apply: split the remedy by guarantee. **Inventory** (deterministic): every
+attachment recorded in the parent extract — name + sha256 + size — so
+nothing disappears unaccounted, including formats with no extraction lane
+(images stay inventory-only: disclosure without interpretation).
+**Recurse** (derived): attachments with a format lane go through the *same*
+extractor as standalone files (`<parent>__att-<slug>.*`), so an embedded
+deck renders identically to a standalone one — one format, one parser, one
+verification surface. Attachment bytes touch a temp dir only; the
+raw-binary firewall holds for nested content. Forwarded emails recurse
+through the email lane itself.
+
 ## Structured data & model files (CSV / delimited / solver ASCII)
 
 **GP-32 — Probe dialect and validate field counts at ingestion.**
@@ -285,4 +325,4 @@ it; public/private routing enforced by frontmatter + pre-commit check.
 
 ---
 
-*Next ID: GP-40.*
+*Next ID: GP-43.*
