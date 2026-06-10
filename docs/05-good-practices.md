@@ -323,6 +323,15 @@ Why: leakage happens through agents' generated text, not just copied files.
 Apply: maintain a known-identifier list; grep all outbound content against
 it; public/private routing enforced by frontmatter + pre-commit check.
 
+## Citation & retrieval
+
+**GP-45 — Log zero-result queries; repeated misses are your ingestion backlog.**
+Why: a persisted failed-queries log (searches returning 0 results) turned out
+to be the cheapest gap detector in a production knowledge store — repeat
+misses name exactly the knowledge users want and the store lacks.
+Apply: persist every zero-result retrieval with timestamp + query; review
+weekly; convert repeats into ingest/authoring tasks.
+
 ---
 
-*Next ID: GP-43.*
+*Next ID: GP-46.*
