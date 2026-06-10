@@ -32,6 +32,18 @@ Everything here was distilled from a real, ongoing ingestion campaign:
 This is a **living document set**: new practices are appended as the work
 continues. See [CONTRIBUTING.md](CONTRIBUTING.md) for how entries are added.
 
+> **⚠️ Before you adopt this, read the measured outcomes —
+> [doc 20](docs/20-measured-outcomes.md).** Extraction is fast and near-total;
+> **verification is the bottleneck**: after 80+ vision batches, ~10% of the
+> 23,000 extracted tables are resolved (and ~47% of those resolved were
+> correctly *rejected* as non-tables). Only ~2% of source documents are fully
+> resolved — by deliberate prioritization. On Office archives, mean information
+> capture is ~64%, with loss concentrated in formula workbooks, attachments,
+> and diagram decks. These are the real, measured success rates per document
+> type — calibrate your plans (and your promises) to them, and keep the
+> per-document completion index that makes the next verification wave
+> selectable.
+
 ## The core idea
 
 > **Extract deterministically. Verify with vision. Trust nothing by default.**
@@ -78,6 +90,7 @@ dependency, offline). Then come back to the document map below.
 | [docs/17-cost-economics.md](docs/17-cost-economics.md) | The pipeline as a *verification-budget* model: $/page by lane, vision-verify ROI, deterministic-vs-LLM crossover, a reusable worksheet |
 | [docs/18-security-and-pii.md](docs/18-security-and-pii.md) | The data-egress firewall: fail-closed hosted-VLM routing, DPA/retention reality, the negative-assertion audit ledger |
 | [docs/19-trust-boundary-and-private-mode.md](docs/19-trust-boundary-and-private-mode.md) | What copyrighted/confidential content enters the repo (derived forms + leak vectors) and the private-mode posture: two structural invariants, the rest operator discretion |
+| [docs/20-measured-outcomes.md](docs/20-measured-outcomes.md) | **Read first**: measured completion % and per-document-type success rates from the live campaigns, and the per-document index that drives wave-based re-verification |
 
 ## Active research program (start here if you're reviewing/researching)
 
