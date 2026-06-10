@@ -177,10 +177,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[URL] --> B[Archive source off-repo<br>link rot is certain]
-    B --> C[Extract text + claims — L1]
-    C --> D[Source page cites archived<br>filename, never private paths]
-    D --> E[Wiki source page<br>with publication metadata]
+    A[URL] --> B[Readability-class extraction — L1]
+    B --> C{Empty / short output?}
+    C -- yes --> D[Escalate: headless render<br>or reader API]
+    C -- no --> E[Single-file snapshot<br>post-JS DOM, off-repo<br>link rot is certain]
+    D --> E
+    E --> F[Async off-site hedge<br>IA Save Page Now]
+    E --> G[Citation id bound to<br>content hash + captured_at<br>+ snapshot filename —<br>never private paths]
+    G --> H[Wiki source page —<br>two-date citations:<br>ingested / last-verified]
 ```
 
 ---
