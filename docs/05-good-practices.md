@@ -323,6 +323,17 @@ Why: leakage happens through agents' generated text, not just copied files.
 Apply: maintain a known-identifier list; grep all outbound content against
 it; public/private routing enforced by frontmatter + pre-commit check.
 
+## Citation & retrieval
+
+**GP-44 — The answer layer may only assert what resolves to a stored, citable record.**
+Why: a client-side model answering over an honest store stitched a fabricated
+sign-off date into an otherwise-correct answer; the store never contained the
+date. Per-claim citation IDs made the fabrication detectable, and a protocol
+now rejects uncited claims at the answer layer.
+Apply: require a resolvable record ID per factual claim; treat any claim
+without one as "inferred — flag it"; spot-check by tracing claims back to
+records.
+
 ---
 
-*Next ID: GP-43.*
+*Next ID: GP-45.*
