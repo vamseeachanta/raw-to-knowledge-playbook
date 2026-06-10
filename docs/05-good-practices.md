@@ -88,6 +88,30 @@ the *reviewer's own* reproducer against HEAD. A fix that addresses the cited
 example but not the invariant fails the next round — that is the loop
 working, not the loop failing. (Skill `adversarial-verify-loop`.)
 
+**GP-47 — Score extracts against an independent engine; verify the
+comparator harder than the pipeline.**
+Why: the verify loop proves fidelity (extract == what the pipeline read) but
+not correctness — both can share a defect. Scoring committed extracts
+against a *different* extraction engine (office suite headless conversion,
+a different PDF text engine, raw XML text nodes, a second format
+implementation) turns "we believe it's faithful" into measured per-lane
+precision/recall. The comparator itself is the trap: in the pilot, the
+scoring tool's "exact" tier silently rounded numerics — three successive
+fixes each satisfied only the probed case (6-sig-fig format → binary-float
+identity → bounded-precision decimal context) before a width-matched
+context made canonicalization precision-lossless **by construction**. A
+flattering comparator bug poisons every downstream number.
+Apply: pick oracles from a different codebase than the lane (and say so
+honestly when independence is partial — two pure-python readers of one
+container format prove less than two unrelated engines). Score on two
+tiers: exact (formatting-only normalization, provably lossless at any
+precision) and display-tolerant. **Attribute every sub-1.0 number** — each
+residual is a diagnostic lead that resolves to a real lane loss (ledger
+it), a legitimate engine difference (caveat it), or a comparator bug (fix
+the comparator, never the score). Run the adversarial verify loop on the
+comparator with *more* rigor than on the pipeline it scores. (Skill
+`independent-oracle-validation`.)
+
 ## Data plumbing
 
 **GP-12 — Union-merge needs append-only; rewrites need dedup-on-write.**
@@ -361,4 +385,4 @@ block reads on the embedder.
 
 ---
 
-*Next ID: GP-47.*
+*Next ID: GP-48.*

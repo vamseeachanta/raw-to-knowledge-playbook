@@ -28,9 +28,10 @@ full contract and the rationale are in
 | [source-extract-fidelity](source-extract-fidelity/SKILL.md) | Office-ingestion campaign | **L2** | Independent prose-vs-extract review: every page claim traces to the committed extract (a cross-ref is not a quote; a derived number is not "quoted") |
 | [stacked-batch-prs](stacked-batch-prs/SKILL.md) | Office-ingestion campaign | **L2** | One PR per batch on stacked branches (avoid shared-file conflicts) + the merge-cascade-strand guard: verify main's tree after each merge |
 | [adversarial-verify-loop](adversarial-verify-loop/SKILL.md) | Office-ingestion campaign | **L2** | Independent refute-not-confirm review loop until a clean PASS: reviewer-built reproducers for code findings; fixes gated on re-running the reviewer's reproducer (GP-42) |
+| [independent-oracle-validation](independent-oracle-validation/SKILL.md) | Office-ingestion campaign | **L2** | Gold-set scoring of committed extracts against a different extraction engine: two-tier numerics, every sub-1.0 number attributed, comparator verified harder than the pipeline (GP-47) |
 | [xlsx-input-code-output-canary](xlsx-input-code-output-canary/SKILL.md) | Spreadsheet canary | **L2** | Classify XLS/XLSX workbooks before extraction and require input contract + code artifact + verified output proof across a ten-file canary |
 
-> The six **Office-ingestion campaign** skills were distilled from a mixed-office
+> The seven **Office-ingestion campaign** skills were distilled from a mixed-office
 > raw-archive ingestion (docx/xlsx/msg/pdf/pptx). Their `incident_refs` use
 > descriptive slugs for failure modes not yet in the [doc 04](../docs/04-failure-modes.md)
 > A/B/C/D/E table (e.g. `merge-cascade-strand`, `prose-overclaim`,

@@ -1,0 +1,35 @@
+{
+  "skill": "independent-oracle-validation",
+  "evals": [
+    {
+      "name": "comparator-inflation-caught-not-shipped",
+      "given": "The scoring tool's exact tier normalizes numerics through a 6-significant-figure format, so 1000000 and 1000001 compare equal and every lane score is inflated.",
+      "when": "The adversarial review of the comparator probes normalization with constructed near-equal value pairs.",
+      "then": "The collapse is filed as a comparator bug; the comparator is fixed to precision-lossless canonicalization and re-run — the scores are never hand-adjusted."
+    },
+    {
+      "name": "residual-resolves-to-real-lane-loss",
+      "given": "The docx lane scores 0.957 recall; the bag diff shows the oracle-only tokens are bullets and auto-numbering (render-time artifacts from numbering.xml).",
+      "when": "Step 5 attributes the residual.",
+      "then": "The residual is classified as a real lane loss (numbered-list structure absent from the extract) and recorded in the coverage ledger — not waved off as engine noise."
+    },
+    {
+      "name": "display-rounding-goes-to-tolerant-tier",
+      "given": "A formula workbook scores 0.51 exact because the oracle exports display-rounded values while the lane stores full precision.",
+      "when": "Two-tier scoring is applied.",
+      "then": "The exact tier keeps the honest 0.51 with the display-rounding attribution; the display-tolerant tier reports the apples-to-apples figure; neither number is presented as the other."
+    },
+    {
+      "name": "partial-independence-stated",
+      "given": "The only available oracle for a format is a second pure-python library that shares the same container-parsing dependency as the lane.",
+      "when": "The report's caveats are written.",
+      "then": "The shared layer is named explicitly (container parsing shared, higher-level decoding independent) so the reader can weigh what the agreement proves — the oracle is not presented as fully independent."
+    },
+    {
+      "name": "scaffold-stripped-positionally",
+      "given": "The lane's extract carries a provenance header and a 'Subject: ' prefix, and the document body contains quoted-history lines that also start with 'Subject:'.",
+      "when": "The ours-side text is prepared for comparison.",
+      "then": "Only the positionally-identified scaffold lines are stripped; the look-alike body lines are preserved — pattern-based stripping that ate them is detected as a recall residual and fixed in the comparator."
+    }
+  ]
+}
