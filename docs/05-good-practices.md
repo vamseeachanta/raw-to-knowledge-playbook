@@ -351,6 +351,14 @@ misses name exactly the knowledge users want and the store lacks.
 Apply: persist every zero-result retrieval with timestamp + query; review
 weekly; convert repeats into ingest/authoring tasks.
 
+**GP-46 — Retrieval must degrade, not die, when the embedding host is down.**
+Why: an embedding-service outage blinded semantic retrieval; reads survived
+only because a lexical fallback over the compiled narrative layer existed and
+was documented before the outage.
+Apply: keep a lexical/keyword leg in the retrieval stack (hybrid, not
+dense-only); document the degraded read path; alert on the outage but never
+block reads on the embedder.
+
 ---
 
-*Next ID: GP-46.*
+*Next ID: GP-47.*
