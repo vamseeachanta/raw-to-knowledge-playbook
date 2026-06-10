@@ -323,6 +323,16 @@ Why: leakage happens through agents' generated text, not just copied files.
 Apply: maintain a known-identifier list; grep all outbound content against
 it; public/private routing enforced by frontmatter + pre-commit check.
 
+## Citation & retrieval
+
+**GP-46 — Retrieval must degrade, not die, when the embedding host is down.**
+Why: an embedding-service outage blinded semantic retrieval; reads survived
+only because a lexical fallback over the compiled narrative layer existed and
+was documented before the outage.
+Apply: keep a lexical/keyword leg in the retrieval stack (hybrid, not
+dense-only); document the degraded read path; alert on the outage but never
+block reads on the embedder.
+
 ---
 
-*Next ID: GP-43.*
+*Next ID: GP-47.*
