@@ -344,6 +344,13 @@ Apply: require a resolvable record ID per factual claim; treat any claim
 without one as "inferred — flag it"; spot-check by tracing claims back to
 records.
 
+**GP-45 — Log zero-result queries; repeated misses are your ingestion backlog.**
+Why: a persisted failed-queries log (searches returning 0 results) turned out
+to be the cheapest gap detector in a production knowledge store — repeat
+misses name exactly the knowledge users want and the store lacks.
+Apply: persist every zero-result retrieval with timestamp + query; review
+weekly; convert repeats into ingest/authoring tasks.
+
 ---
 
-*Next ID: GP-45.*
+*Next ID: GP-46.*
