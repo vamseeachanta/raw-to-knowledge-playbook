@@ -38,7 +38,7 @@ This taxonomy has four independent axes:
 | **CSV / delimited data file** | "Already structured" — silently fragile | L3–L4 + convention sidecar | Probe dialect, validate field counts, capture units/sign conventions — see [10-structured-data-and-model-files.md](10-structured-data-and-model-files.md) |
 | **Analysis-model input deck** (solver ASCII/keyword files) | Model definition = engineering decisions | D2 logic → externalized YAML config | Parse to config, regenerate the deck; assumption ledger for defaults |
 | **Solver output listing / export** | Block-marked text structure, multi-format per solver | L2–L4 | Auto-detect format by header inspection; sanity-gate values before use |
-| **Web article / post** (blog, LinkedIn) | Short, ephemeral, link-rotted | L1 + archived source | Archive the source off-repo; cite filename not private path |
+| **Web article / post** (blog, LinkedIn) | Short, ephemeral, link-rotted, mutable | L1 + readability extraction + post-JS single-file snapshot | Snapshot at capture; bind the citation to `content hash + captured_at + snapshot filename`, never the live URL alone; fire an async off-site hedge (IA Save Page Now); citations carry two dates (ingested / last-verified) — see [13-lane-flowcharts.md](13-lane-flowcharts.md) chart 10 |
 | **Catalog / brochure / minutes / newsletter** | Marketing or administrative | **Filter out pre-ingest** | Junk filter on filename + content keywords |
 
 **Practice: route by content, not by folder.** Source archives are misfiled
