@@ -112,6 +112,24 @@ the comparator, never the score). Run the adversarial verify loop on the
 comparator with *more* rigor than on the pipeline it scores. (Skill
 `independent-oracle-validation`.)
 
+**GP-48 — Completeness claims read the raw container, not the object
+model.**
+Why: a media inventory built to guarantee "nothing silently dropped" was
+itself silently dropping 59 of 399 deck images (~15%) — the convenience
+API's shape walk missed grouped pictures, placeholder pictures,
+alternate-content fallbacks, and an entire **orphaned deleted slide** whose
+image bytes still shipped inside the binary, invisible to every API reader.
+An adversarial raw-XML census (count occurrences in the container; compare
+sha256+size per item) caught it; three review rounds later the inventory
+was census-exact.
+Apply: when the deliverable *asserts completeness*, enumerate from the
+container format directly (the zip members, the XML occurrences, the
+relationship targets) — or at minimum census-check the API walk against the
+raw container and fail on mismatch. Disclose what the document's own
+*renderer* wouldn't show (fallback content, orphaned parts) with explicit
+context labels rather than dropping or laundering it. Object models are for
+*reading* content; containers are for *counting* it.
+
 ## Data plumbing
 
 **GP-12 — Union-merge needs append-only; rewrites need dedup-on-write.**
@@ -385,4 +403,4 @@ block reads on the embedder.
 
 ---
 
-*Next ID: GP-48.*
+*Next ID: GP-49.*
