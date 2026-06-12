@@ -40,6 +40,21 @@ Five rules — content routing, value filter, dedupe-before-write, selective
 verbatim + provisional tables, index/log update. Applying a subset creates
 duplicates, misfiling, or mislabeled trust states.
 
+**GP-49 — Preflight large PDFs: measure, then pick the load strategy.**
+Why: a 100MB+/1000-page PDF loaded whole stalls or OOMs the worker
+mid-batch. A salvaged internal large-PDF reader build (autopsy:
+[case study](case-studies/pdf-large-reader-salvage.md)) proved a cheap
+assessment pass — bytes, pages, sampled complexity, defect probe — routes
+files correctly before extraction starts; its memory-bounded tests held 50
+medium pages under 100 MB peak streaming vs 200 MB list-loaded.
+Apply: assess first (runnable: [examples/pdf-preflight/](../examples/pdf-preflight/)).
+Route < 10 MB & simple → full load; ≥ 100 MB, > 500 pages, or complex →
+fixed-size page chunks; everything else → page-at-a-time streaming. Any
+critical preflight issue (encryption, failed first/last-page probe) forces
+the careful lane. Treat > 10 % U+FFFD replacement characters in sampled text
+as an encoding failure — route to the OCR lane (doc 11), never publish the
+mojibake.
+
 ## Verification
 
 **GP-06 — Select verification batches by data density.**
@@ -403,4 +418,4 @@ block reads on the embedder.
 
 ---
 
-*Next ID: GP-49.*
+*Next ID: GP-50.*

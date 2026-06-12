@@ -25,3 +25,7 @@ jobs:
       - name: Runnable example — verify the gate catches an injected defect
         working-directory: examples/minimal-ingest
         run: uv run ingest.py --inject-defect --check
+
+      - name: Runnable example — PDF preflight assesses the sample clean
+        working-directory: examples/pdf-preflight
+        run: uv run preflight.py --check
