@@ -30,6 +30,7 @@ full contract and the rationale are in
 | [adversarial-verify-loop](adversarial-verify-loop/SKILL.md) | Office-ingestion campaign | **L2** | Independent refute-not-confirm review loop until a clean PASS: reviewer-built reproducers for code findings; fixes gated on re-running the reviewer's reproducer (GP-42) |
 | [independent-oracle-validation](independent-oracle-validation/SKILL.md) | Office-ingestion campaign | **L2** | Gold-set scoring of committed extracts against a different extraction engine: two-tier numerics, every sub-1.0 number attributed, comparator verified harder than the pipeline (GP-47) |
 | [xlsx-input-code-output-canary](xlsx-input-code-output-canary/SKILL.md) | Spreadsheet canary | **L2** | Classify XLS/XLSX workbooks before extraction and require input contract + code artifact + verified output proof across a ten-file canary |
+| [archive-extraction-integrity](archive-extraction-integrity/SKILL.md) | RAR-backup recovery | **L2** | CRC-verify an extracted archive against its stored per-entry checksums (presence/size ≠ fidelity); complementary-decoder fallback; report the irreducible set no decoder reproduces |
 
 > The seven **Office-ingestion campaign** skills were distilled from a mixed-office
 > raw-archive ingestion (docx/xlsx/msg/pdf/pptx). Their `incident_refs` use

@@ -1,0 +1,36 @@
+{
+  "skill": "archive-extraction-integrity",
+  "note": "Human/agent-gradeable acceptance scenarios (no standard runner yet, per AUTHORING-STANDARD.md). Each scenario states the situation, the expected behavior, and the falsifiable pass condition.",
+  "evals": [
+    {
+      "name": "silent-corruption-caught-by-crc-gate",
+      "situation": "A RAR4 archive is extracted with 7z and bsdtar; afterward every file is present and every file size matches the listing, exit codes were non-fatal.",
+      "expected": "The skill does NOT declare success on presence/size. It runs verify_extraction.py, recomputes CRC32 per entry against the archive manifest, and reports the exact subset whose computed CRC differs from the stored CRC as CORRUPT.",
+      "pass_if": "The reported CORRUPT list equals the set of files whose stored CRC != recomputed CRC, and the run is marked FAIL/incomplete rather than done, even though counts and sizes matched."
+    },
+    {
+      "name": "complementary-decoder-fallback",
+      "situation": "7z raises 'Unsupported Method' on a block of entries; bsdtar decodes those but aborts the stream on a different entry with 'File CRC error'.",
+      "expected": "The skill treats neither decoder's failure list as authoritative, extracts each engine's gaps with the other engine (using the archive's non-solid property to recover per-file / via an exclude loop), then reconciles against the manifest.",
+      "pass_if": "Files only one engine can decode are recovered from that engine, and the final CRC-verified count exceeds what either decoder achieves alone."
+    },
+    {
+      "name": "irreducible-set-needs-official-unrar",
+      "situation": "After all available open-source decoders run, N entries still fail the CRC gate (e.g. large .war files defeating both p7zip and libarchive).",
+      "expected": "The skill reports the exact irreducible set (grouped by extension/size) with good/total counts, names the official RARLAB unrar as the remedy, and flags downloading/running it as a user decision rather than doing it silently.",
+      "pass_if": "Output lists the still-corrupt paths and explicitly defers the external-binary download to user approval; it does not claim a complete extraction."
+    },
+    {
+      "name": "solid-archive-guard",
+      "situation": "The manifest shows the archive is solid (Solid = +).",
+      "expected": "The skill detects solidity before attempting per-file fallback and does not try to recover individual entries in isolation (impossible in a solid archive), preferring a single clean full-decode pass.",
+      "pass_if": "Per-file/isolation recovery is skipped for solid archives and the reasoning cites the shared-window constraint."
+    },
+    {
+      "name": "tar-has-no-per-entry-crc",
+      "situation": "The container is a plain .tar (or .tar.gz) with no per-entry checksums.",
+      "expected": "The skill states the CRC gate cannot apply (tar stores no per-entry checksum) and degrades to size/count reconciliation or an external hash manifest, declaring the fidelity limitation explicitly rather than implying a checksum pass.",
+      "pass_if": "Output explicitly notes the absence of per-entry checksums and does not present a size/count check as a checksum verification."
+    }
+  ]
+}
