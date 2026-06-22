@@ -2,7 +2,7 @@
 
 Numbered, append-only. Each practice records the **rule**, the **why**
 (usually an incident), and **how to apply**. New practices are added via PR
-as the work surfaces them — see [CONTRIBUTING.md](../CONTRIBUTING.md).
+as the work surfaces them — see [CONTRIBUTING.md](https://github.com/vamseeachanta/raw-to-knowledge-playbook/blob/main/CONTRIBUTING.md).
 
 ---
 
@@ -47,7 +47,7 @@ mid-batch. A salvaged internal large-PDF reader build (autopsy:
 assessment pass — bytes, pages, sampled complexity, defect probe — routes
 files correctly before extraction starts; its memory-bounded tests held 50
 medium pages under 100 MB peak streaming vs 200 MB list-loaded.
-Apply: assess first (runnable: [examples/pdf-preflight/](../examples/pdf-preflight/)).
+Apply: assess first (runnable: [examples/pdf-preflight/](https://github.com/vamseeachanta/raw-to-knowledge-playbook/tree/main/examples/pdf-preflight/)).
 Route < 10 MB & simple → full load; ≥ 100 MB, > 500 pages, or complex →
 fixed-size page chunks; everything else → page-at-a-time streaming. Any
 critical preflight issue (encryption, failed first/last-page probe) forces

@@ -74,7 +74,7 @@ them all.
 
 Hit ingesting a mixed-office raw archive (docx/xlsx/msg/pdf/pptx → a private
 source-extract wiki). These are the `incident_refs` of the
-[office-ingestion skills](../skills/README.md). Related prior entries: `B8`/`B9`
+[office-ingestion skills](https://github.com/vamseeachanta/raw-to-knowledge-playbook/blob/main/skills/README.md). Related prior entries: `B8`/`B9`
 (stranded commits, stacked-branch divergence), `D5` (client data carried
 forward), `C5` (nested-agent starvation).
 

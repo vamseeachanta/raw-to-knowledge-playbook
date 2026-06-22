@@ -1,7 +1,7 @@
 # Case study — salvaging an agent-built tool repo (pdf-large-reader autopsy)
 
 > Worked example behind [GP-49](../05-good-practices.md) and the runnable
-> [`examples/pdf-preflight/`](../../examples/pdf-preflight/). It is also a
+> [`examples/pdf-preflight/`](https://github.com/vamseeachanta/raw-to-knowledge-playbook/tree/main/examples/pdf-preflight/). It is also a
 > dogfooding exercise for the [doc 12](../12-tooling-landscape.md) trust
 > rubric's **Evidence** gate — *"independent benchmark or production
 > reputation, not just a README claim"* — applied to one of our **own** repos
@@ -35,7 +35,7 @@ by the test suite held up; everything that lived only in the README
 
 | Asset | Decision | Where it went |
 |---|---|---|
-| Preflight-assessment heuristics (size/pages/sampled-complexity → `full_load` / `stream_pages` / `chunk_batch`; critical issues force the careful lane) | **SALVAGED** | [GP-49](../05-good-practices.md) + [`examples/pdf-preflight/`](../../examples/pdf-preflight/) |
+| Preflight-assessment heuristics (size/pages/sampled-complexity → `full_load` / `stream_pages` / `chunk_batch`; critical issues force the careful lane) | **SALVAGED** | [GP-49](../05-good-practices.md) + [`examples/pdf-preflight/`](https://github.com/vamseeachanta/raw-to-knowledge-playbook/tree/main/examples/pdf-preflight/) |
 | Cheap defect probes (encryption flag, first/last-page access probe, > 10 % U+FFFD replacement-char ratio as an encoding-failure signal) | **SALVAGED** | same |
 | Memory-estimate calibration (~2/5/10 MB-per-page by on-disk bytes/page) and the memory-bounded *test pattern* (`tracemalloc` ceiling asserts) | **SALVAGED** | example README, "real vs heuristic" table |
 | The library itself (PyMuPDF-based) | **RETIRED** | PyMuPDF is AGPL-3.0 — already flagged in the [doc 12 license register](../12-tooling-landscape.md) with pdfplumber/Docling as the exit path; the salvage port uses pypdf + pdfplumber. Repo remains archived at its GitHub origin; local clone deleted |

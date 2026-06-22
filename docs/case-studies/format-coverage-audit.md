@@ -1,11 +1,11 @@
 # Case study — measuring ingestion completeness across a mixed-office archive
 
-> Worked example behind the [`format-coverage-ledger`](../../skills/format-coverage-ledger/SKILL.md)
+> Worked example behind the [`format-coverage-ledger`](https://github.com/vamseeachanta/raw-to-knowledge-playbook/blob/main/skills/format-coverage-ledger/SKILL.md)
 > skill and [doc 09](../09-office-formats.md). It quantifies the central claim of
 > that skill: **a faithful text/CSV extract is not a complete one**, and the gap
 > is largest exactly where the document's value is densest.
 >
-> **Abstraction note (dogfooding [`public-private-routing`](../../skills/public-private-routing/SKILL.md)).**
+> **Abstraction note (dogfooding [`public-private-routing`](https://github.com/vamseeachanta/raw-to-knowledge-playbook/blob/main/skills/public-private-routing/SKILL.md)).**
 > The audited corpus is a private client archive. This case study reports only the
 > **method and the aggregate / per-format findings** — no document names, no
 > corpus identity, no per-document table. That is abstraction-by-default in

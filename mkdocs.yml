@@ -1,0 +1,77 @@
+site_name: Raw-to-Knowledge Playbook
+site_description: Field-tested methodology for turning raw engineering data into trustworthy, AI-ready knowledge
+site_url: https://vamseeachanta.github.io/raw-to-knowledge-playbook/
+repo_url: https://github.com/vamseeachanta/raw-to-knowledge-playbook
+repo_name: vamseeachanta/raw-to-knowledge-playbook
+copyright: "Prose CC-BY-4.0 · Code MIT"
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Foundations:
+      - 01 · Source Taxonomy: 01-document-taxonomy.md
+      - 02 · Pipeline Architecture: 02-pipeline-architecture.md
+      - 03 · Verification Playbook: 03-verification-playbook.md
+      - 04 · Failure Modes: 04-failure-modes.md
+      - 05 · Good Practices: 05-good-practices.md
+  - Orchestration & Governance:
+      - 06 · Multi-Agent Orchestration: 06-multi-agent-orchestration.md
+      - 07 · Data Governance: 07-data-governance.md
+      - 08 · Skills Catalog: 08-skills-catalog.md
+      - 19 · Trust Boundary & Private Mode: 19-trust-boundary-and-private-mode.md
+  - Formats & Tooling:
+      - 09 · Office Formats: 09-office-formats.md
+      - 10 · Structured Data & Model Files: 10-structured-data-and-model-files.md
+      - 11 · Imagery & Scans: 11-imagery-and-scans.md
+      - 12 · Tooling Landscape: 12-tooling-landscape.md
+      - 13 · Lane Flowcharts: 13-lane-flowcharts.md
+  - Retrieval & Lifecycle:
+      - 14 · Chunking & Embedding: 14-chunking-and-embedding.md
+      - 15 · Retrieval Evaluation: 15-retrieval-evaluation.md
+      - 16 · Corpus Lifecycle: 16-corpus-lifecycle.md
+      - 17 · Cost Economics: 17-cost-economics.md
+      - 18 · Security & PII: 18-security-and-pii.md
+  - Outcomes & Cases:
+      - 20 · Measured Outcomes: 20-measured-outcomes.md
+      - "Case study: format coverage audit": case-studies/format-coverage-audit.md
+      - "Case study: large-PDF reader salvage": case-studies/pdf-large-reader-salvage.md

@@ -112,7 +112,7 @@ Decks carry the least verbatim data and the most **distilled reporting
 concepts**: what gets summarized, in what order, with what visuals. This
 lane is the least mature in our practice — treat the guidance below as
 design intent pending field validation (per
-[CONTRIBUTING.md](../CONTRIBUTING.md), it graduates to a GP only with
+[CONTRIBUTING.md](https://github.com/vamseeachanta/raw-to-knowledge-playbook/blob/main/CONTRIBUTING.md), it graduates to a GP only with
 evidence).
 
 - **Content (D1):** slide text + speaker notes (notes often contain the
