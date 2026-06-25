@@ -91,6 +91,7 @@ dependency, offline). Then come back to the document map below.
 | [docs/18-security-and-pii.md](docs/18-security-and-pii.md) | The data-egress firewall: fail-closed hosted-VLM routing, DPA/retention reality, the negative-assertion audit ledger |
 | [docs/19-trust-boundary-and-private-mode.md](docs/19-trust-boundary-and-private-mode.md) | What copyrighted/confidential content enters the repo (derived forms + leak vectors) and the private-mode posture: two structural invariants, the rest operator discretion |
 | [docs/20-measured-outcomes.md](docs/20-measured-outcomes.md) | **Read first**: measured completion % and per-document-type success rates from the live campaigns, and the per-document index that drives wave-based re-verification |
+| [docs/21-cad-and-brep-geometry.md](docs/21-cad-and-brep-geometry.md) | CAD geometry & 2D drawings (STEP/IGES/Parasolid, native parts/assemblies, DWG/DXF): license-locked native read, header/version detection, the round-trip invariant oracle, parametric variant generation, XCAF BOM trees |
 
 ## Active research program (start here if you're reviewing/researching)
 

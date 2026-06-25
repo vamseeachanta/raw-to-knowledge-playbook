@@ -416,6 +416,46 @@ Apply: keep a lexical/keyword leg in the retrieval stack (hybrid, not
 dense-only); document the degraded read path; alert on the outage but never
 block reads on the embedder.
 
+## CAD geometry & 2D drawings (STEP/IGES/native parts/DWG)
+
+**GP-50 — Header-detect CAD format and version; never trust the extension or a "structured" claim.**
+Why: in an estate scan, every `.nc` file was NetCDF (hydrodynamics output),
+not CNC G-code — extension classification would have reported a CAM inventory
+that did not exist; DWG spanned ~25 years readable only from the 6-byte
+version code (`AC1014`=R14 … `AC1032`=2018), and STEP's `FILE_SCHEMA` header
+distinguishes AP203/214/242 and names the originating CAD system for free.
+Apply: read magic/header bytes (DWG `AC####`, STEP `FILE_SCHEMA`, file magic);
+record format + version + originating system as provenance; treat the
+extension as a hint and resolve ambiguous ones (`.nc`, `.dat`, `.prt`) by content.
+
+**GP-51 — Exclude editor lock/temp files before counting a native-CAD estate.**
+Why: `~$`-prefixed CAD lock files were ~15% (≈8,800 of ≈60,000) of the
+apparent part/assembly population; counting them inflates every effort,
+billing, and coverage estimate.
+Apply: filter lock/temp/autosave patterns (`~$*`, `*.bak`, swap files) before
+any census; report real vs raw counts and keep the rule in the inventory script.
+
+**GP-52 — For geometry conversion, gate on a round-trip invariant oracle, not "it opened."**
+Why: a STEP→STEP round-trip was proven lossless only by comparing solid-body
+count + bounding box + volume (rel-err ≤1e-6); separately, IGES re-read as
+unoriented surfaces (0 solids, meaningless negative volume) — a silent loss
+that a "file written / viewer opens" check misses entirely.
+Apply: after any geometry convert, re-read the output and compare solid count,
+bbox, and volume/mass within tolerance; **sew** surface-only formats (IGES)
+before trusting any volume/mass; use the kernel's structured (XCAF) reader,
+not the flat one, when the BOM tree/part names matter (a flat reader collapsed
+an 11-product assembly to 2 solids).
+
+**GP-53 — De-identify a raw-path file manifest before its first commit to a public repo.**
+Why: a per-file CAD manifest's path column embedded a personal name plus
+client/field linkage and was pushed to a public branch before the leak was
+caught; auto-mode could not force-push to purge history (deny rule), so the
+blob persisted pending a maintainer squash-merge.
+Apply: replace raw paths with hashes and relabel client/vendor folders
+*before* the first commit; keep the full raw manifest off-repo (private);
+build the de-identification key before authoring any client-mapping doc; if a
+leak ships, escalate to a maintainer squash-merge / branch recreation.
+
 ---
 
-*Next ID: GP-50.*
+*Next ID: GP-54.*
