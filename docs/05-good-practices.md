@@ -456,6 +456,22 @@ Apply: replace raw paths with hashes and relabel client/vendor folders
 build the de-identification key before authoring any client-mapping doc; if a
 leak ships, escalate to a maintainer squash-merge / branch recreation.
 
+## Multi-agent research & verification
+
+**GP-54 — Trust the verifier's per-claim log, not its summary; re-verify decision-critical facts firsthand.**
+Why: a fan-out deep-research run degraded twice in one session — its *synthesis*
+agent returned a stub object, and the *verify* phase was API-rate-limited into
+mass abstentions (claims neither confirmed nor refuted). The real value survived
+in the per-claim vote log, and the decision-critical facts (OSS **license**
+terms governing whether a package can ship) were resolved only by fetching each
+repo's license directly.
+Apply: persist per-claim verifier votes separately from the final summary, and
+hand-synthesize from the log if the summary is malformed; treat a rate-limited
+*abstain* as "unverified", never as a result; and independently confirm the few
+facts a decision actually hinges on (licenses, safety limits, numbers you'll
+act on) against a primary source — a confident multi-agent summary is still a
+claim until its load-bearing facts are checked.
+
 ---
 
-*Next ID: GP-54.*
+*Next ID: GP-55.*
