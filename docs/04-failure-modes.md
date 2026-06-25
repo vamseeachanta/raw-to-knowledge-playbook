@@ -100,6 +100,22 @@ forward), `C5` (nested-agent starvation).
 | `comparator-inflation` | The **validation tool's own normalization** collapses genuinely different values, flattering every lane score it produces | Numeric canonicalization through a precision-bounded representation (fixed sig-fig format, binary float, default decimal context) | Adversarial probes with constructed near-equal pairs at increasing precision | Exact-tier canonicalization precision-lossless **by construction** (width-matched decimal context); tolerance lives only in an explicitly-labeled tier; verify the comparator harder than the pipeline (GP-47, skill `independent-oracle-validation`) |
 | `object-model-blindspot` | An inventory asserting "nothing silently dropped" **itself silently drops** container content the convenience API never surfaces (grouped/placeholder shapes, alternate-content fallbacks, orphaned deleted parts whose bytes still ship in the binary) | Enumeration via the library's object model instead of the container | Adversarial raw-container census (occurrence count + per-item sha256/size) vs the inventory | Enumerate completeness claims from the **raw container** (zip members, XML occurrences, relationship targets); disclose fallback/orphaned content with explicit context labels (GP-48) |
 
+## G. CAD geometry & B-rep lane defects (STEP/IGES/native/DWG)
+
+Hit during a CAD/CAM estate discovery + a license-free extraction pilot
+(see [doc 21](21-cad-and-brep-geometry.md)). Same meta-lesson: structure that
+"parsed/opened" is a hypothesis, not a fact.
+
+| # | Failure mode | Root cause | Detected by | Mitigation |
+|---|---|---|---|---|
+| G1 | **IGES reads as surfaces, not a solid** — volume/mass come back zero or negative and feed downstream sizing | IGES carries un-sewn surface patches, not a closed B-rep solid | Solid-count = 0 with non-zero faces; negative `VolumeProperties` | Sew (ShapeFix) before any volume/mass; reject mass from un-sewn surfaces; prefer STEP (GP-52) |
+| G2 | **Assembly silently flattened** — a BOM/parts-register built from the read is missing components | The basic kernel STEP reader merges solids; an 11-`PRODUCT_DEFINITION` file surfaced as 2 solids | Solid count ≪ `PRODUCT_DEFINITION` count in the file | Use the structured XCAF reader for the tree/part-names/colors; never read a BOM from the flat reader (GP-52) |
+| G3 | **Lock/temp files inflate the estate count** (~15%) | `~$`-prefixed editor lock files counted as parts/assemblies | Real-vs-raw count gap; `~$` prefix census | Filter lock/temp/autosave before counting; report real vs raw (GP-51) |
+| G4 | **Extension misclassification** — a CAM inventory "exists" that doesn't | `.nc` was 100% NetCDF (not G-code); `.dat` ambiguous; classified by suffix | Header/magic inspection contradicts the extension | Header-detect format; resolve ambiguous extensions by content (GP-50) |
+| G5 | **Native-format license lock mistaken for a data gap** | No OSS reader exists for SolidWorks/Inventor/Parasolid; "we can't read it" read as "no data" | Adversarial check: native population is large but unreadable headless | Treat native read as seat-gated; design extraction on neutral formats; one-time vendor-seat export is the unlock, not a parser (doc 21 §1) |
+| G6 | **Comparator flatters the conversion** — a round-trip "passes" because the oracle's tolerance hid a real loss | Volume compared at a coarse tolerance; bbox at limited precision | Adversarial near-equal probes; exact-tier check on integer invariants | Solid/face counts compared **exactly**; geometric tolerance only in an explicitly-labelled tier; verify the comparator harder than the pipeline (mirrors `comparator-inflation`/GP-47) |
+| G7 | **Raw-path manifest leaks PII to a public repo** | A per-file CAD manifest's `path` column embedded a personal name + client/field linkage; pushed before the leak was caught; force-push denied | Pre-commit identifier scan; public/private routing | De-identify (hash paths, relabel client folders) before the first commit; keep raw manifest off-repo; on leak, maintainer squash-merge (GP-53; same class as `pii-leak`/`raw-binary-firewall`) |
+
 ## The meta-lesson
 
 > **Deterministic checks catch structural problems. Only vision catches value

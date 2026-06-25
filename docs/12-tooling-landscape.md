@@ -120,6 +120,40 @@ Expanded with license-screened verdicts and primary-source evidence in
 | LangChain loader wrappers | — | — | **AVOID**: indirection + churn; call the underlying libraries directly |
 | LlamaParse (SaaS) | — | proprietary | **AVOID** for private archives: data egress + lock-in |
 
+## Lane 8 — CAD geometry, B-rep & 2D drawings (doc 21)
+
+License-verified firsthand against each repo (a rate-limited multi-agent pass had
+abstained on the licenses — see the orchestration caveat below). The kernel is
+LGPL; most of the usable Python layer is permissive.
+
+| Tool | License | Verdict | Why |
+|---|---|---|---|
+| **pythonocc-core** (OCCT bindings) | LGPL-3.0 (kernel LGPL-2.1+exc) | **ADOPT, internal** | Most complete STEP/IGES data-exchange + tessellation; **confirmed: OCCT 7.9 writes AP242**. Import-safe for permissive code; keep replaceable |
+| **CadQuery / build123d** | Apache-2.0 | **ADOPT** | Pythonic parametric BREP authoring on OCCT (via OCP) — the variant-generation engine |
+| **cascadio** | MIT | **ADOPT** | pip STEP→GLB via OCCT, **no compile** — the light viz/derivative path for trimesh |
+| **manifold3d** | Apache-2.0 | **ADOPT** | Guaranteed-watertight mesh Boolean (Blender/OpenSCAD's kernel); pushes 3MF + glTF `EXT_mesh_manifold` over lossy STL |
+| **ezdxf** | MIT | **ADOPT** | DXF read/write + title-block/entity extraction (DXF only — DWG needs ODA) |
+| **trimesh / meshio** | MIT | **ADOPT** | Mesh I/O + glTF/3MF derivatives (trimesh glTF needs `networkx`) |
+| **ODA File Converter** | free, **proprietary EULA** | KEEP, FLAGGED | DWG↔DXF (all versions) with no AutoCAD seat; external install, never bundle |
+| **FreeCAD 1.0** (`freecadcmd`) | LGPL | EVALUATE | Headless batch convert; InventorLoader addon claims native `.ipt` read — **pilot, unverified** |
+| **LibreDWG** | ⛔ **GPL-3.0** | CLI-only | DWG reader ~complete, writer older-versions; copyleft → arms-length subprocess only |
+| **Datakit CrossCad/Ware** | commercial SDK | (paid) | The only non-seat native SolidWorks/Inventor reader |
+| **CAD-AI: UV-Net, AAGNet, DeepCAD, MFCAD** | **MIT** | EVALUATE | B-rep feature recognition + embeddings + datasets — commercial-OK (UV-Net has no pretrained weights) |
+| **CAD-AI: cadrille, CAD-Coder** | Apache-2.0 | EVALUATE | text/image → CadQuery code; commercial-OK |
+| **CAD-AI: CAD-Recode, Point2CAD, BRepNet** | ⛔ **CC-BY-NC** | AVOID in product | Strong point-cloud/B-rep models but **non-commercial** — research/prototype only |
+
+**Key finding:** the most valuable native formats (SolidWorks/Inventor/Parasolid)
+have **no OSS reader** — extraction is license-free only on neutral formats
+(STEP/IGES/Parasolid-via-export); native read is seat-gated. Half the best CAD-AI
+models are CC-BY-NC and cannot ship.
+
+> **Orchestration caveat (carries to [doc 06](06-multi-agent-orchestration.md)):** a fan-out deep-research run
+> degraded twice — its *synthesis* agent returned a stub, and the *verify* phase
+> was API-rate-limited into mass abstentions. The recovery: **hand-synthesize from
+> the verifier's per-claim log** (the votes survived even when the summary didn't)
+> and **re-verify decision-critical facts (licenses) firsthand**. Never adopt a
+> license from a rate-limited verifier's abstain.
+
 ---
 
 ## License register (flags to carry)
@@ -132,6 +166,11 @@ Expanded with license-screened verdicts and primary-source evidence in
 | pcodedmp (oletools extra) | GPL-3.0 | Excluded from installs |
 | surya weights | OpenRail-M (<$5M rev) | Verify threshold before use |
 | marker, pycel, koala2, unpaper | GPL family | Not integrated |
+| pythonocc-core / OCCT / OCP | LGPL | Import-safe (dynamic); keep replaceable; don't statically vendor |
+| LibreDWG | GPL-3.0 | Separate-process CLI only; ODA File Converter is the permissive-by-EULA exit |
+| ODA File Converter | proprietary (free) | External install; never bundle/redistribute |
+| CAD-Recode / Point2CAD / BRepNet | CC-BY-NC(-SA) | Research/prototype only; excluded from any shipped/client pipeline |
+| Datakit CrossCad/Ware | commercial | Paid SDK; only path to native SW/Inventor read without a seat |
 
 ## Credible written resources (verified)
 
