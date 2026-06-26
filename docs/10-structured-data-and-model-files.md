@@ -8,6 +8,10 @@ like the easiest sources ("it's already structured!") and that assumption is
 exactly what makes them dangerous: every failure mode in this lane is
 *silent*.
 
+> See also: [structured-data / geospatial coverage sweep](case-studies/structured-data-geospatial-coverage-sweep.md)
+> — extends the format-coverage idea across solver, structured, and
+> geospatial sources.
+
 In the D1/D2/D3 dimension model ([doc 09](09-office-formats.md)):
 
 | Source | D1 content | D2 logic | D3 format |
@@ -27,6 +31,15 @@ In the D1/D2/D3 dimension model ([doc 09](09-office-formats.md)):
 - **Probe the dialect**: delimiter, quoting, encoding, line endings. Mixed
   CRLF/LF within one file is real (see failure B3) and naive text-mode I/O
   silently rewrites it.
+- **Solver "ASCII" is often not ASCII — probe the encoding explicitly.** A
+  modern hydrodynamics-workbench export carrying a `.dat` extension read as
+  *binary* — embedded NUL bytes / UTF-16 — and tripped a text tool's binary
+  guard, while a hand-written deck of the very same solver was plain ASCII.
+  Add an encoding probe (BOM / UTF-16 / NUL detection) to this step,
+  transcode before parsing, and record the source encoding in the provenance
+  sidecar. A whole-file binary classification that comes back identical at
+  several offsets is the tell that you have a tool-generated export, not a
+  hand-edited deck.
 - **Validate field-count per row against the header at ingestion.** Extra
   delimiters in a value silently shift every downstream column for that row
   — the file still parses, the data is garbage.
@@ -50,6 +63,15 @@ not a defect — but nothing in the file says so. Every ingested dataset
 carries a sidecar provenance record: units per column, sign conventions,
 coordinate frames, and any producer quirks. A convention that lives only in
 the original author's head becomes a "bug report" later.
+
+The bare-point case is the sharpest version of this. Geometry-point
+exports — critical-point lists, reference-curve vertices, and similar `.txt`
+dumps from a stability package — arrive as clean three-column `x y z` lists
+with **no header, no units, no datum, and no sign convention in-band.** They
+parse perfectly and mean nothing on their own. **Never promote bare point
+data without a convention sidecar** resolved from the run header, the
+incline report, or the source drawing; mark the derivative `partial` until
+that resolution is confirmed, never assumed.
 
 ### Effort estimation by density
 
@@ -125,6 +147,17 @@ Hard-won rules:
   as flat tabular data interleaves block headers with values — the same
   class of defect as PDF contaminated merges (failure A8), arriving through
   a "clean" channel.
+- **Extension ≠ dimension — classify by first lines, not by suffix.** A
+  solver input deck (D2 logic) and an output listing (D1 results) routinely
+  *share* an extension. One folder of a stability package held two `.TXT`
+  files: one a tank-summary **output** listing with real result tables
+  (capacities, weights, LCG/VCG/FSM), the other a **run script** — a
+  report-definition that *generates* hydrostatics, whose computed numbers
+  live in a binary print file and a PDF, not in the `.TXT` at all. Same
+  extension, opposite dimension, opposite value. Before routing any solver
+  text file as "results," read its first lines and classify it — a results
+  header banner versus run commands — and route on that, never on the
+  extension.
 - Output values feed pillar (c) sanity checks before they feed anything
   else.
 
