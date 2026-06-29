@@ -23,7 +23,7 @@
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) requires a ledger schema, route states, bounded sampling, exclusion classes, and closeout rules.
 - [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) depends on this control plane for storage/lifecycle routing decisions.
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) will consume this sampling contract for manifest freshness/drift checks.
-- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) will consume this route/token contract for public-output redaction canaries.
+- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) will consume this route/token contract for public-output redaction canaries; #51 will define the interface but will not require the #63-owned scanner to exist or pass.
 
 ### Source inventory
 - `ACE_SHARE_ROOT/INDEX.md` exists and warns that the share contains client data and business records.
@@ -102,6 +102,7 @@ for every wave issue #52-#61:
 reject sampling commands that perform unbounded recursive traversal or full-manifest materialization
 require ACE_SHARE_ROOT plus share-relative paths in scripts/tests
 require public artifacts to use source_id/source_sha256/public_source_token, never raw paths
+define the public-output canary input contract consumed by #63 without invoking #63's scanner
 require every closeout to update a playbook doc/skill or file a follow-on issue for method gaps
 ```
 
@@ -113,10 +114,10 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 |---|---|---|
 | Create | docs/case-studies/ace-share-wave-0-control-plane.md | Durable ACE ledger/routing/sampling contract |
 | Create | scripts/validate_ace_wave0_control_plane.py | CI-checkable validator for required fields, routes, wave bindings, and sampling constraints |
-| Reference | scripts/validate_ace_public_artifacts.py | Public-output safety gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63); #51 defines the route/token contract it consumes |
+| Reference | scripts/validate_ace_public_artifacts.py | Public-output safety gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63); #51 will define the route/token input contract only |
 | Modify | .github/workflows/validate.yml | Run the new validator |
-| Modify | docs/index.md | Link the case study |
-| Modify | mkdocs.yml | Publish the case study |
+| Deferred | docs/index.md | Do not link the case study until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
+| Deferred | mkdocs.yml | Do not publish the case study in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
 | Modify | skills/public-private-routing/SKILL.md | Add ACE route-state expectations |
 | Modify | skills/content-triage-and-exclusion/SKILL.md | Add ACE exclusion-class expectations |
 | Modify | skills/format-coverage-ledger/SKILL.md | Add ACE ledger expectations |
@@ -137,6 +138,7 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | test_ace_share_root_required | Host portability | Script/test examples | Uses `ACE_SHARE_ROOT` plus share-relative paths |
 | test_public_artifact_safety_gate_blocks_raw_identifiers | Public publication safety | Case-study and docs targets | Blocks raw paths, private identifiers, personal identifiers, and proprietary snippets |
 | test_every_downstream_wave_has_issue_skill_and_validator | #52-#61 each have bindings | Wave map | No missing issue, skill group, eval data, or executable validator/canary |
+| test_public_canary_is_referenced_not_required | #51/#63 dependency boundary | Control-plane contract | #51 records the #63 scanner interface but does not require `scripts/validate_ace_public_artifacts.py` to exist or pass |
 | test_closeout_requires_method_gap_disposition | Method gaps cannot disappear | Closeout rule | Requires doc/skill update or follow-on issue |
 
 ---
@@ -149,9 +151,10 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 - [ ] Every downstream ACE wave has a bounded sampling protocol and no unbounded share crawl or full-manifest materialization.
 - [ ] Proposed scripts/tests use `ACE_SHARE_ROOT` plus share-relative paths.
 - [ ] Public artifact safety gate blocks raw source paths, private identifiers, personal identifiers, and proprietary snippets before docs publication.
+- [ ] #51 defines the public-output canary input contract consumed by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63), but it does not require `scripts/validate_ace_public_artifacts.py` to exist or pass.
 - [ ] `% ingested success` numerator, denominator, threshold, and validation command are required for every downstream wave.
 - [ ] Exclusion classes are fail-closed for PII, client-confidential, third-party-confidential, binary noise, and low-value material.
-- [ ] `uv run python scripts/validate_ace_wave0_control_plane.py` and `uv run python scripts/validate_ace_public_artifacts.py` pass.
+- [ ] `uv run python scripts/validate_ace_wave0_control_plane.py` passes.
 - [ ] `uv run skills/validate_skill.py` passes after skill updates.
 
 ---

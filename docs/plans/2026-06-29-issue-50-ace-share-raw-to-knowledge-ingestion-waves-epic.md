@@ -54,7 +54,7 @@ EXISTS docs/19-trust-boundary-and-private-mode.md
 EXISTS docs/20-measured-outcomes.md
 EXISTS docs/21-cad-and-brep-geometry.md
 EXISTS skills/README.md
-MISSING docs/case-studies/ace-share-ingestion-wave-coordination.md
+MISSING docs/plans/ace-share-ingestion-wave-coordination.md
 MISSING scripts/validate_ace_epic_wave_coordination.py
 ```
 
@@ -68,7 +68,7 @@ N/A - parent epic/planning issue; no runtime failure is alleged.
 | Artifact | Path |
 |---|---|
 | This plan | docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md |
-| Coordination case study | docs/case-studies/ace-share-ingestion-wave-coordination.md |
+| Coordination table | docs/plans/ace-share-ingestion-wave-coordination.md |
 | Coordination validator | scripts/validate_ace_epic_wave_coordination.py |
 | Review artifact - Claude | scripts/review/results/2026-06-29-plan-50-claude.md |
 | Review artifact - Codex | scripts/review/results/2026-06-29-plan-50-codex.md |
@@ -78,7 +78,7 @@ N/A - parent epic/planning issue; no runtime failure is alleged.
 
 ## Deliverable
 
-A CI-validated epic coordination artifact that will track the ACE child wave plans, dependencies, approval gates, skill-group bindings, method issue bindings, and follow-on method-gap disposition rules without authorizing child implementation.
+A repo-local CI-validated epic coordination artifact that will track the ACE child wave plans, dependencies, approval gates, skill-group bindings, method issue bindings, review evidence, and follow-on method-gap disposition rules without authorizing child implementation. CI validation will check recorded snapshots and local approval markers only; live GitHub label checks will remain an explicit pre-label/changeover step captured in issue comments because stock CI will not have interactive `gh` auth.
 
 ---
 
@@ -87,23 +87,31 @@ A CI-validated epic coordination artifact that will track the ACE child wave pla
 ```text
 load epic #50 and child issues #51-#63
 for each child issue:
-  record plan path, local status, live status labels, lane label, complexity
+  record plan path, local status, latest recorded live-status snapshot,
+  snapshot timestamp, lane label, complexity
   record prerequisite issues and blocked-by dependencies
   record raw-to-knowledge method issue anchors
   record skill groups, eval data, and executable validator/canary files
-  record expected useful ingestion range, measured success formula, and difficulty rank
+  record expected useful ingestion range, measured success formula,
+  measured-vs-expected status, and difficulty rank
   record whether formal Claude/Codex/Gemini plan-review artifacts exist
   record whether .planning/plan-approved/<issue>.md exists with approved-by/date/plan/sha/review fields
-block implementation unless:
-  child issue has status:plan-approved
-  child approval marker exists
+assert implementation_ready=false unless:
+  latest recorded live-status snapshot shows status:plan-approved
+  matching child approval marker exists
+  missing .planning/plan-approved/ is treated as all children unapproved
   parent coordination table shows no unresolved prerequisite blocker
-  #61 is approved before any durable store, public/private target path, retrieval metadata, or publication write
-  #62 snapshot evidence exists before any wave samples a manifest-backed source family
-  #63 public-output canary passes before any public docs/mkdocs/llm-wiki publication
+  #61 has status:plan-approved, approval marker, implemented validators,
+    and passing validation before any durable store, public/private target path,
+    retrieval metadata, or publication write
+  #62 has status:plan-approved, approval marker, implemented freshness validator,
+    passing validation, and cited snapshot_id before any downstream wave samples
+    a manifest-backed source family
+  #63 has status:plan-approved, approval marker, implemented public-output canary,
+    and passing validation before any docs nav, mkdocs, llm-wiki, or other public publication
 require every method gap to land as:
   playbook doc update, skill/eval update, or follow-on GitHub issue
-require public artifact safety gate before docs/mkdocs publication:
+require public artifact safety gate before publication exposure:
   no raw absolute source paths, no private identifiers, source_id/source_sha256 tokens only
 require branch publication rule:
   dedicated planning branch or explicit stacked-branch note; no accidental mix with unrelated feature branches
@@ -115,11 +123,11 @@ require branch publication rule:
 
 | Action | Path | Reason |
 |---|---|---|
-| Create | docs/case-studies/ace-share-ingestion-wave-coordination.md | Durable coordination table for [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50)-[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) |
-| Create | scripts/validate_ace_epic_wave_coordination.py | CI-checkable validation for status, dependencies, issue links, skill groups, executable test bindings, method issue bindings, review/approval gates, and branch/publication rule |
+| Create | docs/plans/ace-share-ingestion-wave-coordination.md | Durable coordination table for child issues [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51)-[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) |
+| Create | scripts/validate_ace_epic_wave_coordination.py | CI-checkable validation for repo-local snapshots, dependencies, issue links, skill groups, executable test bindings, method issue bindings, review/approval gates, and branch/publication rule |
 | Modify | .github/workflows/validate.yml | Run the coordination validator |
-| Modify | docs/index.md | Link the coordination case study |
-| Modify | mkdocs.yml | Publish the coordination case study |
+| Deferred | docs/index.md | Do not link the coordination table until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
+| Deferred | mkdocs.yml | Do not publish the coordination table in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
 | Modify | skills/adversarial-verify-loop/SKILL.md | Require child-wave method-gap disposition during closeout |
 | Modify | skills/format-coverage-ledger/SKILL.md | Add epic-level wave status and expected-yield fields |
 
@@ -132,29 +140,32 @@ require branch publication rule:
 | test_epic_coordination_lists_all_children | Child issue coverage | Coordination table | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51)-[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) all present |
 | test_each_child_has_method_issue_binding | Raw-to-knowledge method traceability | Coordination table rows | Every child row lists at least one method issue anchor |
 | test_each_child_has_skill_group_and_executable_test_binding | Skill-group/test traceability | Coordination table rows | Every child row lists skill groups plus validator/canary/eval files |
-| test_status_gate_blocks_unapproved_children | Approval gate | Child row without `.planning/plan-approved/<issue>.md` | Implementation state remains blocked |
-| test_dependencies_include_wave0_and_lifecycle_contract | Dependency correctness | Child dependency rows | Downstream waves depend on [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51), and durable output/retrieval/publication work also depends on [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) |
+| test_status_gate_records_unapproved_children | Approval gate | Child row without `.planning/plan-approved/<issue>.md` or with missing marker directory | `implementation_ready=false` is recorded without crashing |
+| test_dependencies_include_wave0_and_lifecycle_contract | Dependency correctness | Child dependency rows | Downstream waves depend on [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51), and durable output/retrieval/publication work also depends on [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) approval plus validators |
 | test_method_gap_disposition_is_closed_set | Closeout governance | Method-gap rule | Gap disposition is doc update, skill/eval update, or follow-on issue |
-| test_public_artifact_safety_gate_required | Public repo safety | Coordination table publication rows | Requires deny-list/path-tokenization gate before docs/mkdocs publication |
+| test_public_artifact_safety_gate_required | Public repo safety | Coordination table publication rows | Requires deny-list/path-tokenization gate before docs nav/mkdocs/llm-wiki publication |
 | test_branch_publication_rule_present | Branch hygiene | Coordination rules | Requires dedicated planning branch or explicit stacked-branch publication note |
-| test_ingested_success_metric_is_defined | Measurement contract | Child rows | Numerator, denominator, threshold, and command exist for `% ingested success` |
-| test_manifest_snapshot_gate_listed | Freshness gate | Coordination table | [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot gate is represented before manifest-backed sampling |
-| test_public_redaction_canary_gate_listed | Publication safety gate | Coordination table | [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) canary gate is represented before publication |
+| test_ingested_success_metric_is_defined | Measurement contract | Child rows | Expected range is present for draft rows; measured numerator, denominator, threshold, and command are required only for approved/implemented rows |
+| test_manifest_snapshot_gate_bound_per_row | Freshness gate | Manifest-backed child rows | Each row that samples manifest-backed source families depends on [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) approval, marker, implemented validator, passing command, and snapshot_id |
+| test_public_redaction_canary_gate_bound_per_row | Publication safety gate | Public-output child rows | Each row that publishes docs, mkdocs, llm-wiki, or comments depends on [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval, marker, implemented canary, and passing command |
+| test_bounded_share_reads_are_declared | ACE source safety | Source inventory section and validator config | `ACE_SHARE_ROOT`, named manifest source, seed/sort rule, row caps, max files/bytes, and denied traversal patterns are present |
+| test_unbounded_manifest_traversal_is_denied | ACE source safety | Bad command/config fixtures | Recursive share walk, full-manifest materialization, unrestricted `jq`, `os.walk`, `ls -R`, `find`, `du`, `rg`, and `fd` patterns fail validation |
 
 ---
 
 ## Acceptance Criteria
 
 - [ ] Coordination artifact lists [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51)-[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) with plan file, lane, complexity, status, dependency, method issue, skill group, expected useful ingestion range, measured success formula, and difficulty rank where applicable.
-- [ ] No child issue is represented as implementation-ready unless live GitHub status and `.planning/plan-approved/<issue>.md` both prove user approval.
+- [ ] No child issue is represented as implementation-ready unless the coordination table records a fresh live-status snapshot showing `status:plan-approved`, `.planning/plan-approved/<issue>.md` exists, and missing `.planning/plan-approved/` is handled as all children unapproved.
 - [ ] Every child row names the raw-to-knowledge method issue(s), skill group(s), eval data, and executable validator/canary files that implementation will use and update.
 - [ ] Every child row records whether formal plan review artifacts exist for Claude, Codex, and Gemini, or records explicit provider unavailability.
 - [ ] Method gaps found during child waves must update a playbook doc/skill/eval or create a follow-on GitHub issue before child closeout.
-- [ ] Public artifact safety gate blocks raw source paths, private identifiers, personal identifiers, and proprietary snippets before any `docs/` or `mkdocs.yml` publication.
+- [ ] Public artifact safety gate blocks raw source paths, private identifiers, personal identifiers, and proprietary snippets before any docs nav, `mkdocs.yml`, `llm-wiki`, or external publication exposure.
 - [ ] Branch/publication rule prevents these plan artifacts from landing accidentally on unrelated feature branches.
-- [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is represented as a gate before any child wave writes durable stores, target paths, retrieval metadata, or published summaries.
-- [ ] [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) is represented as a gate before any child wave samples manifest-backed source families.
-- [ ] [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is represented as a gate before any child wave publishes public artifacts.
+- [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is represented as an approved-plan plus implemented-validator gate before any child wave writes durable stores, target paths, retrieval metadata, or published summaries.
+- [ ] [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) is represented per manifest-backed row as an approved-plan plus implemented-validator gate before any downstream child wave samples manifest-backed source families.
+- [ ] [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is represented per publication row as an approved-plan plus implemented-canary gate before any child wave publishes public artifacts.
+- [ ] Coordination validation denies recursive ACE share walks and full-manifest materialization unless a later approved issue explicitly authorizes them.
 - [ ] `uv run python scripts/validate_ace_epic_wave_coordination.py` passes.
 - [ ] `uv run skills/validate_skill.py` passes after skill updates.
 
@@ -164,18 +175,18 @@ require branch publication rule:
 
 | Provider | Verdict | Key findings |
 |---|---|---|
-| Claude | PENDING | Not yet reviewed |
-| Codex | PENDING | Not yet reviewed |
-| Gemini | PENDING | Not yet reviewed |
+| Claude | MAJOR | CI cannot enforce live GitHub status; TDD under-covers per-wave #62/#63 dependency binding; wording overstates "block" enforcement. |
+| Codex | MAJOR | Gate dependency cycle across #51/#63; #62/#63 represented as listed gates rather than implemented/approved gates; publication and bounded-read tests under-specified. |
+| Gemini | UNAVAILABLE | `gemini -p` failed with auth exit 41; no non-interactive Gemini credentials were available in this session. |
 
-**Overall result:** PENDING - draft only; not ready for `status:plan-review`.
+**Overall result:** NEEDS REVISION - draft only; not ready for `status:plan-review` until the blockers above are patched and available providers return no MAJOR findings.
 
 ---
 
 ## Risks and Open Questions
 
-- **Risk:** The coordination artifact can drift from live GitHub labels unless the validator checks both repo-local fields and live issue state or clearly records a snapshot timestamp.
-- **Risk:** Planning artifacts currently live on `docs/cad-brep-geometry-lane`; publication should move to a dedicated planning branch or wait for the CAD branch to merge.
+- **Risk:** The coordination artifact can drift from live GitHub labels; this plan will keep CI limited to repo-local snapshot fields and require a fresh `gh issue view` evidence comment before any label transition.
+- **Risk:** Planning artifacts currently live on `docs/ace-ingestion-wave-plans`, a dedicated planning branch stacked on `docs/cad-brep-geometry-lane`; publication exposure should wait until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the canary passes.
 - **Open:** [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) must name the private sidecar location before child waves rely on it for output routing.
 - **Open:** [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) must define retrieval/evaluation gates before bulk ingestion expands beyond pilot size.
 

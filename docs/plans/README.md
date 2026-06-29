@@ -6,6 +6,8 @@ Workflow: issue intake -> resource intelligence -> draft plan -> adversarial rev
 
 No plan in this directory authorizes implementation until the linked GitHub issue has `status:plan-approved` and a local approval marker at `.planning/plan-approved/<issue>.md`. The marker must name the approving user, approval date, plan path, reviewed commit SHA, and review artifact paths.
 
+CI validators in this repo must validate repo-local contracts, snapshots, and approval-marker files. Live GitHub label checks are pre-label/changeover evidence and must be captured in issue comments before `status:*` transitions; stock CI must not depend on interactive `gh` auth.
+
 ## ACE Portfolio Gates
 
 - Plans are public methodology artifacts. They must not copy private corpus contents, raw absolute source paths, client identifiers, email addresses, personal identifiers, or proprietary snippets into `docs/`, `skills/`, comments, or review artifacts.
@@ -13,6 +15,9 @@ No plan in this directory authorizes implementation until the linked GitHub issu
 - Route targets are a closed set owned by [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51): `public_llm_wiki`, `private_sidecar`, `metadata_only`, and `excluded_no_ingest`.
 - Lifecycle states are a separate closed set owned by [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61): `candidate`, `provisional`, `verified`, `rejected`, `superseded`, and `stale_requires_rescreen`.
 - Downstream waves may classify and sample after [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51), but they must not write durable stores, select public/private target paths, publish derived summaries, or scale beyond pilot size until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved.
+- [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) owns the route, ledger, and sampling interface only; it must not require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63)'s public-output scanner to exist or pass before #63 is implemented.
+- Manifest-backed downstream sampling requires [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) approval, a local approval marker, an implemented freshness validator, a passing validator command, and a cited snapshot ID.
+- Public docs navigation, `mkdocs.yml`, `llm-wiki`, or external publication exposure requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval, a local approval marker, an implemented public-output canary, and a passing canary command.
 - `% ingested success` is measured as `successful_routed_items / eligible_candidate_items * 100` for the bounded sample. A successful item has a closed route target, provenance token/hash, public-artifact safety pass, required shape/fidelity checks, and an allowed lifecycle state. Hard exclusions are reported separately as `% excluded`, not counted as ingestion failures.
 - Bounded sampling must name manifest source, seed/sort rule, per-bucket row cap, maximum files/bytes touched, and denied traversal patterns. Unbounded recursive crawls, full-share walks, and full-manifest materialization are out of scope unless a later approved issue explicitly authorizes them.
 
