@@ -1,6 +1,6 @@
 # Plan for #50: ACE Share Raw-to-Knowledge Ingestion Waves Epic
 
-> **Status:** draft
+> **Status:** plan-review
 > **Complexity:** T2
 > **Date:** 2026-06-29
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50
@@ -129,8 +129,8 @@ require branch publication rule:
 | Create | docs/plans/ace-share-ingestion-wave-coordination.md | Durable coordination table for child issues [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51)-[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) |
 | Create | scripts/validate_ace_epic_wave_coordination.py | CI-checkable validation for repo-local snapshots, dependencies, issue links, skill groups, executable test bindings, method issue bindings, review/approval gates, and branch/publication rule |
 | Modify | .github/workflows/validate.yml | Run the coordination validator |
-| Deferred | docs/index.md | Do not link the coordination table until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
-| Deferred | mkdocs.yml | Do not publish the coordination table in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
+| Deferred | docs/index.md | Do not link the coordination table until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has `status:plan-approved`, the local approval marker exists, the public-output canary is implemented, and the canary has a recorded passing-command result |
+| Deferred | mkdocs.yml | Do not publish the coordination table in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has `status:plan-approved`, the local approval marker exists, the public-output canary is implemented, and the canary has a recorded passing-command result |
 | Modify | skills/adversarial-verify-loop/SKILL.md | Require child-wave method-gap disposition during closeout |
 | Modify | skills/format-coverage-ledger/SKILL.md | Add epic-level wave status and expected-yield fields |
 
@@ -186,15 +186,17 @@ require branch publication rule:
 | Codex r2 | MAJOR | #62 still allowed unbounded full-manifest hash/count; downstream publication plans still lacked the full #63 approval-marker-canary-command gate. |
 | Claude r3 | MINOR | R2 MAJOR objectives resolved; residual #50/#51 deferred wording and #62 cap/no-sidecar behavior required tightening. |
 | Codex r3 | APPROVE | No findings in focused diff review of `614e33f..2be9f80`. |
+| Claude r4 | MINOR | No MAJOR; stale #50 risk wording and optional deferral-row hardening remained. |
+| Codex r4 | MINOR | No MAJOR; #50/#51 deferral rows and #50 risk prose needed literal four-part #63 gate wording. |
 
-**Overall result:** NEEDS FINAL REREVIEW - draft only; r3 MINOR findings were patched after review, so this plan is not ready for `status:plan-review` until available providers confirm no MAJOR findings on the updated head.
+**Overall result:** NO MAJOR - ready for `status:plan-review` after evidence comment and live GitHub label update. R4 MINOR wording findings were patched in this plan revision; implementation remains blocked pending user approval.
 
 ---
 
 ## Risks and Open Questions
 
 - **Risk:** The coordination artifact can drift from live GitHub labels; this plan will keep CI limited to repo-local snapshot fields and require a fresh `gh issue view` evidence comment before any label transition.
-- **Risk:** Planning artifacts currently live on `docs/ace-ingestion-wave-plans`, a dedicated planning branch stacked on `docs/cad-brep-geometry-lane`; publication exposure should wait until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the canary passes.
+- **Risk:** Planning artifacts currently live on `docs/ace-ingestion-wave-plans`, a dedicated planning branch stacked on `docs/cad-brep-geometry-lane`; publication exposure should wait until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has `status:plan-approved`, the local approval marker exists, the public-output canary is implemented, and the canary has a recorded passing-command result.
 - **Open:** [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) must name the private sidecar location before child waves rely on it for output routing.
 - **Open:** [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) must define retrieval/evaluation gates before bulk ingestion expands beyond pilot size.
 

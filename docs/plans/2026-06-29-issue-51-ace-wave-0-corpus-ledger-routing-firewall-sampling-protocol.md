@@ -117,8 +117,8 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | Create | scripts/validate_ace_wave0_control_plane.py | CI-checkable validator for required fields, routes, wave bindings, and sampling constraints |
 | Reference | scripts/validate_ace_public_artifacts.py | Public-output safety gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63); #51 will define the route/token input contract only |
 | Modify | .github/workflows/validate.yml | Run the new validator |
-| Deferred | docs/index.md | Do not link the case study until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
-| Deferred | mkdocs.yml | Do not publish the case study in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
+| Deferred | docs/index.md | Do not link the case study until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has `status:plan-approved`, the local approval marker exists, the public-output canary is implemented, and the canary has a recorded passing-command result |
+| Deferred | mkdocs.yml | Do not publish the case study in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has `status:plan-approved`, the local approval marker exists, the public-output canary is implemented, and the canary has a recorded passing-command result |
 | Modify | skills/public-private-routing/SKILL.md | Add ACE route-state expectations |
 | Modify | skills/content-triage-and-exclusion/SKILL.md | Add ACE exclusion-class expectations |
 | Modify | skills/format-coverage-ledger/SKILL.md | Add ACE ledger expectations |
