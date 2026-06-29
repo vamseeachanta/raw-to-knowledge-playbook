@@ -1,0 +1,594 @@
+from __future__ import annotations
+
+import importlib.util
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+VALIDATOR_PATH = REPO_ROOT / "scripts" / "validate_ace_epic_wave_coordination.py"
+PRIVATE_SOURCE_PATH = "/mnt" + "/ace/private/source.docx"
+PRIVATE_EMAIL = "person" + "@example.com"
+CLIENT_ID_SNIPPET = "client_" + "id=ACME-123"
+CONFIDENTIAL_SNIPPET = "PROPRIETARY " + "CONFIDENTIAL payload"
+
+
+def load_validator():
+    spec = importlib.util.spec_from_file_location("validate_ace_epic_wave_coordination", VALIDATOR_PATH)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+METHOD_ISSUES = {
+    51: "#1, #12",
+    52: "#1, #12",
+    53: "#5, #6, #12, #33",
+    54: "#2, #3, #7, #12, #33",
+    55: "#8, #12, #33",
+    56: "#3, #4, #12",
+    57: "#1, #12",
+    58: "#9, #10, #12",
+    59: "#6, #12",
+    60: "#12",
+    61: "#12, #1",
+    62: "#12",
+    63: "#12",
+}
+
+EXECUTABLE_BINDINGS = {
+    51: "content-triage-and-exclusion; scripts/validate_ace_wave0_control_plane.py",
+    52: "content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py",
+    53: "format-coverage-ledger; scripts/validate_ace_wave2_spreadsheet_csv.py",
+    54: "source-extraction-coverage; scripts/validate_ace_wave3_document_lane.py",
+    55: "format-coverage-ledger; scripts/validate_ace_wave4_decks_email.py",
+    56: "content-triage-and-exclusion; scripts/validate_ace_wave5_images.py",
+    57: "docs/21-cad-and-brep-geometry.md; scripts/validate_ace_wave6_cad.py",
+    58: "simulation-engineering-file-lane; examples/simulation-engineering-lane/check.py",
+    59: "database-geospatial-structured-index-lane; examples/database-geospatial-index-lane/check.py",
+    60: "archive-extraction-integrity; scripts/validate_ace_wave9_media_archive_noise.py",
+    61: "page-shape-contract; scripts/validate_ace_knowledge_store_contract.py; scripts/validate_ace_ingested_success_metric.py",
+    62: "source-extraction-coverage; scripts/validate_ace_manifest_freshness.py",
+    63: "public-private-routing; scripts/validate_ace_public_artifacts.py; tests/fixtures/ace-public-artifact-safety/",
+}
+
+
+def valid_marker(issue: int) -> str:
+    return "\n".join(
+        [
+            "Approved by: vamseeachanta",
+            "Approval date: 2026-06-29",
+            f"Issue: https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/{issue}",
+            f"Plan path: docs/plans/issue-{issue}.md",
+            "Reviewed commit: ba1041f117f00a6c36fd35298b84856d1dd92f56",
+            "Review artifacts:",
+            "  - scripts/review/results/2026-06-29-plan-50-claude-r4.md",
+        ]
+    )
+
+
+def row(issue: int) -> str:
+    return (
+        f"| #{issue} | docs/plans/issue-{issue}.md | lane:claude | T2 | draft | "
+        f"2026-06-29 no status label; no approval marker | false | {METHOD_ISSUES[issue]} | "
+        f"{EXECUTABLE_BINDINGS[issue]} | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | "
+        "#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate | 70-95%; success = successful_routed_items / eligible_candidate_items * 100; "
+        "difficulty 2/11 | yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling | "
+        "yes; #63 status:plan-approved+approval marker+implemented canary+recorded passing-command before publication | "
+        "closed-set: doc-update, skill-eval-update, follow-on-issue | false |"
+    )
+
+
+GOOD_DOC = "\n".join(
+    [
+        "# ACE Share Ingestion Wave Coordination",
+        "",
+        "## Source Inventory and Bounded Read Contract",
+        "- Root abstraction: `ACE_SHARE_ROOT`.",
+        "- Named manifest sources: `INDEX.md`, `assets.json`, `docs/master-index.jsonl`, `_cad-index/index-summary.json`, `.ace-knowledge/index.db`.",
+        "- Seed/sort rule: stable sort by `source_id`, then seeded sample `ace-epic-50-2026-06-29`.",
+        "- Row caps: 200 rows per bucket; maximum files touched: 25; maximum bytes touched: 1048576.",
+        "- Denied traversal patterns: recursive share walk; full-manifest materialization; full-file hashing/counting of large manifests; unrestricted `jq`; `os.walk`; `ls -R`; `find`; `du`; `rg`; `fd`.",
+        "- Allowed proof command examples must be bounded and use share-relative paths only.",
+        "",
+        "## Epic Gates",
+        "- Branch publication rule: dedicated planning branch or explicit stacked-branch note is required.",
+        "- Public artifact safety gate: path-tokenization, source_id/source_sha256 tokens, deny-list scan, private identifier check, personal identifier check, and proprietary snippet check before docs nav, mkdocs, llm-wiki, GitHub comments, or external publication.",
+        "- `% ingested success` = `successful_routed_items / eligible_candidate_items * 100`; hard exclusions are reported as `% excluded`.",
+        "- Method gap disposition closed set: `doc-update`, `skill-eval-update`, `follow-on-issue`.",
+        "- Wave #0 / #51 lifecycle contract: downstream waves depend on #51; durable outputs depend on #61 status:plan-approved plus approval marker plus implemented validators and recorded passing-command evidence.",
+        "",
+        "## Child Wave Ledger",
+        "| Issue | Plan | Lane | Complexity | Plan status | Status snapshot | Implementation ready | Method issues | Skill groups and executable tests | Review artifacts | Dependencies | Expected useful ingestion / success metric / difficulty | Manifest gate | Public canary gate | Method gap disposition | Publication exposure |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        *[row(issue) for issue in range(51, 64)],
+    ]
+)
+
+
+class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
+    def assert_rejects(self, text: str, expected: str):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_text(text, approval_root=Path(tmp))
+
+        self.assertTrue(result.errors, "expected validation errors")
+        self.assertIn(expected, "\n".join(result.errors))
+
+    def test_epic_coordination_lists_all_children(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_text(GOOD_DOC, approval_root=Path(tmp))
+
+        self.assertEqual([], result.errors)
+
+    def test_each_child_has_method_issue_binding(self):
+        bad_doc = GOOD_DOC.replace("| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 |", "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | none |")
+        self.assert_rejects(bad_doc, "#52 method issues")
+
+    def test_each_child_has_expected_method_issue_binding(self):
+        bad_doc = GOOD_DOC.replace("| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 |", "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #999 |")
+        self.assert_rejects(bad_doc, "#52 method issues")
+
+    def test_each_child_has_skill_group_and_executable_test_binding(self):
+        bad_doc = GOOD_DOC.replace("content-triage-and-exclusion; scripts/validate_ace_wave0_control_plane.py", "content-triage-and-exclusion", 1)
+        self.assert_rejects(bad_doc, "#51 skill groups")
+
+    def test_each_child_rejects_placeholder_executable_binding(self):
+        bad_doc = GOOD_DOC.replace("content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py", "content-triage-and-exclusion; validator TBD", 1)
+        self.assert_rejects(bad_doc, "#52 skill groups")
+
+    def test_review_artifact_status_recorded_per_child(self):
+        bad_doc = GOOD_DOC.replace("Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41", "pending; pending; pending", 1)
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_requires_provider_specific_segments(self):
+        bad_doc = GOOD_DOC.replace("Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41", "Claude: Codex: Gemini: pending", 1)
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_unbacked_verdict_words(self):
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: approve; Codex: minor; Gemini: major",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_path_traversal(self):
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/../../../docs/plans/ace-share-ingestion-wave-coordination.md; Codex: pending; Gemini: not-run",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_status_gate_records_unapproved_children(self):
+        bad_doc = GOOD_DOC.replace("2026-06-29 no status label; no approval marker | false | #1, #12", "2026-06-29 no status label; no approval marker | true | #1, #12", 1)
+        self.assert_rejects(bad_doc, "#51 implementation ready")
+
+    def test_approved_marker_requires_required_fields_when_ready(self):
+        validator = load_validator()
+        ready_doc = GOOD_DOC.replace(
+            "2026-06-29 no status label; no approval marker | false | #1, #12",
+            "2026-06-29 status:plan-approved | true | #1, #12",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "51.md").write_text("Approved by: reviewer\n")
+            result = validator.validate_text(ready_doc, approval_root=approval_root)
+
+        self.assertIn("#51 approval marker", "\n".join(result.errors))
+
+    def test_approved_marker_requires_matching_values_when_ready(self):
+        validator = load_validator()
+        ready_doc = GOOD_DOC.replace(
+            "2026-06-29 no status label; no approval marker | false | #1, #12",
+            "2026-06-29 status:plan-approved | true | #1, #12",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "51.md").write_text(
+                "\n".join(
+                    [
+                        "Approved by:",
+                        "Approval date:",
+                        "Issue: https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/999",
+                        "Plan path: docs/plans/wrong.md",
+                        "Reviewed commit: not-a-sha",
+                        "Review artifacts:",
+                        "  - missing.md",
+                    ]
+                )
+            )
+            result = validator.validate_text(ready_doc, approval_root=approval_root)
+
+        self.assertIn("#51 approval marker", "\n".join(result.errors))
+
+    def test_approved_marker_requires_review_artifact_paths(self):
+        validator = load_validator()
+        ready_doc = GOOD_DOC.replace(
+            "2026-06-29 no status label; no approval marker | false | #1, #12",
+            "2026-06-29 status:plan-approved | true | #1, #12",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "51.md").write_text(
+                "\n".join(
+                    [
+                        "Approved by: vamseeachanta",
+                        "Approval date: 2026-06-29",
+                        "Issue: https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51",
+                        "Plan path: docs/plans/issue-51.md",
+                        "Reviewed commit: ba1041f117f00a6c36fd35298b84856d1dd92f56",
+                        "Review artifacts: present",
+                        "  - README.md",
+                    ]
+                )
+            )
+            result = validator.validate_text(ready_doc, approval_root=approval_root)
+
+        self.assertIn("#51 approval marker", "\n".join(result.errors))
+
+    def test_approved_marker_rejects_review_artifact_path_traversal(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "51.md"
+            marker.write_text(
+                "\n".join(
+                    [
+                        "Approved by: vamseeachanta",
+                        "Approval date: 2026-06-29",
+                        "Issue: https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51",
+                        "Plan path: docs/plans/issue-51.md",
+                        "Reviewed commit: ba1041f117f00a6c36fd35298b84856d1dd92f56",
+                        "Review artifacts:",
+                        "  - scripts/review/results/../../../docs/plans/ace-share-ingestion-wave-coordination.md",
+                    ]
+                )
+            )
+
+            result = validator.validate_approval_marker(
+                marker,
+                51,
+                "docs/plans/issue-51.md",
+            )
+
+        self.assertIn("#51 approval marker review artifact", "\n".join(result))
+
+    def test_approved_marker_accepts_documented_bullet_list_format(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "51.md"
+            marker.write_text(valid_marker(51))
+
+            result = validator.validate_approval_marker(
+                marker,
+                51,
+                "docs/plans/issue-51.md",
+            )
+
+        self.assertEqual([], result)
+
+    def test_plan_approved_status_requires_snapshot_and_marker(self):
+        bad_doc = GOOD_DOC.replace(
+            "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 |",
+            "| #52 | docs/plans/issue-52.md | lane:claude | T2 | plan-approved | 2026-06-29 no status label; no approval marker | false | #1, #12 |",
+        )
+        self.assert_rejects(bad_doc, "#52 plan-approved")
+
+    def test_downstream_ready_requires_issue_61_ready(self):
+        validator = load_validator()
+        ready_doc = GOOD_DOC.replace(
+            "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 |",
+            "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 status:plan-approved | true | #1, #12 |",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "52.md").write_text(valid_marker(52))
+            result = validator.validate_text(ready_doc, approval_root=approval_root)
+
+        self.assertIn("#52 #61 dependency", "\n".join(result.errors))
+
+    def test_dependencies_include_wave0_and_lifecycle_contract(self):
+        good_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate |"
+        bad_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #61 durable-output gate |"
+        bad_doc = GOOD_DOC.replace(good_row, bad_row)
+        self.assert_rejects(bad_doc, "#52 dependencies")
+
+    def test_lifecycle_contract_requires_full_gate_details(self):
+        good_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate |"
+        bad_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 durable-output gate |"
+        bad_doc = GOOD_DOC.replace(good_row, bad_row)
+        self.assert_rejects(bad_doc, "#52 #61 gate")
+
+    def test_method_gap_disposition_is_closed_set(self):
+        bad_doc = GOOD_DOC.replace("closed-set: doc-update, skill-eval-update, follow-on-issue", "notes-only", 1)
+        self.assert_rejects(bad_doc, "#51 method gap disposition")
+
+    def test_method_gap_disposition_can_record_one_actual_resolution(self):
+        validator = load_validator()
+        good_doc = GOOD_DOC.replace("closed-set: doc-update, skill-eval-update, follow-on-issue", "follow-on-issue #99", 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_text(good_doc, approval_root=Path(tmp))
+
+        self.assertEqual([], result.errors)
+
+    def test_method_gap_disposition_requires_durable_target(self):
+        bad_doc = GOOD_DOC.replace("closed-set: doc-update, skill-eval-update, follow-on-issue", "follow-on-issue", 1)
+        self.assert_rejects(bad_doc, "#51 method gap disposition")
+
+    def test_public_artifact_safety_gate_required(self):
+        bad_doc = GOOD_DOC.replace("path-tokenization, source_id/source_sha256 tokens, deny-list scan, private identifier check, personal identifier check, and proprietary snippet check", "manual review")
+        self.assert_rejects(bad_doc, "public artifact safety gate")
+
+    def test_public_artifact_safety_gate_blocks_raw_private_leaks(self):
+        leak_doc = GOOD_DOC + f"\n\n## Bad Public Example\n- `{PRIVATE_SOURCE_PATH}`\n- `{PRIVATE_EMAIL}`\n- `{CLIENT_ID_SNIPPET}`\n- `{CONFIDENTIAL_SNIPPET}`\n"
+        self.assert_rejects(leak_doc, "public artifact leak")
+
+    def test_public_artifact_safety_sentinel_does_not_allow_raw_private_leaks(self):
+        leak_doc = GOOD_DOC + f"\n\n## Bad Public Example\n- validator-allow-forbidden-example `{PRIVATE_SOURCE_PATH}` `{PRIVATE_EMAIL}`\n"
+        self.assert_rejects(leak_doc, "public artifact leak")
+
+    def test_denied_traversal_policy_line_does_not_hide_private_leaks(self):
+        leak_doc = GOOD_DOC.replace(
+            "Denied traversal patterns:",
+            f"Denied traversal patterns: `{PRIVATE_SOURCE_PATH}`;",
+        )
+        self.assert_rejects(leak_doc, "public artifact leak")
+
+    def test_denied_traversal_policy_line_does_not_hide_command_examples(self):
+        bad_doc = GOOD_DOC.replace(
+            "Denied traversal patterns:",
+            "Denied traversal patterns: `find ACE_SHARE_ROOT -type f`;",
+        )
+        self.assert_rejects(bad_doc, "unbounded traversal")
+
+    def test_branch_publication_rule_present(self):
+        bad_doc = GOOD_DOC.replace("Branch publication rule: dedicated planning branch or explicit stacked-branch note is required.", "Branch publication rule: TBD.")
+        self.assert_rejects(bad_doc, "branch publication rule")
+
+    def test_ingested_success_metric_is_defined(self):
+        bad_doc = GOOD_DOC.replace("successful_routed_items / eligible_candidate_items * 100", "manual estimate")
+        self.assert_rejects(bad_doc, "ingested success")
+
+    def test_manifest_snapshot_gate_bound_per_row(self):
+        bad_doc = GOOD_DOC.replace("yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling", "yes; snapshot later", 1)
+        self.assert_rejects(bad_doc, "#51 manifest gate")
+
+    def test_manifest_snapshot_gate_rejects_negated_wording(self):
+        bad_doc = GOOD_DOC.replace(
+            "yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling",
+            "yes; #62 does not require status:plan-approved approval marker implemented validator recorded passing-command snapshot_id",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 manifest gate")
+
+    def test_public_redaction_canary_gate_bound_per_row(self):
+        bad_doc = GOOD_DOC.replace("yes; #63 status:plan-approved+approval marker+implemented canary+recorded passing-command before publication", "yes; canary later", 1)
+        self.assert_rejects(bad_doc, "#51 public canary gate")
+
+    def test_public_redaction_canary_gate_rejects_negated_wording(self):
+        bad_doc = GOOD_DOC.replace(
+            "yes; #63 status:plan-approved+approval marker+implemented canary+recorded passing-command before publication",
+            "yes; #63 does not require status:plan-approved approval marker implemented canary recorded passing-command",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 public canary gate")
+
+    def test_bounded_share_reads_are_declared(self):
+        bad_doc = GOOD_DOC.replace("maximum files touched: 25; maximum bytes touched: 1048576", "limits TBD")
+        self.assert_rejects(bad_doc, "bounded read contract")
+
+    def test_unbounded_manifest_traversal_is_denied(self):
+        commands = [
+            'find ACE_SHARE_ROOT -type f',
+            'find "$ACE_SHARE_ROOT" -type f',
+            'find ${ACE_SHARE_ROOT} -type f',
+            'jq \'.[]\' "$ACE_SHARE_ROOT/assets.json"',
+            'cat $ACE_SHARE_ROOT/assets.json',
+            'wc -l $ACE_SHARE_ROOT/docs/master-index.jsonl',
+            'wc -c $ACE_SHARE_ROOT/assets.json',
+            'sha256sum $ACE_SHARE_ROOT/assets.json',
+            'Path(ACE_SHARE_ROOT).rglob("*")',
+            'grep -R needle $ACE_SHARE_ROOT',
+            'grep --recursive needle $ACE_SHARE_ROOT',
+            'grep -r needle $ACE_SHARE_ROOT',
+            'grep -nr needle "$ACE_SHARE_ROOT"',
+            'wc $ACE_SHARE_ROOT/assets.json',
+            'ls -R $ACE_SHARE_ROOT',
+            'du -sh "$ACE_SHARE_ROOT"',
+            'rg needle $ACE_SHARE_ROOT',
+            'fd needle $ACE_SHARE_ROOT',
+            'os.walk(ACE_SHARE_ROOT)',
+        ]
+        for command in commands:
+            with self.subTest(command=command):
+                bad_doc = GOOD_DOC + f"\n\n## Proposed Commands\n- `{command}`\n"
+                self.assert_rejects(bad_doc, "unbounded traversal")
+
+    def test_duplicate_child_issue_rows_are_rejected(self):
+        duplicate_bad_row = row(52).replace("#1, #12", "#999", 1)
+        bad_doc = GOOD_DOC.replace(row(52), duplicate_bad_row + "\n" + row(52))
+        self.assert_rejects(bad_doc, "duplicate child issue row")
+
+    def test_child_ledger_header_drift_does_not_skip_row_validation(self):
+        bad_doc = GOOD_DOC.replace("| Issue | Plan | Lane | Complexity |", "| Issue Number | Plan | Lane | Complexity |")
+        self.assert_rejects(bad_doc, "child wave ledger")
+
+    def test_child_ledger_section_is_required(self):
+        bad_doc = GOOD_DOC.replace("## Child Wave Ledger", "## Appendix Table")
+        self.assert_rejects(bad_doc, "Child Wave Ledger")
+
+    def test_row_width_must_match_header(self):
+        bad_doc = GOOD_DOC.replace("| #51 | docs/plans/issue-51.md |", "| #51 | docs/plans/issue-51.md | extra |", 1)
+        self.assert_rejects(bad_doc, "#51 row has")
+
+    def test_ledger_header_schema_must_be_exact(self):
+        header = "| Issue | Plan | Lane | Complexity | Plan status | Status snapshot | Implementation ready | Method issues | Skill groups and executable tests | Review artifacts | Dependencies | Expected useful ingestion / success metric / difficulty | Manifest gate | Public canary gate | Method gap disposition | Publication exposure |"
+        bad_doc = GOOD_DOC.replace(header, header[:-1] + " Extra |")
+        self.assert_rejects(bad_doc, "child wave ledger header")
+
+    def test_required_row_fields_are_validated(self):
+        bad_doc = GOOD_DOC.replace("| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft |", "| #52 |  | lane:bad | T9 | unknown |", 1)
+        self.assert_rejects(bad_doc, "#52 plan")
+
+    def test_publication_exposure_requires_issue_63_ready(self):
+        bad_doc = GOOD_DOC.replace(
+            "closed-set: doc-update, skill-eval-update, follow-on-issue | false |",
+            "closed-set: doc-update, skill-eval-update, follow-on-issue | true |",
+            2,
+        )
+        self.assert_rejects(bad_doc, "#52 publication exposure")
+
+    def test_gate_ready_requires_executable_and_passing_command_evidence(self):
+        validator = load_validator()
+        ready_63 = row(63).replace(
+            "draft | 2026-06-29 no status label; no approval marker | false",
+            "plan-approved | 2026-06-29 status:plan-approved | true",
+        )
+        exposed_52 = row(52).replace(
+            "closed-set: doc-update, skill-eval-update, follow-on-issue | false |",
+            "closed-set: doc-update, skill-eval-update, follow-on-issue | true |",
+        )
+        bad_doc = GOOD_DOC.replace(row(63), ready_63).replace(row(52), exposed_52)
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "63.md").write_text(valid_marker(63))
+            result = validator.validate_text(bad_doc, approval_root=approval_root)
+
+        self.assertIn("#63 gate readiness", "\n".join(result.errors))
+
+    def test_gate_ready_rejects_placeholder_passing_command_evidence(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            executable = Path(tmp) / "validate_ace_public_artifacts.py"
+            executable.write_text("# test executable\n")
+            validator.EXPECTED_EXECUTABLE_BINDINGS[63] = {str(executable)}
+            status_snapshot = (
+                "2026-06-29 status:plan-approved; "
+                f"implemented-canary:{executable}; "
+                f"passing-command: not run {executable}; "
+                "exit-code:0 expected"
+            )
+            ready_63 = (
+                row(63)
+                .replace("scripts/validate_ace_public_artifacts.py", str(executable))
+                .replace(
+                    "draft | 2026-06-29 no status label; no approval marker | false",
+                    f"plan-approved | {status_snapshot} | true",
+                )
+            )
+            exposed_52 = row(52).replace(
+                "closed-set: doc-update, skill-eval-update, follow-on-issue | false |",
+                "closed-set: doc-update, skill-eval-update, follow-on-issue | true |",
+            )
+            bad_doc = GOOD_DOC.replace(row(63), ready_63).replace(row(52), exposed_52)
+            approval_root = Path(tmp)
+            (approval_root / "63.md").write_text(valid_marker(63))
+            result = validator.validate_text(bad_doc, approval_root=approval_root)
+
+        self.assertIn("#63 gate readiness", "\n".join(result.errors))
+
+    def test_gate_ready_rejects_hyphenated_not_run_evidence(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            executable = Path(tmp) / "validate_ace_public_artifacts.py"
+            executable.write_text("# test executable\n")
+            validator.EXPECTED_EXECUTABLE_BINDINGS[63] = {str(executable)}
+            status_snapshot = (
+                "2026-06-29 status:plan-approved; "
+                f"implemented-canary:{executable}; "
+                f"passing-command:not-run {executable}; "
+                "exit-code:0"
+            )
+            ready_63 = (
+                row(63)
+                .replace("scripts/validate_ace_public_artifacts.py", str(executable))
+                .replace(
+                    "draft | 2026-06-29 no status label; no approval marker | false",
+                    f"plan-approved | {status_snapshot} | true",
+                )
+            )
+            exposed_52 = row(52).replace(
+                "closed-set: doc-update, skill-eval-update, follow-on-issue | false |",
+                "closed-set: doc-update, skill-eval-update, follow-on-issue | true |",
+            )
+            bad_doc = GOOD_DOC.replace(row(63), ready_63).replace(row(52), exposed_52)
+            approval_root = Path(tmp)
+            (approval_root / "63.md").write_text(valid_marker(63))
+            result = validator.validate_text(bad_doc, approval_root=approval_root)
+
+        self.assertIn("#63 gate readiness", "\n".join(result.errors))
+
+    def test_publication_exposure_allows_structured_issue_63_evidence(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            executable = Path(tmp) / "validate_ace_public_artifacts.py"
+            executable.write_text("# test executable\n")
+            validator.EXPECTED_EXECUTABLE_BINDINGS[63] = {str(executable)}
+            status_snapshot = (
+                "2026-06-29 status:plan-approved; "
+                f"implemented-canary:{executable}; "
+                f"passing-command: uv run python {executable}; "
+                "exit-code:0"
+            )
+            ready_63 = (
+                row(63)
+                .replace("scripts/validate_ace_public_artifacts.py", str(executable))
+                .replace(
+                    "draft | 2026-06-29 no status label; no approval marker | false",
+                    f"plan-approved | {status_snapshot} | true",
+                )
+            )
+            exposed_52 = row(52).replace(
+                "closed-set: doc-update, skill-eval-update, follow-on-issue | false |",
+                "closed-set: doc-update, skill-eval-update, follow-on-issue | true |",
+            )
+            good_doc = GOOD_DOC.replace(row(63), ready_63).replace(row(52), exposed_52)
+            approval_root = Path(tmp)
+            (approval_root / "63.md").write_text(valid_marker(63))
+            result = validator.validate_text(good_doc, approval_root=approval_root)
+
+        self.assertEqual([], result.errors)
+
+    def test_public_artifact_scan_rejects_missing_paths(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_public_artifact_paths([Path(tmp) / "missing.md"])
+
+        self.assertIn("missing public artifact scan path", "\n".join(result))
+
+    def test_public_artifact_scan_rejects_leaks(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "public.md"
+            path.write_text(f"contact {PRIVATE_EMAIL}\n")
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("public artifact leak", "\n".join(result))
+
+    def test_public_artifact_scan_rejects_python_file_leaks(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "public.py"
+            path.write_text(f"PRIVATE_PATH = {PRIVATE_SOURCE_PATH!r}\nCONTACT = {PRIVATE_EMAIL!r}\n")
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("public artifact leak", "\n".join(result))
+
+    def test_validator_source_is_not_self_blocking_public_artifact(self):
+        validator = load_validator()
+        result = validator.validate_public_artifact_paths([VALIDATOR_PATH])
+
+        self.assertEqual([], result)
+
+
+if __name__ == "__main__":
+    unittest.main()
