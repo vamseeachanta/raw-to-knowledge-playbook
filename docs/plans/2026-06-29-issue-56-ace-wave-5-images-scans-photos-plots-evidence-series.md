@@ -140,7 +140,7 @@ update docs, skills, and evals
 - [ ] Private/client/personal imagery routes to `private_sidecar`/on-prem or `excluded_no_ingest` before derived publication.
 - [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved before durable image records, target paths, retrieval metadata, or publication writes.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] `% ingested success` is calculated as successful routed items over eligible candidate items, with excluded/no-ingest rows reported separately.
 - [ ] Evidence-series grouping uses deterministic metadata/hash signals and records uncertainty.
 - [ ] Raw images/scans are never committed; only derived records plus public source tokens/hashes are allowed in public artifacts.

@@ -155,7 +155,7 @@ compute routed success numerator/denominator for eligible candidate rows
 - [ ] Private/public routing applies before any derived transcript, metadata record, or extracted archive child is promoted.
 - [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved before durable media/archive records, target paths, retrieval metadata, or publication writes.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] `% ingested success` is calculated for route/exclusion decisions, with narrow content ingestion reported separately.
 - [ ] Skill evals cover the new policy, and `uv run python scripts/validate_ace_wave9_media_archive_noise.py` plus `uv run skills/validate_skill.py` pass.
 

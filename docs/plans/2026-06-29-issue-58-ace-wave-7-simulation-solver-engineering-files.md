@@ -120,8 +120,8 @@ compute routed success numerator/denominator for eligible candidate rows
 | Modify | docs/10-structured-data-and-model-files.md | Cross-link dedicated lane |
 | Modify | docs/12-tooling-landscape.md | Add solver parser/tool license decisions |
 | Modify | docs/13-lane-flowcharts.md | Add/extend solver flowcharts |
-| Modify | docs/index.md | Link new lane doc |
-| Modify | mkdocs.yml | Publish new lane doc |
+| Deferred | docs/index.md | Do not link the new lane doc until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
+| Deferred | mkdocs.yml | Do not publish the new lane doc in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
 | Modify | skills/README.md | Register new skill |
 | Modify | .github/workflows/validate.yml | Run canary and skill validation |
 
@@ -152,7 +152,7 @@ compute routed success numerator/denominator for eligible candidate rows
 - [ ] Large binaries remain metadata-only without approved parser/verifier.
 - [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved before durable solver/result stores, target paths, retrieval metadata, or publication writes.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] `% ingested success` is calculated for eligible candidate rows, with large-binary metadata-only successes and exclusions reported separately.
 - [ ] Skill evals and executable canary pass in CI.
 

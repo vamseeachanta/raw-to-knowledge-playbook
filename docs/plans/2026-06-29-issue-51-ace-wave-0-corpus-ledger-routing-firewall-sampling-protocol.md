@@ -33,7 +33,7 @@
 ### Gaps identified
 - No repo-local ACE corpus ledger schema exists yet.
 - No validated closed route enum exists for `public_llm_wiki`, `private_sidecar`, `metadata_only`, and `excluded_no_ingest`.
-- No bounded sampling contract exists to prevent unbounded share crawls through `find`, `du`, `rg`, `fd`, `ls -R`, recursive globbing, `os.walk`, unrestricted `jq`, or custom full-manifest loops.
+- No bounded sampling contract exists to prevent unbounded share crawls through `find`, `du`, `rg`, `fd`, `ls -R`, recursive globbing, `os.walk`, unrestricted `jq`, custom full-manifest loops, or full-file hashing/counting of large manifests.
 - No public artifact safety gate exists to enforce source tokenization and private identifier denial before public `docs/` publication.
 
 ### Evidence
@@ -99,7 +99,8 @@ define fail-closed exclusions:
 for every wave issue #52-#61:
   record extension family, inventory evidence, method issues, skill group, sampling rule,
   executable validator/canary file, and % ingested success formula
-reject sampling commands that perform unbounded recursive traversal or full-manifest materialization
+reject sampling commands that perform unbounded recursive traversal,
+  full-manifest materialization, or full-file hashing/counting of large manifests
 require ACE_SHARE_ROOT plus share-relative paths in scripts/tests
 require public artifacts to use source_id/source_sha256/public_source_token, never raw paths
 define the public-output canary input contract consumed by #63 without invoking #63's scanner
@@ -133,7 +134,7 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | test_ace_ledger_schema_requires_all_control_fields | Ledger schema covers #51 fields | Case-study ledger table | Source token/hash fields, private lookup key, route, lifecycle, expected yield, measured success fields present |
 | test_ace_route_enum_is_closed | Route targets are closed-set | Route table | Exactly four route targets |
 | test_ace_route_and_lifecycle_are_separate | Route targets do not mix with lifecycle states | Route/lifecycle tables | No `private_only` or `excluded` lifecycle used as a route alias |
-| test_ace_sampling_protocol_blocks_unbounded_crawls | Sampling rules do not allow unbounded crawls | Sampling section | Fails on unbounded `find`, `du`, `rg`, `fd`, `ls -R`, recursive glob, `os.walk`, unrestricted `jq`, or custom full-manifest loop |
+| test_ace_sampling_protocol_blocks_unbounded_crawls | Sampling rules do not allow unbounded crawls | Sampling section | Fails on unbounded `find`, `du`, `rg`, `fd`, `ls -R`, recursive glob, `os.walk`, unrestricted `jq`, custom full-manifest loop, or full-file hashing/counting of large manifests |
 | test_ace_sampling_protocol_requires_caps | Sampling rules are bounded | Sampling section | Manifest source, seed/sort, per-bucket caps, max files, and max bytes are present |
 | test_ace_share_root_required | Host portability | Script/test examples | Uses `ACE_SHARE_ROOT` plus share-relative paths |
 | test_public_artifact_safety_gate_blocks_raw_identifiers | Public publication safety | Case-study and docs targets | Blocks raw paths, private identifiers, personal identifiers, and proprietary snippets |
@@ -148,7 +149,7 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 - [ ] Ledger schema covers all fields named in #51 plus downstream issue, skill, eval data, executable validator/canary, and measured success binding.
 - [ ] Ledger distinguishes public `llm-wiki`, private sidecar, metadata-only, and excluded/no-ingest routing.
 - [ ] Route targets are separate from lifecycle states; `private_only` and `exclude` aliases are rejected in favor of the closed enums.
-- [ ] Every downstream ACE wave has a bounded sampling protocol and no unbounded share crawl or full-manifest materialization.
+- [ ] Every downstream ACE wave has a bounded sampling protocol and no unbounded share crawl, full-manifest materialization, or full-file hashing/counting of large manifests.
 - [ ] Proposed scripts/tests use `ACE_SHARE_ROOT` plus share-relative paths.
 - [ ] Public artifact safety gate blocks raw source paths, private identifiers, personal identifiers, and proprietary snippets before docs publication.
 - [ ] #51 defines the public-output canary input contract consumed by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63), but it does not require `scripts/validate_ace_public_artifacts.py` to exist or pass.

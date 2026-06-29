@@ -19,7 +19,7 @@ CI validators in this repo must validate repo-local contracts, snapshots, and ap
 - Manifest-backed downstream sampling requires [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) approval, a local approval marker, an implemented freshness validator, a passing validator command, and a cited snapshot ID.
 - Public docs navigation, `mkdocs.yml`, `llm-wiki`, or external publication exposure requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval, a local approval marker, an implemented public-output canary, and a passing canary command.
 - `% ingested success` is measured as `successful_routed_items / eligible_candidate_items * 100` for the bounded sample. A successful item has a closed route target, provenance token/hash, public-artifact safety pass, required shape/fidelity checks, and an allowed lifecycle state. Hard exclusions are reported separately as `% excluded`, not counted as ingestion failures.
-- Bounded sampling must name manifest source, seed/sort rule, per-bucket row cap, maximum files/bytes touched, and denied traversal patterns. Unbounded recursive crawls, full-share walks, and full-manifest materialization are out of scope unless a later approved issue explicitly authorizes them.
+- Bounded sampling must name manifest source, seed/sort rule, per-bucket row cap, maximum files/bytes touched, and denied traversal patterns. Unbounded recursive crawls, full-share walks, full-manifest materialization, and full-file hashing/row-counting of large manifests are out of scope unless a later approved issue explicitly authorizes them or a bounded precomputed sidecar is cited.
 
 ## Plan Index
 

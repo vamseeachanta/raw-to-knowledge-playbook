@@ -106,8 +106,8 @@ compute routed success numerator/denominator for bounded index rows
 |---|---|---|
 | Create | docs/case-studies/ace-wave-6-cad-drawings-geometry.md | CAD pilot and trust-state evidence |
 | Modify | docs/21-cad-and-brep-geometry.md | Add ACE index/readability/trust-state rules |
-| Modify | docs/index.md | Update site count/link if doc 21 is published |
-| Modify | mkdocs.yml | Publish doc 21 or document why it remains repo-only |
+| Deferred | docs/index.md | Do not update site count/link until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
+| Deferred | mkdocs.yml | Do not publish doc 21 in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
 | Modify | docs/12-tooling-landscape.md | Carry CAD tool containment and adoption caveats |
 | Modify | docs/01-document-taxonomy.md | Align CAD lane with taxonomy/trust states |
 | Modify | docs/18-security-and-pii.md | Clarify title-block/BOM/path leakage routing |
@@ -150,7 +150,7 @@ compute routed success numerator/denominator for bounded index rows
 - [ ] Raw CAD binaries are never committed; public outputs use source IDs/hashes and abstract private identifiers.
 - [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved before durable geometry stores, target paths, retrieval metadata, or publication writes.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] `% ingested success` is calculated for bounded index-row routing, with geometry promotion reported only for rows passing invariant verification.
 - [ ] `uv run python scripts/validate_ace_wave6_cad.py` and `uv run skills/validate_skill.py` pass.
 

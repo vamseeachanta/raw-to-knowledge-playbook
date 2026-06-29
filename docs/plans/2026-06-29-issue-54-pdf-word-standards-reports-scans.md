@@ -143,7 +143,7 @@ update docs/skills or file follow-on issue
 - [ ] OCR output is labeled `ocr-interpreted`, never deterministic raw text.
 - [ ] Public/private routing blocks client identifiers, personal records, and restricted standards text from public `llm-wiki`.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] `% ingested success` is calculated as successful routed items over eligible candidate items, with excluded/no-ingest rows reported separately.
 - [ ] New method gaps produce a governing doc/skill patch or a follow-on issue before closeout.
 - [ ] `uv run python scripts/validate_ace_wave3_document_lane.py` and `uv run skills/validate_skill.py` pass.

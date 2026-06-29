@@ -135,7 +135,7 @@ update docs and skills with reusable JSON/config/text filtering rules
 - [ ] `% ingested success` is calculated as successful routed items over eligible candidate items, with generated/noise exclusions reported separately.
 - [ ] Public/private routing is checked before any public target path is selected, and no durable output path is selected before [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) approval.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] Reusable JSON/config/text filtering rule lands in docs/skills.
 - [ ] `uv run skills/validate_skill.py`, `uv run skills/content-triage-and-exclusion/resources/text_json_triage.py self-test`, and `uv run python scripts/validate_ace_wave1_text_json.py` pass.
 

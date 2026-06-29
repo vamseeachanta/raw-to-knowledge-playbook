@@ -146,7 +146,7 @@ write case study and update docs/skills/evals
 - [ ] `% ingested success` is calculated as successful routed items over eligible candidate items, with guarded/unsupported exclusions reported separately.
 - [ ] Public/private routing occurs before any derived page or dataset target is selected, and no durable dataset/path is selected before [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) approval.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] Workbook and CSV self-tests, `uv run python scripts/validate_ace_wave2_spreadsheet_csv.py`, and `uv run skills/validate_skill.py` pass.
 
 ---

@@ -144,7 +144,7 @@ compute routed success numerator/denominator for eligible candidate rows
 - [ ] Sensitive email/deck content is routed to `private_sidecar` or `excluded_no_ingest` before any derived summary is published.
 - [ ] [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved before durable deck/email pages, target paths, retrieval metadata, or publication writes.
 - [ ] Manifest-backed sampling records a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot/drift result before sample selection.
-- [ ] Public-facing docs/reports pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) redaction canary before publication.
+- [ ] Public-facing docs/reports require [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result before docs, comments, `llm-wiki`, or external publication.
 - [ ] `% ingested success` is calculated separately for eligible deck and email candidates, with exclusions reported separately.
 - [ ] Pilot fidelity check compares extracted deck/email samples against originals.
 - [ ] Coverage ledger records deck diagrams/charts/speaker notes and email attachment/header/thread loss modes.
