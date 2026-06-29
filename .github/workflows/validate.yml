@@ -18,6 +18,19 @@ jobs:
       - name: Validate SKILL.md files (warn-only on-ramp; DENY rules block)
         run: uv run skills/validate_skill.py
 
+      - name: Validate ACE epic wave coordination
+        run: |
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path skills/adversarial-verify-loop/SKILL.md \
+            --scan-public-path skills/format-coverage-ledger/SKILL.md \
+            --scan-public-path .planning/plan-approved/50.md
+
+      - name: Validator unit tests
+        run: uv run python -m unittest tests.test_validate_ace_epic_wave_coordination
+
       - name: Runnable example — verify the happy path promotes
         working-directory: examples/minimal-ingest
         run: uv run ingest.py --check

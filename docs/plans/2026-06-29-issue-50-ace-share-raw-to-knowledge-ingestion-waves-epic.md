@@ -1,13 +1,13 @@
 # Plan for #50: ACE Share Raw-to-Knowledge Ingestion Waves Epic
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T2
 > **Date:** 2026-06-29
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:claude
-> **Review artifacts:** scripts/review/results/2026-06-29-plan-50-claude.md | scripts/review/results/2026-06-29-plan-50-codex.md | scripts/review/results/2026-06-29-plan-50-gemini.md
+> **Review artifacts:** scripts/review/results/2026-06-29-plan-50-claude-r4.md | scripts/review/results/2026-06-29-plan-50-codex-r4.md | scripts/review/results/2026-06-29-plan-50-gemini.md
 
 ---
 
@@ -189,7 +189,7 @@ require branch publication rule:
 | Claude r4 | MINOR | No MAJOR; stale #50 risk wording and optional deferral-row hardening remained. |
 | Codex r4 | MINOR | No MAJOR; #50/#51 deferral rows and #50 risk prose needed literal four-part #63 gate wording. |
 
-**Overall result:** NO MAJOR - ready for `status:plan-review` after evidence comment and live GitHub label update. R4 MINOR wording findings were patched in this plan revision; implementation remains blocked pending user approval.
+**Overall result:** NO MAJOR - user approval is recorded in `.planning/plan-approved/50.md`. R4 MINOR wording findings were patched in this plan revision; implementation is authorized for [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) only.
 
 ---
 

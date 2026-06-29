@@ -72,6 +72,10 @@ metadata:
    loop ends only when a round returns zero findings. Then flip the label to
    `verified` and post the round table (verdict per round + what each caught)
    on the PR as the verification record.
+7. **Close child-wave method gaps explicitly.** For ACE ingestion waves under
+   issue #50, every reusable method gap found during review must be resolved as
+   one of `doc-update`, `skill-eval-update`, or `follow-on-issue` before
+   closeout. Update the wave's coordination row if the disposition changes.
 
 ## Verification
 - The PR carries a posted round table: every round's verdict and findings,
@@ -82,6 +86,9 @@ metadata:
   committed artifacts.
 - The label history shows `needs-verify` → `verified` only after the PASS
   round (no self-certification by the producer).
+- ACE wave closeout records each method gap as `doc-update`,
+  `skill-eval-update`, or `follow-on-issue`; no reusable gap remains only in
+  session notes.
 
 ## Cleanup
 - Review transcripts/reproducers live outside the repo (temp/session dirs);
@@ -98,3 +105,4 @@ metadata:
 | PASS terminates, not a round count | The fix for round 1's finding introduced round 2's; only a zero-finding round proves convergence |
 | Record the exact runner | A reviewer running a PEP-723 script with bare `python` produced a false FAIL (missing deps) |
 | Post the round table on the PR | The verification record is part of the deliverable — confidence must be auditable later |
+| Close method gaps into durable artifacts | ACE child waves must improve the playbook or file a follow-on issue instead of burying reusable lessons in a transcript |

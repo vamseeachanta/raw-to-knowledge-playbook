@@ -79,6 +79,12 @@ metadata:
    `completeness: partial` and queued for a richer lane (formula-graph extraction,
    image/diagram capture, attachment harvesting), not silently shipped as
    complete.
+5. **Carry epic-level wave fields for ACE batches.** For ACE ingestion waves,
+   the ledger row also records `method_issue`, `skill_group`,
+   `expected_useful_ingestion_range`, `% ingested success`, `difficulty_rank`,
+   `review_status`, and `implementation_ready`. `% ingested success` uses
+   `successful_routed_items / eligible_candidate_items * 100`; hard exclusions
+   are reported separately as `% excluded`.
 
 ## Verification
 - Every extracted page declares a coverage ledger naming the lane's known loss;
@@ -87,6 +93,9 @@ metadata:
 - No host mount path appears in any committed file (the corpus root is an env
   var); grep the diff to confirm.
 - Every value has a `corpus-relative-path + sha256` pointer; raw binary absent.
+- ACE wave ledgers include method issue, skill group, expected useful ingestion
+  range, `% ingested success`, difficulty rank, review status, and
+  implementation readiness.
 
 ## Cleanup
 - Raw binary stays in the temp/off-repo location; only derived parts + pointers
@@ -100,3 +109,4 @@ metadata:
 | pptx loses diagrams/plots | The engineering content is often the drawn figure, not the slide text |
 | Corpus root via env var | No host mount path is ever committed; the corpus is relocatable and private |
 | Partial ≠ done | A page whose lost layer holds the value goes to the richer-lane backlog, not the trusted set |
+| ACE wave status fields travel with the ledger | Epic coordination needs expected yield, difficulty, review state, and implementation readiness beside the format-loss facts |
