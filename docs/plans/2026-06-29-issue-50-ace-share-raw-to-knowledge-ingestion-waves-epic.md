@@ -129,8 +129,8 @@ require branch publication rule:
 | Create | docs/plans/ace-share-ingestion-wave-coordination.md | Durable coordination table for child issues [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51)-[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) |
 | Create | scripts/validate_ace_epic_wave_coordination.py | CI-checkable validation for repo-local snapshots, dependencies, issue links, skill groups, executable test bindings, method issue bindings, review/approval gates, and branch/publication rule |
 | Modify | .github/workflows/validate.yml | Run the coordination validator |
-| Deferred | docs/index.md | Do not link the coordination table until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
-| Deferred | mkdocs.yml | Do not publish the coordination table in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
+| Deferred | docs/index.md | Do not link the coordination table until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
+| Deferred | mkdocs.yml | Do not publish the coordination table in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
 | Modify | skills/adversarial-verify-loop/SKILL.md | Require child-wave method-gap disposition during closeout |
 | Modify | skills/format-coverage-ledger/SKILL.md | Add epic-level wave status and expected-yield fields |
 
@@ -184,8 +184,10 @@ require branch publication rule:
 | Gemini r1 | UNAVAILABLE | `gemini -p` failed with auth exit 41; no non-interactive Gemini credentials were available in this session. |
 | Claude r2 | MINOR | R1 blockers resolved; residual acceptance/TDD consistency and recorded-evidence wording required. |
 | Codex r2 | MAJOR | #62 still allowed unbounded full-manifest hash/count; downstream publication plans still lacked the full #63 approval-marker-canary-command gate. |
+| Claude r3 | MINOR | R2 MAJOR objectives resolved; residual #50/#51 deferred wording and #62 cap/no-sidecar behavior required tightening. |
+| Codex r3 | APPROVE | No findings in focused diff review of `614e33f..2be9f80`. |
 
-**Overall result:** NEEDS REVISION - draft only; not ready for `status:plan-review` until r2 MAJOR findings are patched and available providers return no MAJOR findings.
+**Overall result:** NEEDS FINAL REREVIEW - draft only; r3 MINOR findings were patched after review, so this plan is not ready for `status:plan-review` until available providers confirm no MAJOR findings on the updated head.
 
 ---
 

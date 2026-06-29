@@ -27,7 +27,8 @@
 ### Source inventory
 - Candidate manifests include `assets.json`, `docs/master-index.jsonl`, `_cad-index/index-summary.json`, `_cad-index/cad-readability-index.tsv`, and `.ace-knowledge/index.db` under `ACE_SHARE_ROOT`.
 - This issue will read direct file metadata and bounded manifest headers/summaries only; it will not recursively crawl the share or full-hash/full-count multi-million-row manifests.
-- Full-manifest SHA-256 and row-count values will be accepted only when supplied by a bounded, precomputed sidecar or a manifest explicitly under the implementation byte/row cap.
+- Full-manifest SHA-256 and row-count values will be accepted only when supplied by a bounded, precomputed sidecar or a manifest explicitly under named config caps: `max_header_bytes`, `max_under_cap_bytes`, and `max_under_cap_rows`.
+- Large manifests above cap without a sidecar content signal will classify content fingerprint as `unavailable`; size/mtime alone must not produce a `compatible` drift verdict.
 
 ### Gaps identified
 - No reusable manifest snapshot ID exists for downstream waves.
@@ -80,13 +81,18 @@ require #51 route/sampling contract
 read ACE_SHARE_ROOT from environment
 for each configured manifest candidate:
   stat direct path only
+  load validator caps:
+    max_header_bytes, max_under_cap_bytes, max_under_cap_rows
   read bounded header/summary bytes or a precomputed sidecar within cap
   record size, mtime, optional generated timestamp, schema marker,
     and sidecar-provided sha256/row count when available
   record snapshot_id from path key + size + mtime + generated timestamp
     + bounded schema marker + optional sidecar hash/count
+  if manifest is above cap and no sidecar hash/count exists:
+    set content_fingerprint_status=unavailable
 compare broad manifest, master index, CAD index, and knowledge-store index:
-  classify drift as compatible, warning, blocker, or unavailable
+  classify drift as compatible, warning, blocker, or unavailable;
+  size/mtime-only evidence cannot classify large manifests as compatible
 reject commands/config that use hardcoded mount paths, recursive crawls,
   full-manifest materialization, or full-file hashing/counting of large manifests
 emit public-safe manifest snapshot report using share-relative keys and hashes only
@@ -115,6 +121,8 @@ emit public-safe manifest snapshot report using share-relative keys and hashes o
 | test_ace_share_root_required | Host portability | Validator config | Uses `ACE_SHARE_ROOT` and share-relative paths |
 | test_no_recursive_crawl_patterns | Bounded freshness | Validator config/scripts | Rejects recursive crawl/full-manifest commands |
 | test_large_manifest_full_hash_or_count_is_rejected | Bounded freshness | Large-manifest fixture/config | Full-file SHA-256 or full row counting fails unless a bounded precomputed sidecar or under-cap manifest is declared |
+| test_manifest_caps_are_named | Bounded freshness | Validator config | `max_header_bytes`, `max_under_cap_bytes`, and `max_under_cap_rows` are present |
+| test_large_manifest_without_sidecar_is_unavailable | Drift safety | Above-cap manifest without sidecar hash/count | Content fingerprint status is `unavailable`; drift cannot be `compatible` from size/mtime alone |
 | test_drift_severity_closed_set | Drift classification | Compatible/warning/blocker examples | Closed severity enum only |
 | test_incompatible_counts_require_reconciliation | Mixed manifests | Broad and CAD snapshots with mismatch | Blocker unless reconciliation note exists |
 | test_public_report_has_no_raw_paths | Public artifact safety | Snapshot report | Source tokens/hashes only; no host paths |
@@ -125,7 +133,8 @@ emit public-safe manifest snapshot report using share-relative keys and hashes o
 
 - [ ] Snapshot IDs exist for configured manifests using share-relative keys, size, mtime, timestamp/status, schema marker, and optional bounded sidecar-provided SHA-256/row-count values where available.
 - [ ] Freshness checks use direct file metadata and bounded probes only; no recursive share crawl or full-manifest materialization.
-- [ ] Large manifests are not full-hashed or full-counted unless a bounded precomputed sidecar or explicit under-cap manifest is declared.
+- [ ] Large manifests are not full-hashed or full-counted unless a bounded precomputed sidecar or explicit under-cap manifest is declared through `max_header_bytes`, `max_under_cap_bytes`, and `max_under_cap_rows`.
+- [ ] Above-cap manifests without sidecar hash/count evidence classify content fingerprint as `unavailable` and cannot be marked `compatible` from size/mtime alone.
 - [ ] Drift is classified as compatible, warning, blocker, or unavailable.
 - [ ] Downstream waves can cite manifest snapshot IDs instead of raw host paths.
 - [ ] Incompatible manifest counts block downstream sampling unless a reconciliation note is present.
@@ -148,7 +157,7 @@ emit public-safe manifest snapshot report using share-relative keys and hashes o
 
 ## Risks and Open Questions
 
-- **Risk:** Full hashing/counting of large manifests would violate bounded-read policy; implementation must use direct stats, bounded headers/summaries, or precomputed sidecars.
+- **Risk:** Full hashing/counting of large manifests would violate bounded-read policy; implementation must use direct stats, bounded headers/summaries, named config caps, or precomputed sidecars.
 - **Risk:** Some source manifests may be unavailable on a machine; validator must distinguish unavailable from stale or incompatible.
 - **Open:** [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) must define which downstream waves require fresh snapshot IDs before sampling.
 

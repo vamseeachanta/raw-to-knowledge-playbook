@@ -117,8 +117,8 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | Create | scripts/validate_ace_wave0_control_plane.py | CI-checkable validator for required fields, routes, wave bindings, and sampling constraints |
 | Reference | scripts/validate_ace_public_artifacts.py | Public-output safety gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63); #51 will define the route/token input contract only |
 | Modify | .github/workflows/validate.yml | Run the new validator |
-| Deferred | docs/index.md | Do not link the case study until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
-| Deferred | mkdocs.yml | Do not publish the case study in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and the public-output canary passes |
+| Deferred | docs/index.md | Do not link the case study until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
+| Deferred | mkdocs.yml | Do not publish the case study in site navigation until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved, the local marker exists, and the public-output canary has a recorded passing result |
 | Modify | skills/public-private-routing/SKILL.md | Add ACE route-state expectations |
 | Modify | skills/content-triage-and-exclusion/SKILL.md | Add ACE exclusion-class expectations |
 | Modify | skills/format-coverage-ledger/SKILL.md | Add ACE ledger expectations |
@@ -153,6 +153,7 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 - [ ] Proposed scripts/tests use `ACE_SHARE_ROOT` plus share-relative paths.
 - [ ] Public artifact safety gate blocks raw source paths, private identifiers, personal identifiers, and proprietary snippets before docs publication.
 - [ ] #51 defines the public-output canary input contract consumed by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63), but it does not require `scripts/validate_ace_public_artifacts.py` to exist or pass.
+- [ ] Any `docs/index.md` or `mkdocs.yml` publication of the #51 case study requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result.
 - [ ] `% ingested success` numerator, denominator, threshold, and validation command are required for every downstream wave.
 - [ ] Exclusion classes are fail-closed for PII, client-confidential, third-party-confidential, binary noise, and low-value material.
 - [ ] `uv run python scripts/validate_ace_wave0_control_plane.py` passes.
