@@ -88,9 +88,9 @@ N/A - governance/planning issue; no runtime failure is alleged.
 | Coordination ledger | `docs/plans/ace-share-ingestion-wave-coordination.md` |
 | Workflow | `.github/workflows/validate.yml` |
 | Bound skill docs | `skills/format-coverage-ledger/SKILL.md`, `skills/public-private-routing/SKILL.md`, `skills/content-triage-and-exclusion/SKILL.md`, `skills/page-shape-contract/SKILL.md`, `skills/adversarial-verify-loop/SKILL.md` |
-| Review artifact - Claude | `scripts/review/results/2026-06-30-plan-65-claude.md` |
-| Review artifact - Codex | `scripts/review/results/2026-06-30-plan-65-codex.md` |
-| Review artifact - Gemini | `scripts/review/results/2026-06-30-plan-65-gemini.md` |
+| Review artifact - Claude r1 | `scripts/review/results/2026-06-30-plan-65-claude-r1.md` |
+| Review artifact - Codex r1 | `scripts/review/results/2026-06-30-plan-65-codex-r1.md` |
+| Review artifact - Gemini r1 | `scripts/review/results/2026-06-30-plan-65-gemini-r1.md` |
 
 ---
 
@@ -121,10 +121,12 @@ validate control_plane_verification_state enum:
   not_verified
   validator_passed
   independent_review_passed
-  rejected
-  this enum is not a #61 lifecycle state and is not the page-shape parse_status enum
+  verification_rejected
+  all values are disjoint from #61 lifecycle states and page-shape parse_status values
 validate required ledger field groups:
   source identity names are declared as private-only schema terms, never values
+  private source field terms are represented as array values under neutral keys, never as JSON object keys
+  JSON object keys may not equal private source field names or source-like raw digest field names
   public token field is declared as a downstream contract owned by #66/#63
   route, store, extraction, sensitivity, content class, verification, method binding,
   success metric, validator path, and implementation-readiness fields are required
@@ -135,7 +137,9 @@ validate split registry:
   #68 depends on #65/#66 for safe public-surface contexts
   #69 depends on #68 for config self-scan boundaries
   every split row is implementation_ready=false unless its own issue has status:plan-approved
-  and .planning/plan-approved/<issue>.md exists with the required approval-marker fields
+  and .planning/plan-approved/<issue>.md passes the same constraints as validate_approval_marker:
+    matching issue URL, exact plan path, 40-character reviewed commit,
+    non-empty review artifact paths, and verdict-bearing review artifacts
   stock CI validates only repo-local snapshot/marker evidence; live GitHub labels are pre-label evidence
 validate canonical wave registry compatibility:
   #51/#61/#62/#63 remain non-ingestion control/gate rows
@@ -151,6 +155,8 @@ validate #65 public-surface scan set:
   tests/test_validate_ace_wave0_schema_contract.py, .github/workflows/validate.yml,
   every changed bound skill doc, and every retained scripts/review/results/*plan-65*.md artifact
   reuse the parent public scanner where possible
+  do not use os.walk or Path.rglob in the new validator/test sources; use an explicit path list
+  or bounded non-recursive glob patterns so committed source files pass their own scan
   additionally reject JSON-style quoted assignments for private source fields and source-like raw digests
   construct negative fixtures at test runtime from token fragments or temp files, not as committed raw examples
 run parent coordination validator as a compatibility check
@@ -162,17 +168,17 @@ run parent coordination validator as a compatibility check
 
 | Action | Path | Reason |
 |---|---|---|
-| Create | `artifacts/ace-wave0-ledger-schema.json` | Canonical machine-readable schema, route enum, route-store matrix, verification-state enum, split registry, method bindings, and public-safety notes |
-| Create | `scripts/validate_ace_wave0_schema_contract.py` | Focused validator for the schema artifact, schema-local public-surface checks, and compatibility with the coordination ledger |
+| Create | `artifacts/ace-wave0-ledger-schema.json` | Canonical machine-readable schema, route enum, route-store matrix, verification-state enum, split registry, method bindings, scanner-safe private field term representation, and public-safety notes |
+| Create | `scripts/validate_ace_wave0_schema_contract.py` | Focused validator for the schema artifact, schema-local public-surface checks, parent approval-marker semantics, and compatibility with the coordination ledger |
 | Create | `tests/test_validate_ace_wave0_schema_contract.py` | TDD coverage for schema loading, closed enums, route-store matrix, split dependencies, implementation-readiness fail-closed behavior, public-scan coverage, JSON quoted-key raw digest rejection, and no physical/private paths |
 | Modify | `.github/workflows/validate.yml` | Run the new validator, unit test, and explicit [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) public-scan paths after approved implementation |
-| Modify | `docs/plans/README.md` | Mark [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) as planned/reviewed during status transitions without implying approval |
+| Modify | `docs/plans/README.md` | Mark [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) as planned/reviewed during status transitions and clarify [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) conceptual route ownership versus [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) machine encoding without implying approval |
 | Modify | `docs/plans/ace-share-ingestion-wave-coordination.md` | Point the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) split row at the plan/schema after review and later record implementation evidence |
-| Conditional modify | `skills/format-coverage-ledger/SKILL.md` | Link the schema contract if implementation exposes a reusable ledger-field guidance gap |
-| Conditional modify | `skills/public-private-routing/SKILL.md` | Link the route-store matrix if implementation exposes a reusable route-enum guidance gap |
-| Conditional modify | `skills/content-triage-and-exclusion/SKILL.md` | Link fail-closed sensitivity/content-class routing if implementation exposes a reusable triage gap |
-| Conditional modify | `skills/page-shape-contract/SKILL.md` | Link verification-state and provenance shape guidance if implementation exposes a reusable page-shape gap |
-| Conditional modify | `skills/adversarial-verify-loop/SKILL.md` | Link method-gap disposition guidance if implementation exposes a reusable review-loop gap |
+| Conditional scan-clean modify or follow-on | `skills/format-coverage-ledger/SKILL.md` | Link the schema contract only if implementation exposes a reusable ledger-field guidance gap and the changed skill doc passes the #65 public scan; otherwise file a follow-on issue |
+| Conditional scan-clean modify or follow-on | `skills/public-private-routing/SKILL.md` | Link the route-store matrix only if implementation exposes a reusable route-enum guidance gap and the changed skill doc passes the #65 public scan; otherwise file a follow-on issue |
+| Conditional follow-on preferred | `skills/content-triage-and-exclusion/SKILL.md` | Do not directly edit this skill in #65 if pre-existing policy prose blocks the public scan; file a follow-on or wait for [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68)/[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) scanner allow-context support |
+| Conditional scan-clean modify or follow-on | `skills/page-shape-contract/SKILL.md` | Link verification-state and provenance shape guidance only if implementation exposes a reusable page-shape gap and the changed skill doc passes the #65 public scan; otherwise file a follow-on issue |
+| Conditional scan-clean modify or follow-on | `skills/adversarial-verify-loop/SKILL.md` | Link method-gap disposition guidance only if implementation exposes a reusable review-loop gap and the changed skill doc passes the #65 public scan; otherwise file a follow-on issue |
 
 ---
 
@@ -184,16 +190,19 @@ run parent coordination validator as a compatibility check
 | `test_route_enum_is_closed` | Route targets cannot drift | Schema route target list | Exactly four route targets are accepted |
 | `test_logical_store_enum_is_closed` | Store targets cannot drift or imply paths | Schema logical store list | Exactly `public_llm_wiki_store`, `private_sidecar_store`, `metadata_ledger_store`, and `excluded_no_store` are accepted |
 | `test_route_to_store_matrix_is_logical_only` | #65 does not invent physical private storage or public/wiki paths | Schema route/store matrix plus negative fixtures | Each route maps to one logical store; physical paths, repo paths, host paths, wiki paths, and relative private paths are rejected |
-| `test_control_plane_verification_state_enum_is_closed` | Trust evidence vocabulary is precise and separate from page/lifecycle vocab | Schema verification-state list plus #61 lifecycle and page-shape parse_status samples | Exactly four control-plane verification states are accepted and lifecycle/parse_status values are not accepted in that field |
+| `test_control_plane_verification_state_enum_is_closed` | Trust evidence vocabulary is precise and separate from page/lifecycle vocab | Schema verification-state list plus #61 lifecycle and page-shape parse_status samples | Exactly `not_verified`, `validator_passed`, `independent_review_passed`, and `verification_rejected` are accepted; lifecycle/parse_status values are not accepted in that field |
 | `test_required_field_groups_are_present` | Ledger has the fields downstream split issues need | Schema required field groups | Identity, route, content, method, validation, success, readiness, and downstream contract field groups are present |
+| `test_private_source_terms_are_values_not_keys` | Scanner-safe schema representation cannot turn private field terms into JSON assignments | Schema JSON object keys and private source term arrays | Private source field terms may appear only as neutral-key array values, never as JSON object keys |
 | `test_private_field_names_are_schema_terms_only` | Public schema does not publish private values | Schema field declarations plus runtime-generated negative fixtures | Private provenance terms appear only as field names/classes; assigned values or maps fail without committing raw deny examples |
 | `test_json_source_hash_assignments_are_rejected` | JSON artifacts cannot bypass raw-digest denial | Runtime-generated JSON fixtures with quoted source-like hash keys | Quoted-key raw digest assignments fail validation |
 | `test_public_token_field_is_delegated` | #65 does not implement token generation | Schema downstream contract section | Public-token grammar and generation are marked as [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66)/[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63)-owned |
 | `test_split_registry_dependencies_are_parseable` | Split issue order is executable | Schema split registry | #66/#67 depend on #65, #68 depends on #65/#66, and #69 depends on #68 |
-| `test_split_registry_requires_approval_marker_contract` | No split issue can become ready without the repo approval contract | Schema or coordination fixture with ready=true, missing `status:plan-approved` snapshot, or missing/invalid marker fields | Validator fails |
+| `test_split_registry_requires_approval_marker_contract` | No split issue can become ready without the repo approval contract | Schema or coordination fixture with ready=true, missing `status:plan-approved` snapshot, or marker cases invalid under parent `validate_approval_marker` semantics | Validator fails |
 | `test_wave_registry_compatibility_matches_coordination` | #65 schema stays compatible with parent coordination | Schema plus `docs/plans/ace-share-ingestion-wave-coordination.md` | Wave classes and success fields match the canonical registry |
 | `test_public_scan_paths_cover_65_artifacts` | #65 safety scan cannot omit a public output | Validator path list plus artifact map | Plan, README, coordination, schema, validator, tests, workflow, changed skills, and retained plan-65 review artifacts are scanned when present |
 | `test_negative_fixtures_are_not_committed_as_raw_examples` | Public scanner fixtures do not self-block committed files | Test source text and runtime fixture builder | Deny strings are assembled at runtime or written to temp files; committed files do not contain raw private-looking assignments |
+| `test_validator_source_avoids_denied_recursive_traversal` | New validator/test sources do not need parent filename-only self-exemptions | Validator and unit test source text | New source files avoid `os.walk` and `Path.rglob`, or fail until an explicit tested self-exemption exists |
+| `test_changed_skill_docs_are_scan_clean_or_follow_on` | Conditional skill edits cannot introduce pre-existing scanner blockers into #65 | Changed bound skill doc list | Every changed skill doc passes the #65 public scan, or the method gap is routed to a follow-on issue |
 | `test_parent_validator_still_passes` | New validator does not regress parent validator | Existing parent validator command | Parent validator passes |
 | `test_ci_invokes_wave0_schema_validator_and_scan` | CI wiring exists after implementation | `.github/workflows/validate.yml` | Workflow invokes new validator, unit test, and explicit #65 public-scan paths |
 
@@ -202,17 +211,21 @@ run parent coordination validator as a compatibility check
 ## Acceptance Criteria
 
 - [ ] A standalone issue plan exists for [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65), passes adversarial plan review, and remains blocked from implementation until user approval.
-- [ ] `artifacts/ace-wave0-ledger-schema.json` defines schema metadata, required ledger field groups, closed route targets, closed logical target-store values, closed control-plane verification states, split issue dependencies, method issues, skill groups, and success-field vocabulary.
+- [ ] `artifacts/ace-wave0-ledger-schema.json` defines schema metadata, required ledger field groups, closed route targets, closed logical target-store values, closed control-plane verification states, split issue dependencies, method issues, skill groups, scanner-safe private field term representation, and success-field vocabulary.
+- [ ] The schema records route-target ownership metadata that says [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) owns the umbrella route contract and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) only machine-encodes it for downstream split issues.
 - [ ] Route targets are closed to `public_llm_wiki`, `private_sidecar`, `metadata_only`, and `excluded_no_ingest`.
 - [ ] Logical store names are closed to `public_llm_wiki_store`, `private_sidecar_store`, `metadata_ledger_store`, and `excluded_no_store`.
 - [ ] The route-store matrix uses logical store names only and rejects physical private-sidecar locations, public/wiki paths, host paths, repo paths, and relative private paths because [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) owns physical storage and publication destinations.
-- [ ] The `control_plane_verification_state` enum is closed to `not_verified`, `validator_passed`, `independent_review_passed`, and `rejected`, and is explicitly separate from [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) lifecycle states and `page-shape-contract` `parse_status` values.
+- [ ] The `control_plane_verification_state` enum is closed to `not_verified`, `validator_passed`, `independent_review_passed`, and `verification_rejected`, and its values are disjoint from [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) lifecycle states and `page-shape-contract` `parse_status` values.
+- [ ] Private source field terms and source-like raw digest terms are represented as neutral-key array values in the schema JSON, never as JSON object keys or assigned values.
 - [ ] The schema records downstream ownership boundaries: [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) for token fixture generation, [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) for sampling firewall behavior, [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) for generic public-surface self-scan, [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) for repo-local legal/security scan, [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) for durable private storage, and [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) for publication certification.
-- [ ] Split registry validation keeps [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) `implementation_ready=false` unless each issue has a recorded `status:plan-approved` snapshot and `.planning/plan-approved/<issue>.md` exists with the required approval-marker fields.
+- [ ] Split registry validation keeps [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) `implementation_ready=false` unless each issue has a recorded `status:plan-approved` snapshot and `.planning/plan-approved/<issue>.md` passes the same issue URL, exact plan path, 40-character reviewed commit, non-empty review artifact, and verdict-bearing artifact checks as `scripts/validate_ace_epic_wave_coordination.py::validate_approval_marker`.
 - [ ] The validator passes with `ACE_SHARE_ROOT` unset and does not read private source content.
 - [ ] Public surfaces do not publish private source content, raw host paths, exact private inventory counts, assigned private provenance values, source-like raw digests, client identifiers, or personal identifiers.
 - [ ] The schema validator scans the complete [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) public-surface set: this plan, plan README, coordination ledger, schema JSON, validator, unit tests, workflow, changed bound skill docs, and retained `scripts/review/results/*plan-65*.md` artifacts when they exist.
 - [ ] JSON quoted-key assignments for private source fields and source-like raw digests fail validation; negative fixtures are generated at runtime or kept in temp files so committed public artifacts do not self-block the scanner.
+- [ ] New validator/test source files avoid `os.walk` and `Path.rglob` unless an explicit tested self-exemption is added; the default path discovery is an explicit list plus bounded non-recursive glob patterns.
+- [ ] Conditional bound-skill updates are applied only if the changed skill doc passes the #65 public scan; otherwise [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) files or links a follow-on issue instead of carrying a known self-blocker.
 - [ ] If implementation reveals a reusable method gap, the bound skill docs are updated or a follow-on issue is filed before closeout.
 - [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python scripts/validate_ace_wave0_schema_contract.py` passes after implementation.
 - [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python -m unittest tests.test_validate_ace_wave0_schema_contract` passes after implementation.
@@ -226,11 +239,11 @@ run parent coordination validator as a compatibility check
 |---|---|---|
 | Parallel subagent - workflow/schema | MAJOR | r1 found the [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) validator-path collision, loose approval-evidence wording, unsourced enum boundaries, and incomplete CI/public-scan coverage. Current draft patches these issues; formal provider review still required. |
 | Parallel subagent - public/private | MAJOR | r1 found incomplete #65 public-surface scan coverage, JSON raw-digest scanner gaps, self-blocking negative-fixture risk, and under-specified path leakage tests. Current draft patches these issues; formal provider review still required. |
-| Claude | PENDING | Not yet reviewed |
-| Codex | PENDING | Not yet reviewed |
-| Gemini | PENDING | Not yet reviewed |
+| Claude r1 | MAJOR | Found `rejected` enum collision, route ownership drift, and self-scan feasibility gaps. Current draft patches these issues; re-review required. |
+| Codex r1 | MAJOR | Found `rejected` enum collision, JSON schema key self-blocker, underspecified approval-marker semantics, conditional skill scan blocker, and route ownership ambiguity. Current draft patches these issues; re-review required. |
+| Gemini r1 | UNAVAILABLE | Installed client returned unsupported-tier authentication error; no review performed. |
 
-**Overall result:** PENDING - draft only; preliminary parallel-agent review returned MAJOR and the draft has been patched. It is not ready for `status:plan-review` until formal provider review returns a no-MAJOR round.
+**Overall result:** NEEDS RE-REVIEW - draft only; formal r1 review returned MAJOR from both active providers. Current draft patches the r1 findings and must receive a fresh no-MAJOR provider round before `status:plan-review`.
 
 ---
 
@@ -239,6 +252,8 @@ run parent coordination validator as a compatibility check
 - **Risk:** The schema could grow back into the old [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) monolith. The implementation will reject token generation, sampling firewall rules, public-surface scanner behavior, legal/security scanning, physical storage, and publication certification as out of scope for [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65).
 - **Risk:** The schema could expose private provenance values while trying to document private field names. The implementation will treat private provenance names as schema terms only and will test that assigned values or maps fail.
 - **Risk:** Scanner negative fixtures could block their own public artifacts. The implementation will construct denied examples at runtime or in temp files and will require the #65 public-surface scan to pass on committed artifacts.
+- **Risk:** Scanner-safe schema representation could drift into natural JSON object-key shape. The implementation will test that private source terms remain array values under neutral keys and that private/source-like terms used as JSON keys fail validation.
+- **Risk:** The new validator could require parent scanner self-exemptions. The implementation will avoid denied recursive traversal APIs in new source files by default and will add explicit tests before introducing any self-exemption.
 - **Risk:** The schema-local JSON scanner could reveal a broader public-scan defect. The implementation will keep the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) fix scoped to #65 artifacts and will update [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68)/[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) or file a follow-on for any reusable scanner rule.
 - **Risk:** Parent and split registries could drift. The implementation will compare the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema against `docs/plans/ace-share-ingestion-wave-coordination.md`.
 - **Open:** Gemini review remains unavailable in current noninteractive runs. [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) cannot move to `status:plan-review` until fresh review evidence is available under the workspace quorum policy.
