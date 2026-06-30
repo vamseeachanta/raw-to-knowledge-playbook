@@ -1,6 +1,6 @@
 # Plan for #65: ACE Wave 0 Ledger Schema and Route-Store Matrix
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T2
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65
@@ -51,7 +51,7 @@
 **Issue status** (verified 2026-06-30):
 
 ```text
-#65 OPEN ACE wave 0 split: ledger schema and route-store matrix labels=strengthening,lane:claude,priority:high
+#65 OPEN ACE wave 0 split: ledger schema and route-store matrix labels=strengthening,status:plan-approved,lane:claude,priority:high
 ```
 
 **File existence** (verified 2026-06-30):
@@ -260,7 +260,7 @@ run parent coordination validator as a compatibility check
 | Codex r3 | APPROVE | Verified current head `937f9455c211a2329893556247645660392e9208`, validators/tests/scans, live issue assumptions, and no findings. |
 | Gemini r3 | UNAVAILABLE | Installed client returned unsupported-tier authentication error; no review performed. |
 
-**Overall result:** PLAN-REVIEW READY - r3 active-provider review returned no MAJOR (Claude MINOR, Codex APPROVE) on `937f9455c211a2329893556247645660392e9208`; Gemini was unavailable and is recorded explicitly. Implementation remains blocked until user approval moves the issue to `status:plan-approved`.
+**Overall result:** PLAN-APPROVED - r3 active-provider review returned no MAJOR (Claude MINOR, Codex APPROVE) on `937f9455c211a2329893556247645660392e9208`; Gemini was unavailable and is recorded explicitly. User approval was recorded on 2026-06-30 with `.planning/plan-approved/65.md`, authorizing implementation for the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) scope only.
 
 ---
 
