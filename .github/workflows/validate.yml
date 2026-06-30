@@ -28,8 +28,19 @@ jobs:
             --scan-public-path skills/format-coverage-ledger/SKILL.md \
             --scan-public-path .planning/plan-approved/50.md
 
+      - name: Validate ACE wave 0 schema contract
+        run: |
+          uv run python scripts/validate_ace_wave0_schema_contract.py
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path artifacts/ace-wave0-ledger-schema.json \
+            --scan-public-path scripts/validate_ace_wave0_schema_contract.py \
+            --scan-public-path tests/test_validate_ace_wave0_schema_contract.py \
+            --scan-public-path .planning/plan-approved/65.md
+
       - name: Validator unit tests
-        run: uv run python -m unittest tests.test_validate_ace_epic_wave_coordination
+        run: |
+          uv run python -m unittest tests.test_validate_ace_epic_wave_coordination
+          uv run python -m unittest tests.test_validate_ace_wave0_schema_contract
 
       - name: Runnable example — verify the happy path promotes
         working-directory: examples/minimal-ingest

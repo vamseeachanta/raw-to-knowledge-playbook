@@ -38,7 +38,7 @@ The split registry below records the post-r26 decomposition of [#51](https://git
 
 | Issue | Scope | Lane | Plan status | Implementation ready | Dependency |
 |---|---|---|---|---|---|
-| [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) | Ledger schema and route-store matrix | lane:claude | plan-approved: `docs/plans/2026-06-30-issue-65-ace-wave-0-ledger-schema-route-store-matrix.md`; approval marker `.planning/plan-approved/65.md` | true | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) umbrella |
+| [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) | Ledger schema and route-store matrix | lane:claude | implemented: schema `artifacts/ace-wave0-ledger-schema.json`, validator `scripts/validate_ace_wave0_schema_contract.py`; code/artifact review pending | true | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) umbrella |
 | [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | Public-token fixtures and private-field placeholders | lane:codex | plan-required | false | [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema |
 | [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) | Bounded sampling firewall | lane:codex | plan-required | false | [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema |
 | [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | Public-surface self-scan for control-plane artifacts | lane:claude | plan-required | false | [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema and [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) placeholders |

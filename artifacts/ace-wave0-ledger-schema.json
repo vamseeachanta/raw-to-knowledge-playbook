@@ -1,0 +1,328 @@
+{
+  "schema_id": "ace-wave0-ledger-schema",
+  "schema_version": "1.0.0",
+  "owner_issue": 65,
+  "status": "plan-approved",
+  "route_contract_owner_issue": 51,
+  "public_safety_notes": [
+    "This artifact defines public control-plane vocabulary only.",
+    "It does not contain private source content, physical storage paths, raw inventory counts, or publication destinations.",
+    "Private provenance field names are schema terms only and remain values under neutral keys."
+  ],
+  "route_targets": [
+    "public_llm_wiki",
+    "private_sidecar",
+    "metadata_only",
+    "excluded_no_ingest"
+  ],
+  "logical_target_stores": [
+    "public_llm_wiki_store",
+    "private_sidecar_store",
+    "metadata_ledger_store",
+    "excluded_no_store"
+  ],
+  "route_store_matrix": {
+    "public_llm_wiki": "public_llm_wiki_store",
+    "private_sidecar": "private_sidecar_store",
+    "metadata_only": "metadata_ledger_store",
+    "excluded_no_ingest": "excluded_no_store"
+  },
+  "control_plane_verification_states": [
+    "not_verified",
+    "validator_passed",
+    "independent_review_passed",
+    "verification_rejected"
+  ],
+  "external_status_vocabularies": {
+    "issue_61_lifecycle_states": {
+      "owner_issue": 61,
+      "source": "docs/plans/README.md ACE Portfolio Gates",
+      "values": [
+        "candidate",
+        "provisional",
+        "verified",
+        "rejected",
+        "superseded",
+        "stale_requires_rescreen"
+      ]
+    },
+    "page_shape_parse_status_values": {
+      "owner_skill": "page-shape-contract",
+      "source": "skills/page-shape-contract/SKILL.md",
+      "values": [
+        "not_parsed",
+        "parse_succeeded",
+        "parse_failed",
+        "parse_needs_review"
+      ]
+    }
+  },
+  "required_field_groups": [
+    "identity",
+    "routing",
+    "content",
+    "method",
+    "validation",
+    "success",
+    "readiness",
+    "downstream_contracts"
+  ],
+  "ledger_field_groups": {
+    "identity": [
+      "public_source_token",
+      "private_source_terms_reference"
+    ],
+    "routing": [
+      "route_target",
+      "logical_target_store"
+    ],
+    "content": [
+      "content_class",
+      "sensitivity_class",
+      "extraction_level"
+    ],
+    "method": [
+      "method_issue_bindings",
+      "bound_skill_groups"
+    ],
+    "validation": [
+      "control_plane_verification_state",
+      "validator_path",
+      "review_artifacts"
+    ],
+    "success": [
+      "success_metric_applicability",
+      "expected_yield",
+      "measured_success_numerator",
+      "measured_success_denominator",
+      "successful_routed_items",
+      "eligible_candidate_items"
+    ],
+    "readiness": [
+      "status_snapshot",
+      "approval_marker",
+      "implementation_ready"
+    ],
+    "downstream_contracts": [
+      "public_token",
+      "sampling_firewall",
+      "public_surface_scan",
+      "legal_security_scan",
+      "durable_private_storage",
+      "publication_certification"
+    ]
+  },
+  "private_source_field_terms": [
+    "source_id",
+    "source_sha256",
+    "private_lookup_key",
+    "private_lookup_map",
+    "share_relative_path_private_only"
+  ],
+  "source_like_raw_digest_terms": [
+    "source_hash",
+    "provenance_pointer"
+  ],
+  "downstream_contracts": {
+    "public_token": {
+      "owner_issues": [
+        66,
+        63
+      ],
+      "field_name": "public_source_token",
+      "generation_status": "delegated_not_implemented_in_65"
+    },
+    "sampling_firewall": {
+      "owner_issue": 67,
+      "status": "delegated_not_implemented_in_65"
+    },
+    "public_surface_scan": {
+      "owner_issue": 68,
+      "status": "schema_local_scan_only_until_generalized"
+    },
+    "legal_security_scan": {
+      "owner_issue": 69,
+      "status": "delegated_not_implemented_in_65"
+    },
+    "durable_private_storage": {
+      "owner_issue": 61,
+      "status": "logical_store_names_only_in_65"
+    },
+    "publication_certification": {
+      "owner_issue": 63,
+      "status": "delegated_not_implemented_in_65"
+    }
+  },
+  "method_issue_bindings": [
+    1,
+    12
+  ],
+  "bound_skill_groups": [
+    "format-coverage-ledger",
+    "public-private-routing",
+    "content-triage-and-exclusion",
+    "page-shape-contract",
+    "adversarial-verify-loop"
+  ],
+  "success_field_vocabulary": {
+    "control_plane": {
+      "success_metric_applicability": "not_applicable_control_plane",
+      "success_numerator_field": "measured_success_numerator",
+      "success_denominator_field": "measured_success_denominator"
+    },
+    "ingestion_wave": {
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    }
+  },
+  "canonical_wave_registry": [
+    {
+      "issue": 51,
+      "wave_class": "control_plane",
+      "requires_manifest_snapshot_id": false,
+      "success_numerator_field": "measured_success_numerator",
+      "success_denominator_field": "measured_success_denominator"
+    },
+    {
+      "issue": 52,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 53,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 54,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 55,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 56,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 57,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 58,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 59,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 60,
+      "wave_class": "ingestion_wave",
+      "requires_manifest_snapshot_id": true,
+      "success_numerator_field": "successful_routed_items",
+      "success_denominator_field": "eligible_candidate_items"
+    },
+    {
+      "issue": 61,
+      "wave_class": "storage_lifecycle_gate",
+      "requires_manifest_snapshot_id": false,
+      "success_numerator_field": "measured_success_numerator",
+      "success_denominator_field": "measured_success_denominator"
+    },
+    {
+      "issue": 62,
+      "wave_class": "manifest_freshness_gate",
+      "requires_manifest_snapshot_id": false,
+      "success_numerator_field": "measured_success_numerator",
+      "success_denominator_field": "measured_success_denominator"
+    },
+    {
+      "issue": 63,
+      "wave_class": "public_canary_gate",
+      "requires_manifest_snapshot_id": false,
+      "success_numerator_field": "measured_success_numerator",
+      "success_denominator_field": "measured_success_denominator"
+    }
+  ],
+  "wave0_split_registry": [
+    {
+      "issue": 65,
+      "scope": "ledger_schema_route_store_matrix",
+      "lane": "lane:claude",
+      "plan_path": "docs/plans/2026-06-30-issue-65-ace-wave-0-ledger-schema-route-store-matrix.md",
+      "status_snapshot": "status:plan-approved",
+      "implementation_ready": true,
+      "depends_on": []
+    },
+    {
+      "issue": 66,
+      "scope": "public_token_fixtures_private_field_placeholders",
+      "lane": "lane:codex",
+      "plan_path": "",
+      "status_snapshot": "plan-required",
+      "implementation_ready": false,
+      "depends_on": [
+        65
+      ]
+    },
+    {
+      "issue": 67,
+      "scope": "bounded_sampling_firewall",
+      "lane": "lane:codex",
+      "plan_path": "",
+      "status_snapshot": "plan-required",
+      "implementation_ready": false,
+      "depends_on": [
+        65
+      ]
+    },
+    {
+      "issue": 68,
+      "scope": "public_surface_self_scan",
+      "lane": "lane:claude",
+      "plan_path": "",
+      "status_snapshot": "plan-required",
+      "implementation_ready": false,
+      "depends_on": [
+        65,
+        66
+      ]
+    },
+    {
+      "issue": 69,
+      "scope": "repo_local_legal_security_scan",
+      "lane": "lane:claude",
+      "plan_path": "",
+      "status_snapshot": "plan-required",
+      "implementation_ready": false,
+      "depends_on": [
+        68
+      ]
+    }
+  ],
+  "method_gap_disposition": "none_discovered"
+}
