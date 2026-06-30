@@ -205,10 +205,15 @@ def _validate_field_groups(schema: dict, errors: list[str]) -> None:
 def _validate_private_terms(schema: dict, errors: list[str]) -> None:
     if set(schema.get("private_source_field_terms", [])) != PRIVATE_SOURCE_TERMS:
         errors.append("private source field terms must match the closed schema-term set")
+    if set(schema.get("source_like_raw_digest_terms", [])) != SOURCE_LIKE_DIGEST_TERMS:
+        errors.append("source-like raw digest terms must match the closed schema-term set")
     keys = _collect_keys(schema)
     for term in PRIVATE_SOURCE_TERMS:
         if term in keys:
             errors.append(f"private source field term must be an array value, not a JSON key: {term}")
+    for term in SOURCE_LIKE_DIGEST_TERMS:
+        if term in keys:
+            errors.append(f"source-like raw digest term must be an array value, not a JSON key: {term}")
     for key, value in _walk_items(schema):
         if key in SOURCE_LIKE_DIGEST_TERMS and isinstance(value, str) and HEX_DIGEST.fullmatch(value):
             errors.append(f"source-like raw digest assignment is not allowed for key: {key}")

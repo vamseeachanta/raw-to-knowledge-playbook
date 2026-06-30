@@ -36,6 +36,10 @@ EXPECTED_FIELD_GROUPS = {
     "readiness",
     "downstream_contracts",
 }
+EXPECTED_SOURCE_DIGEST_TERMS = {
+    "source_" + "hash",
+    "provenance_" + "pointer",
+}
 EXPECTED_SPLIT_DEPENDENCIES = {
     65: [],
     66: [65],
@@ -187,9 +191,16 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         hash_key = source_term("source", "hash")
         digest = "0123456789abcdef" * 4
 
+        self.assertEqual(EXPECTED_SOURCE_DIGEST_TERMS, set(schema["source_like_raw_digest_terms"]))
+
         mutated = copy.deepcopy(schema)
         mutated["unsafe_digest_fixture"] = {hash_key: digest}
         self.assertIn("raw digest", "\n".join(validator.validate_schema(mutated)))
+
+        for term in EXPECTED_SOURCE_DIGEST_TERMS:
+            key_mutation = copy.deepcopy(schema)
+            key_mutation["unsafe_digest_key_fixture"] = {term: "placeholder"}
+            self.assertIn("raw digest", "\n".join(validator.validate_schema(key_mutation)))
 
     def test_public_token_field_is_delegated(self):
         schema = load_schema()
