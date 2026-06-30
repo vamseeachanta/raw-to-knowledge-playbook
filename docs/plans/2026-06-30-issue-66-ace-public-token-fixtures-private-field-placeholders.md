@@ -7,7 +7,7 @@
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:codex
-> **Review artifacts:** scripts/review/results/2026-06-30-plan-66-claude.md | scripts/review/results/2026-06-30-plan-66-codex.md | scripts/review/results/2026-06-30-plan-66-gemini.md
+> **Review artifacts:** scripts/review/results/2026-06-30-plan-66-claude.md | scripts/review/results/2026-06-30-plan-66-codex.md | scripts/review/results/2026-06-30-plan-66-gemini.md | scripts/review/results/2026-06-30-plan-66-disagreement.md
 
 ---
 
@@ -29,6 +29,7 @@
 - [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) will use #66's placeholder grammar as an input to the generic public-surface self-scan contract.
 - [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) will remain the owner of durable token lookup persistence and private storage behavior.
 - [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) co-owns the broader public-token policy and will remain the owner of public-output certification and production/publication canary behavior.
+- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63)'s future `config/ace-public-output-contract.json` will be authoritative for production/publication token policy. #66's fixture contract will be subordinate and must reconcile with it when that #63 config exists.
 - [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) will remain the owner of the repo-local legal/security scan command. #66 closeout will record `NO_LEGAL_SCAN_SCRIPT` and remain blocked from full close if that command is still absent.
 
 ### Source inventory
@@ -95,6 +96,10 @@ N/A - planning/governance issue; no runtime failure is alleged.
 | Review artifact - Codex r1 | `scripts/review/results/2026-06-30-plan-66-codex.md` |
 | Review artifact - Gemini r1 | `scripts/review/results/2026-06-30-plan-66-gemini.md` |
 | Review artifact - disagreement r1 | `scripts/review/results/2026-06-30-plan-66-disagreement.md` |
+| Review artifact - Claude r2 | `scripts/review/results/2026-06-30-plan-66-claude-r2.md` |
+| Review artifact - Codex r2 | `scripts/review/results/2026-06-30-plan-66-codex-r2.md` |
+| Review artifact - Gemini r2 | `scripts/review/results/2026-06-30-plan-66-gemini-r2.md` |
+| Review artifact - disagreement r2 | `scripts/review/results/2026-06-30-plan-66-disagreement-r2.md` |
 
 ---
 
@@ -113,6 +118,9 @@ load config/ace-public-token-fixture-contract.json with Python stdlib json
 validate fixture contract metadata:
   fixture_contract_owner_issue is #66
   public_token_policy_owner_issues are imported from #65 as #66 and #63
+  if config/ace-public-output-contract.json exists, fixture token prefix and
+  public/private field policy must match that #63-owned contract
+  if #63 config does not exist yet, #66 records provisional_fixture_contract=true
   mode is fixture_only
   schema_dependency points to #65 schema artifact
   durable lookup persistence owner remains #61
@@ -129,13 +137,20 @@ validate generation request grammar:
   committed good fixtures contain a generation request marker
   committed good fixtures do not contain hand-authored concrete public token values
   marker key is public_source_token_request
-  marker contains fixture-local ids only
+  marker value is an object with exactly:
+    fixture_set_id
+    fixture_row_id
+    count
+  fixture_set_id is a closed enum, initially wave0_public_token_good
+  fixture_row_id matches fixture_row_<three digits>
+  count is an integer from 1 through 100
+  marker contains fixture-local ids only in those exact keys
   committed request markers contain no source identifiers, path fragments, hashes,
   private keys, lookup aliases, or deterministic seeds
   generator accepts fixture count and fixture set id only
   tests may inject a runtime random source to force duplicates and retry behavior
   generator rejects source, path, name, hash, private key, lookup, or raw provenance inputs
-  concrete runtime token grammar is the existing public token prefix plus exactly
+  concrete runtime token grammar is literal prefix pst_ plus exactly
   32 lowercase hexadecimal characters
   the validator and parent scanner agree this is the concrete-token assignment shape
   committed files may name the grammar but must never contain a concrete token
@@ -147,9 +162,11 @@ validate private-field placeholder grammar:
   placeholder values are a closed set
   placeholders are accepted only inside parsed synthetic good fixtures
   placeholder fields are mapped to #65 private source field terms
-  every committed artifact represents private source field terms only as array/list
-  values under neutral keys, never as JSON object keys, map keys, or the left side
-  of a colon/equal assignment
+  every committed machine-readable contract/config/fixture artifact represents
+  private source field terms only as array/list values under neutral keys, never
+  as JSON object keys, map keys, or the left side of a colon/equal assignment
+  committed prose may name private source field terms only as policy/schema terms,
+  never as assigned values or lookup maps
   placeholders are never treated as durable private values
   placeholder maps keyed by private source field terms are always rejected
   grammar prose is distinguished from parsed fixture content by parser context,
@@ -172,6 +189,9 @@ validate public scan safety:
   plan, contract, scripts, tests, request fixtures, workflow, README, coordination,
   and retained plan review artifacts pass the current parent public-surface scan
   raw negative examples are built at runtime or written to temp files
+  self-scanned Python modules and tests construct forbidden private-source terms
+  and concrete token patterns from string fragments, following the existing
+  validators' source-safe idiom
   retained provider stderr/error sidecars are either normalized into public-safe
   review artifacts and scanned, or deleted as transient non-evidence before closeout
   scan path discovery uses explicit path lists and bounded local globs only
@@ -182,8 +202,11 @@ validate #65 schema cross-link:
   update artifacts/ace-wave0-ledger-schema.json wave0 split row for #66 during
   approved implementation
   set the #66 plan path to this plan
-  set status snapshot and implementation readiness using the existing approval
-  marker semantics; do not mark implementation_ready true before plan approval
+  keep status_snapshot as plan-required and implementation_ready false until the
+  plan approval marker exists
+  after approval, set status snapshot and implementation readiness using the
+  existing approval marker semantics; do not mark implementation_ready true
+  before plan approval
 
 validate legal/security closeout:
   if scripts/legal/legal-sanity-scan.sh exists, run it before closeout
@@ -224,17 +247,22 @@ verify()
 | `test_fixture_contract_is_json_and_owned_by_66` | Contract is machine-readable and issue-owned | `config/ace-public-token-fixture-contract.json` | JSON loads with owner, mode, schema dependency, and downstream boundaries |
 | `test_contract_imports_65_public_token_field` | #66 consumes #65 field vocabulary | #65 schema plus #66 contract | Public token field name matches #65; no duplicate field vocabulary is invented |
 | `test_contract_imports_65_public_token_policy_owners` | #66 fixture ownership does not erase #63 co-ownership | #65 schema plus #66 contract | Fixture contract owner is #66 and public token policy owners remain #66 plus #63 |
+| `test_fixture_contract_reconciles_with_63_when_present` | Fixture grammar cannot drift from #63 production policy | #66 contract plus optional `config/ace-public-output-contract.json` | If #63 config exists, token prefix and field policy match it; otherwise #66 marks itself provisional fixture-only |
 | `test_contract_imports_65_private_source_terms` | Placeholder fields stay aligned with #65 | #65 schema plus #66 contract | Private source term set matches #65 exactly |
 | `test_contract_does_not_redefine_route_or_store_enums` | #66 cannot drift route/store semantics | #66 contract | No new route target or logical store values are introduced |
+| `test_generation_request_marker_shape_is_closed` | Good fixture request marker is machine-checkable | Request marker variants | Exactly `fixture_set_id`, `fixture_row_id`, and `count` are accepted |
+| `test_generation_request_marker_values_are_closed` | Fixture-local IDs cannot hide private/source-like values | Runtime-generated request variants | Closed fixture set, row-id pattern, count range, and no source/path/hash-like values are enforced |
 | `test_good_fixture_uses_generation_request_marker` | Committed good fixtures are requests, not concrete tokens | Synthetic request fixture | `public_source_token_request` marker validates; no literal token value is hand-authored |
 | `test_generator_rejects_source_path_name_hash_key_inputs` | Token generation is not source-derived | Runtime-generated unsafe request variants | Every forbidden input class fails validation |
 | `test_generator_rejects_fixed_seed_inputs` | Fixture requests cannot make deterministic public token allocation an input contract | Runtime-generated fixed-seed request variant | Seed-bearing request fails validation |
-| `test_concrete_token_grammar_matches_parent_scanner` | New validator and parent scanner agree on concrete token assignment shape | Runtime-generated concrete token assignment | Assignment is rejected by both scanner paths |
+| `test_concrete_token_assignment_matches_parent_scanner` | New validator and parent scanner agree on concrete token assignment shape | Runtime-generated concrete token assignment | Assignment form is rejected by both scanner paths |
+| `test_bare_concrete_token_literals_are_66_validator_only` | #66 validator is stronger than parent scanner for non-assignment literals | Runtime-generated bare token and expected-output row variants | #66 validator rejects them without claiming parent-scanner parity |
 | `test_generator_emits_opaque_fixture_tokens` | Emitted fixture tokens are opaque and fixture-only | Valid synthetic generation request | Tokens validate against fixture grammar and carry no source-like payload |
 | `test_duplicate_tokens_retry_with_injected_random_source` | Duplicate handling is testable without source-derived seeds | Monkeypatched runtime random source | Duplicate candidate is retried and final output remains unique |
 | `test_generated_tokens_are_not_durable_lookup_entries` | Fixture tokens do not create persistence | Generated fixture rows | No private token lookup file, map, or durable store output is produced |
 | `test_private_placeholder_values_are_closed` | Placeholder grammar cannot drift | Contract placeholder set plus bad value variant | Closed values pass; invented placeholder values fail |
 | `test_private_source_terms_are_list_values_only` | Contract cannot self-block under parent scanner | Contract JSON shape and runtime negative fixture | Private source terms appear only as neutral-key list values in committed artifacts; key/assignment form fails |
+| `test_private_source_term_prose_policy_is_allowed_without_assignment` | Policy prose remains valid under the current parent scanner | Prose-only fixture naming schema terms | Prose naming terms passes; assigned values and maps fail |
 | `test_placeholders_are_allowed_only_in_parsed_good_fixtures` | Private-field placeholders are context-bound | Parsed good fixture and public artifact fixture | Good fixture passes; public artifact carrying placeholder-like fields fails |
 | `test_grammar_prose_is_not_fixture_content` | Parser context, not substring allowlisting, separates documentation from fixture rows | Contract prose and parsed fixture rows | Schema-term prose passes; assigned public/private fixture content fails |
 | `test_bad_fixture_rejects_hand_authored_concrete_public_token` | Good fixtures cannot smuggle concrete tokens | Runtime-generated bad fixture | Validator fails concrete token assignment |
@@ -251,6 +279,7 @@ verify()
 | `test_public_scan_paths_cover_66_artifacts` | #66 artifacts stay public-scan clean | Planned artifact path list | Plan, contract, scripts, tests, safe fixtures, workflow, README, coordination, and retained plan review artifacts pass parent scanner when present |
 | `test_review_error_sidecars_are_not_retained_unscanned` | Provider stderr cannot become silent public residue | Review artifact directory with `.err` sidecar | Sidecar is normalized and scanned or absent before closeout |
 | `test_legal_scan_absence_blocks_full_closeout` | Missing #69 legal gate is not hidden | Repo without `scripts/legal/legal-sanity-scan.sh` | Closeout records `NO_LEGAL_SCAN_SCRIPT` and does not claim full closure |
+| `test_self_scanned_source_uses_fragmented_private_terms` | Validator/test source files do not self-block | New Python source text | Private/source-token deny constants are constructed from fragments, not direct assignment-shaped literals |
 | `test_ci_invokes_public_token_fixture_validator` | CI gate runs #66 checks | `.github/workflows/validate.yml` | Workflow invokes #66 validator and unit test |
 
 ---
@@ -261,15 +290,18 @@ verify()
 - [ ] `config/ace-public-token-fixture-contract.json` will define fixture-only mode, schema dependency, public-token fixture grammar, private-field placeholder grammar, and downstream ownership boundaries.
 - [ ] The fixture contract will import the public token field name and private source field terms from `artifacts/ace-wave0-ledger-schema.json` and will not redefine route or logical store enums.
 - [ ] The fixture contract will record #66 as fixture-contract owner and preserve #65's #66/#63 public-token policy ownership.
+- [ ] If `config/ace-public-output-contract.json` exists, the #66 fixture contract will match its token prefix and public/private field policy; if it does not exist, #66 will mark the fixture contract provisional and subordinate to #63.
 - [ ] The public token generator will take no source, path, name, hash, private key, lookup, or raw provenance inputs.
-- [ ] Generation request markers will use `public_source_token_request`, fixture-local IDs only, and no deterministic seed inputs in committed request files.
+- [ ] Generation request markers will use `public_source_token_request` with exactly `fixture_set_id`, `fixture_row_id`, and `count`; fixture IDs are closed, row IDs match `fixture_row_<three digits>`, count is 1 through 100, and no deterministic seed inputs appear in committed request files.
 - [ ] Committed good fixtures will use a generation request marker rather than hand-authored concrete public token values.
-- [ ] Concrete runtime fixture token grammar will be the existing public token prefix plus exactly 32 lowercase hexadecimal characters, matching the current parent scanner's concrete-token assignment class.
+- [ ] Concrete runtime fixture token grammar will be literal prefix `pst_` plus exactly 32 lowercase hexadecimal characters, matching the current parent scanner's concrete-token assignment class for assignment-shaped public token values.
 - [ ] Committed artifacts may name the token grammar but will not contain concrete token literals as field assignments or expected-output rows.
+- [ ] Assignment-shaped concrete token values will be rejected by both the parent scanner and #66 validator; bare concrete token literals and expected-output row literals will be rejected by the #66 validator without claiming parent-scanner parity.
 - [ ] Emitted fixture tokens will be opaque, fixture-only, and non-decodable into source-like parts.
 - [ ] Duplicate token handling will be tested through an injected runtime random source, not by accepting source-derived or fixed-seed fixture inputs.
 - [ ] Private-only ledger fields will use closed placeholder values only inside parsed synthetic good fixtures.
-- [ ] Private source field terms will appear only as array/list values under neutral keys in committed artifacts, never as JSON object keys, map keys, or the left side of colon/equal assignments.
+- [ ] Private source field terms will appear only as array/list values under neutral keys in committed machine-readable contract/config/fixture artifacts, never as JSON object keys, map keys, or the left side of colon/equal assignments.
+- [ ] Committed prose may name private source field terms only as policy/schema terms, never as assigned values or lookup maps.
 - [ ] Placeholder maps keyed by private source field terms will be rejected.
 - [ ] Grammar prose will be distinguished from parsed fixture/control-plane rows by parser context, not raw substring allowlisting.
 - [ ] Bad fixtures will prove source-derived token attempts, path-derived token attempts, name-derived token attempts, hash-derived token attempts, private lookup derived token attempts, and private-field value leaks fail validation.
@@ -282,9 +314,10 @@ verify()
 - [ ] Retained provider stderr/error sidecars will be normalized into public-safe review artifacts and scanned, or removed as transient non-evidence before closeout.
 - [ ] If `scripts/legal/legal-sanity-scan.sh` remains absent, #66 closeout will record `NO_LEGAL_SCAN_SCRIPT` and will not claim full closure until #69 supplies the gate or the user records an explicit deferral.
 - [ ] Negative fixtures will be runtime-generated or temp-file scoped so committed public artifacts and tests do not self-block the current parent scanner.
+- [ ] Self-scanned Python modules and tests will construct forbidden private-source terms and token patterns from string fragments, matching the existing validators' source-safe idiom.
 - [ ] Any reusable method gap exposed by implementation will be promoted to the bound skills or filed as a follow-on issue before closeout.
-- [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python scripts/validate_ace_public_token_fixtures.py` will pass after implementation.
-- [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python -m unittest tests.test_validate_ace_public_token_fixtures` will pass after implementation.
+- [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python scripts/validate_ace_public_token_fixtures.py` will pass after implementation; CI will use the repo's existing plain `uv run python` invocation style.
+- [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python -m unittest tests.test_validate_ace_public_token_fixtures` will pass after implementation; CI will use the repo's existing plain `uv run python` invocation style.
 - [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python scripts/validate_ace_wave0_schema_contract.py`, `UV_CACHE_DIR=.claude/state/uv-cache uv run python scripts/validate_ace_epic_wave_coordination.py`, and `UV_CACHE_DIR=.claude/state/uv-cache uv run skills/validate_skill.py` will still pass after implementation.
 
 ---
@@ -296,6 +329,9 @@ verify()
 | Claude r1 | MAJOR | Private-source term mapping could self-block under the parent line scanner; token grammar was unpinned; #63 co-ownership and Gemini quorum wording needed clarification. Current draft patches these findings; re-review required. |
 | Codex r1 | MAJOR | #65 schema cross-link was undecided; review artifact names did not match generated artifacts; provider error sidecars and legal-scan deferral were underspecified. Current draft patches these findings; re-review required. |
 | Gemini r1 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
+| Claude r2 | MAJOR | Required string-fragment construction for self-scanned validator constants, literal `pst_` prefix, scanner parity wording, CI command wording, header/artifact consistency, and #65 readiness timing. Current draft patches these findings; re-review required. |
+| Codex r2 | MAJOR | Required closed request-marker grammar, scoped machine-readable private-term placement rule, and #63/#66 contract precedence. Current draft patches these findings; re-review required. |
+| Gemini r2 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
 
 **Overall result:** MAJOR - draft only; not ready for `status:plan-review` until a fresh active-provider re-review returns no unresolved MAJOR findings. Gemini remains unavailable and must be recorded as unavailable unless restored before re-review.
 
@@ -308,6 +344,8 @@ verify()
 - **Risk:** Private-field placeholders could normalize unsafe public exposure. Implementation will allow placeholders only inside parsed synthetic good fixtures and will keep public artifact exposure blocked.
 - **Risk:** A scanner-safe JSON contract could become self-blocking if private source terms are used as object keys. Implementation will represent private source terms only as list values under neutral keys.
 - **Risk:** #66 could drift into durable token persistence or publication certification. The contract will keep those boundaries assigned to #61 and #63.
+- **Risk:** #66 fixture grammar could drift from #63 public-output policy. #66 will reconcile with `config/ace-public-output-contract.json` when it exists and remain explicitly provisional before then.
+- **Risk:** Source-safe validator constants are easy to regress. The plan requires fragmented string construction and self-scan tests for new source files.
 - **Risk:** Gemini may remain unavailable. Any transition to `status:plan-review` will need fresh no-MAJOR active-provider evidence plus explicit disclosure of the Gemini unavailable artifact.
 
 ---
