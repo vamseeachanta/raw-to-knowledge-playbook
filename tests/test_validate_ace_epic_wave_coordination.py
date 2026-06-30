@@ -73,6 +73,13 @@ DIFFICULTY_RANK = {
 }
 
 CONTROL_GATE_ISSUES = {51, 61, 62, 63}
+WAVE_CLASSES = {
+    51: "control_plane",
+    **{issue: "ingestion_wave" for issue in range(52, 61)},
+    61: "storage_lifecycle_gate",
+    62: "manifest_freshness_gate",
+    63: "public_canary_gate",
+}
 
 
 def metric_cell(issue: int) -> str:
@@ -121,6 +128,16 @@ def row(issue: int) -> str:
     )
 
 
+def structural_row(issue: int) -> str:
+    requires_snapshot = "true" if 52 <= issue <= 60 else "false"
+    if issue in CONTROL_GATE_ISSUES:
+        denominator = "measured_success_denominator"
+    else:
+        denominator = "eligible_candidate_items"
+    numerator = "measured_success_numerator" if issue in CONTROL_GATE_ISSUES else "successful_routed_items"
+    return f"| #{issue} | {WAVE_CLASSES[issue]} | {requires_snapshot} | {numerator} | {denominator} |"
+
+
 GOOD_DOC = "\n".join(
     [
         "# ACE Share Ingestion Wave Coordination",
@@ -139,6 +156,11 @@ GOOD_DOC = "\n".join(
         "- `% ingested success` = `successful_routed_items / eligible_candidate_items * 100`; hard exclusions are reported as `% excluded`.",
         "- Method gap disposition closed set: `doc-update`, `skill-eval-update`, `follow-on-issue`.",
         "- Wave #0 / #51 lifecycle contract: downstream waves depend on #51; durable outputs depend on #61 status:plan-approved plus approval marker plus implemented validators and recorded passing-command evidence.",
+        "",
+        "## Structural Wave Gate Registry",
+        "| Issue | wave_class | requires_manifest_snapshot_id | success_numerator_field | success_denominator_field |",
+        "|---|---|---|---|---|",
+        *[structural_row(issue) for issue in range(51, 64)],
         "",
         "## Child Wave Ledger",
         "| Issue | Plan | Lane | Complexity | Plan status | Status snapshot | Implementation ready | Method issues | Skill groups and executable tests | Review artifacts | Dependencies | Expected useful ingestion / success metric / difficulty | Manifest gate | Public canary gate | Method gap disposition | Publication exposure |",
@@ -555,6 +577,22 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
     def test_ingested_success_metric_is_defined(self):
         bad_doc = GOOD_DOC.replace("successful_routed_items / eligible_candidate_items * 100", "manual estimate")
         self.assert_rejects(bad_doc, "ingested success")
+
+    def test_structural_wave_gate_registry_is_required(self):
+        bad_doc = GOOD_DOC.replace("## Structural Wave Gate Registry", "## Wave Notes")
+        self.assert_rejects(bad_doc, "Structural Wave Gate Registry")
+
+    def test_structural_wave_gate_registry_requires_expected_wave_class(self):
+        bad_doc = GOOD_DOC.replace(structural_row(52), structural_row(52).replace("ingestion_wave", "control_plane"))
+        self.assert_rejects(bad_doc, "#52 wave_class")
+
+    def test_structural_wave_gate_registry_requires_manifest_boolean(self):
+        bad_doc = GOOD_DOC.replace(structural_row(52), structural_row(52).replace("| true |", "| false |"))
+        self.assert_rejects(bad_doc, "#52 requires_manifest_snapshot_id")
+
+    def test_structural_wave_gate_registry_uses_authoritative_success_terms(self):
+        bad_doc = GOOD_DOC.replace(structural_row(52), structural_row(52).replace("eligible_candidate_items", "computed_sample"))
+        self.assert_rejects(bad_doc, "#52 success_denominator_field")
 
     def test_control_gate_rows_require_zero_success_sentinel(self):
         bad_doc = GOOD_DOC.replace(

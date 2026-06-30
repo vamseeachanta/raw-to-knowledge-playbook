@@ -16,6 +16,14 @@ MANIFEST_GATE_ISSUES = DOWNSTREAM_WAVES
 NON_SAMPLING_MANIFEST_GATE_ISSUES = {51, 61, 62, 63}
 CONTROL_SUCCESS_SENTINEL_ISSUES = NON_SAMPLING_MANIFEST_GATE_ISSUES
 CROSS_WAVE_GATE_ISSUES = {61, 62, 63}
+EXPECTED_WAVE_CLASS = {
+    51: "control_plane",
+    **{issue: "ingestion_wave" for issue in range(52, 61)},
+    61: "storage_lifecycle_gate",
+    62: "manifest_freshness_gate",
+    63: "public_canary_gate",
+}
+EXPECTED_REQUIRES_MANIFEST_SNAPSHOT_ID = {issue: issue in MANIFEST_GATE_ISSUES for issue in EXPECTED_CHILD_ISSUES}
 PARENT_ISSUE = 50
 PARENT_PLAN_PATH = "docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md"
 REVIEW_ARTIFACT_ROOT = Path("scripts/review/results")
@@ -72,6 +80,13 @@ EXPECTED_CHILD_LEDGER_HEADERS = [
     "public canary gate",
     "method gap disposition",
     "publication exposure",
+]
+EXPECTED_STRUCTURAL_WAVE_GATE_HEADERS = [
+    "issue",
+    "wave_class",
+    "requires_manifest_snapshot_id",
+    "success_numerator_field",
+    "success_denominator_field",
 ]
 CONFIDENTIAL_TERMS = [
     "proprietary " + "confidential",
@@ -212,6 +227,55 @@ def _parse_child_rows(text: str) -> tuple[dict[int, dict[str, str]], list[str]]:
         rows[issue] = dict(zip(headers, padded))
     if not saw_child_section:
         errors.append("missing ## Child Wave Ledger section")
+    return rows, errors
+
+
+def _parse_structural_wave_gate_rows(text: str) -> tuple[dict[int, dict[str, str]], list[str]]:
+    rows: dict[int, dict[str, str]] = {}
+    errors: list[str] = []
+    headers: list[str] | None = None
+    in_registry = False
+    in_table = False
+    saw_registry = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            in_registry = stripped == "## Structural Wave Gate Registry"
+            saw_registry = saw_registry or in_registry
+            in_table = False
+            headers = None
+            continue
+        if not in_registry:
+            continue
+        if line.startswith("| Issue | wave_class | requires_manifest_snapshot_id |"):
+            headers = [_normalise_header(header) for header in _split_markdown_row(line)]
+            if headers != EXPECTED_STRUCTURAL_WAVE_GATE_HEADERS:
+                errors.append("Structural Wave Gate Registry header must match canonical schema")
+            in_table = True
+            continue
+        if not in_table:
+            continue
+        if not line.startswith("|"):
+            in_table = False
+            continue
+        if re.fullmatch(r"\|\s*-+.*", line):
+            continue
+        cells = _split_markdown_row(line)
+        match = re.fullmatch(r"(?:#(\d+)|\[#(\d+)\]\([^)]+\))", cells[0] if cells else "")
+        if not match:
+            continue
+        issue = int(match.group(1) or match.group(2))
+        if headers is None:
+            continue
+        if len(cells) != len(headers):
+            errors.append(f"#{issue} structural wave gate row has {len(cells)} cells; expected {len(headers)}")
+            continue
+        if issue in rows:
+            errors.append(f"duplicate structural wave gate row for #{issue}")
+            continue
+        rows[issue] = dict(zip(headers, cells))
+    if not saw_registry:
+        errors.append("missing ## Structural Wave Gate Registry section")
     return rows, errors
 
 
@@ -573,12 +637,38 @@ def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, e
         errors.append(f"#{issue} publication exposure must be true or false")
 
 
+def _validate_structural_wave_gate_row(issue: int, row: dict[str, str], errors: list[str]) -> None:
+    expected_class = EXPECTED_WAVE_CLASS[issue]
+    if row.get("wave_class", "") != expected_class:
+        errors.append(f"#{issue} wave_class must be {expected_class}")
+    expected_requires_snapshot = "true" if EXPECTED_REQUIRES_MANIFEST_SNAPSHOT_ID[issue] else "false"
+    if row.get("requires_manifest_snapshot_id", "").lower() != expected_requires_snapshot:
+        errors.append(f"#{issue} requires_manifest_snapshot_id must be {expected_requires_snapshot}")
+    expected_numerator = "successful_routed_items" if issue in DOWNSTREAM_WAVES else "measured_success_numerator"
+    expected_denominator = "eligible_candidate_items" if issue in DOWNSTREAM_WAVES else "measured_success_denominator"
+    if row.get("success_numerator_field", "") != expected_numerator:
+        errors.append(f"#{issue} success_numerator_field must be {expected_numerator}")
+    if row.get("success_denominator_field", "") != expected_denominator:
+        errors.append(f"#{issue} success_denominator_field must be {expected_denominator}")
+
+
 def validate_text(text: str, approval_root: Path | None = None) -> ValidationResult:
     errors: list[str] = []
     _validate_global_contract(text, errors)
+    structural_rows, structural_parse_errors = _parse_structural_wave_gate_rows(text)
+    errors.extend(structural_parse_errors)
     rows, parse_errors = _parse_child_rows(text)
     errors.extend(parse_errors)
+    structural_issues = set(structural_rows)
     child_issues = set(rows)
+    missing_structural = sorted(EXPECTED_CHILD_ISSUES - structural_issues)
+    extra_structural = sorted(issue for issue in structural_issues if issue not in EXPECTED_CHILD_ISSUES)
+    if missing_structural:
+        errors.append(f"Structural Wave Gate Registry missing parsable child issues: {', '.join(f'#{issue}' for issue in missing_structural)}")
+    if extra_structural:
+        errors.append(f"unexpected structural wave gate issues: {', '.join(f'#{issue}' for issue in extra_structural)}")
+    for issue in sorted(EXPECTED_CHILD_ISSUES & structural_issues):
+        _validate_structural_wave_gate_row(issue, structural_rows[issue], errors)
     missing = sorted(EXPECTED_CHILD_ISSUES - child_issues)
     extra = sorted(issue for issue in child_issues if issue not in EXPECTED_CHILD_ISSUES)
     if missing:

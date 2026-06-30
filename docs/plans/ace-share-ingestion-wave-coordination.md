@@ -31,6 +31,26 @@ This artifact tracks the child waves under [#50](https://github.com/vamseeachant
 - Manifest-backed sampling requires [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) `status:plan-approved`, approval marker, implemented validator, recorded passing-command, and snapshot_id before sampling.
 - Publication exposure requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, approval marker, implemented canary, and recorded passing-command before publication.
 
+## Structural Wave Gate Registry
+
+The registry below is the parseable source of truth for the wave class, manifest-snapshot gate, and success-field vocabulary. The prose `Manifest gate` and `% ingested success` summaries in the child ledger must not contradict it.
+
+| Issue | wave_class | requires_manifest_snapshot_id | success_numerator_field | success_denominator_field |
+|---|---|---|---|---|
+| #51 | control_plane | false | measured_success_numerator | measured_success_denominator |
+| #52 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #53 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #54 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #55 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #56 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #57 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #58 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #59 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #60 | ingestion_wave | true | successful_routed_items | eligible_candidate_items |
+| #61 | storage_lifecycle_gate | false | measured_success_numerator | measured_success_denominator |
+| #62 | manifest_freshness_gate | false | measured_success_numerator | measured_success_denominator |
+| #63 | public_canary_gate | false | measured_success_numerator | measured_success_denominator |
+
 ## Child Wave Ledger
 
 | Issue | Plan | Lane | Complexity | Plan status | Status snapshot | Implementation ready | Method issues | Skill groups and executable tests | Review artifacts | Dependencies | Expected useful ingestion / success metric / difficulty | Manifest gate | Public canary gate | Method gap disposition | Publication exposure |
