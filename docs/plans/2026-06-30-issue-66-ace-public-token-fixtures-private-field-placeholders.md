@@ -7,7 +7,7 @@
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:codex
-> **Review artifacts:** scripts/review/results/2026-06-30-plan-66-claude.md | scripts/review/results/2026-06-30-plan-66-codex.md | scripts/review/results/2026-06-30-plan-66-gemini.md | scripts/review/results/2026-06-30-plan-66-disagreement.md
+> **Review artifacts:** see Artifact Map below for r1-r3 artifacts
 
 ---
 
@@ -70,6 +70,7 @@ MISSING config/ace-public-token-fixture-contract.json
 MISSING scripts/ace_public_token_fixtures.py
 MISSING scripts/validate_ace_public_token_fixtures.py
 MISSING tests/test_validate_ace_public_token_fixtures.py
+MISSING tests/fixtures/ace-public-token-fixtures/good-request.json
 MISSING .planning/plan-approved/66.md
 MISSING scripts/legal/legal-sanity-scan.sh
 ```
@@ -100,6 +101,10 @@ N/A - planning/governance issue; no runtime failure is alleged.
 | Review artifact - Codex r2 | `scripts/review/results/2026-06-30-plan-66-codex-r2.md` |
 | Review artifact - Gemini r2 | `scripts/review/results/2026-06-30-plan-66-gemini-r2.md` |
 | Review artifact - disagreement r2 | `scripts/review/results/2026-06-30-plan-66-disagreement-r2.md` |
+| Review artifact - Claude r3 | `scripts/review/results/2026-06-30-plan-66-claude-r3.md` |
+| Review artifact - Codex r3 | `scripts/review/results/2026-06-30-plan-66-codex-r3.md` |
+| Review artifact - Gemini r3 | `scripts/review/results/2026-06-30-plan-66-gemini-r3.md` |
+| Review artifact - disagreement r3 | `scripts/review/results/2026-06-30-plan-66-disagreement-r3.md` |
 
 ---
 
@@ -130,6 +135,7 @@ validate fixture contract metadata:
 validate imported schema terms:
   public token field name matches #65 schema
   private source field terms match #65 schema values
+  source-like raw digest terms match #65 schema values
   route/store vocabulary comes from #65 schema
   no new route target or logical store enum is introduced
 
@@ -149,7 +155,9 @@ validate generation request grammar:
   private keys, lookup aliases, or deterministic seeds
   generator accepts fixture count and fixture set id only
   tests may inject a runtime random source to force duplicates and retry behavior
-  generator rejects source, path, name, hash, private key, lookup, or raw provenance inputs
+  generator rejects source, path, hash, private key, lookup, or raw provenance inputs
+  generator also rejects name-derived inputs as #66 extra hardening, not as a
+  #65 schema-derived field class
   concrete runtime token grammar is literal prefix pst_ plus exactly
   32 lowercase hexadecimal characters
   the validator and parent scanner agree this is the concrete-token assignment shape
@@ -187,7 +195,8 @@ validate bad fixtures:
 
 validate public scan safety:
   plan, contract, scripts, tests, request fixtures, workflow, README, coordination,
-  and retained plan review artifacts pass the current parent public-surface scan
+  approval marker when present, and retained plan review artifacts pass the
+  current parent public-surface scan
   raw negative examples are built at runtime or written to temp files
   self-scanned Python modules and tests construct forbidden private-source terms
   and concrete token patterns from string fragments, following the existing
@@ -227,8 +236,8 @@ verify()
 | Create | `scripts/ace_public_token_fixtures.py` | Python stdlib helper for generation request parsing, opaque fixture token emission, placeholder validation, and bad-fixture rejection |
 | Create | `scripts/validate_ace_public_token_fixtures.py` | Executable validator for the #66 fixture contract, fixture requests, and schema dependency |
 | Create | `tests/test_validate_ace_public_token_fixtures.py` | TDD coverage for token input rejection, marker-only good fixtures, placeholder grammar, bad fixtures, and public-scan safety |
-| Create | `tests/fixtures/ace-public-token-fixtures/` | Synthetic committed request fixtures that contain markers only, not hand-authored concrete public token values |
-| Modify | `.github/workflows/validate.yml` | Run the #66 validator and unit test in repo-local CI |
+| Create | `tests/fixtures/ace-public-token-fixtures/good-request.json` | Synthetic committed request fixture that contains a generation marker only, not a hand-authored concrete public token value |
+| Modify | `.github/workflows/validate.yml` | Run the #66 validator, unit test, and explicit parent public-surface scan over #66 plan/contract/scripts/tests/fixture/workflow/approval marker when present |
 | Modify | `artifacts/ace-wave0-ledger-schema.json` | Cross-link the #66 split row to this plan and gate status/implementation readiness through the existing approval-marker semantics |
 | Modify if status transitions | `docs/plans/README.md` | Update #66 status and review summary only when plan-review or approval status changes |
 | Modify if status transitions | `docs/plans/ace-share-ingestion-wave-coordination.md` | Update #66 plan status and implementation readiness only when gate status changes |
@@ -249,11 +258,13 @@ verify()
 | `test_contract_imports_65_public_token_policy_owners` | #66 fixture ownership does not erase #63 co-ownership | #65 schema plus #66 contract | Fixture contract owner is #66 and public token policy owners remain #66 plus #63 |
 | `test_fixture_contract_reconciles_with_63_when_present` | Fixture grammar cannot drift from #63 production policy | #66 contract plus optional `config/ace-public-output-contract.json` | If #63 config exists, token prefix and field policy match it; otherwise #66 marks itself provisional fixture-only |
 | `test_contract_imports_65_private_source_terms` | Placeholder fields stay aligned with #65 | #65 schema plus #66 contract | Private source term set matches #65 exactly |
+| `test_contract_imports_65_source_like_digest_terms` | Raw provenance/digest classes stay aligned with #65 | #65 schema plus #66 contract | Source-like digest term set matches #65 exactly, including provenance-pointer terms |
 | `test_contract_does_not_redefine_route_or_store_enums` | #66 cannot drift route/store semantics | #66 contract | No new route target or logical store values are introduced |
 | `test_generation_request_marker_shape_is_closed` | Good fixture request marker is machine-checkable | Request marker variants | Exactly `fixture_set_id`, `fixture_row_id`, and `count` are accepted |
 | `test_generation_request_marker_values_are_closed` | Fixture-local IDs cannot hide private/source-like values | Runtime-generated request variants | Closed fixture set, row-id pattern, count range, and no source/path/hash-like values are enforced |
 | `test_good_fixture_uses_generation_request_marker` | Committed good fixtures are requests, not concrete tokens | Synthetic request fixture | `public_source_token_request` marker validates; no literal token value is hand-authored |
-| `test_generator_rejects_source_path_name_hash_key_inputs` | Token generation is not source-derived | Runtime-generated unsafe request variants | Every forbidden input class fails validation |
+| `test_generator_rejects_schema_source_path_hash_key_inputs` | Token generation is not source-derived | Runtime-generated unsafe request variants | Every #65-derived forbidden input class fails validation |
+| `test_generator_rejects_name_inputs_as_66_hardening` | Name-like inputs are rejected without pretending they are #65 schema terms | Runtime-generated name-derived request variants | Every name-like input class fails validation as #66 extra hardening |
 | `test_generator_rejects_fixed_seed_inputs` | Fixture requests cannot make deterministic public token allocation an input contract | Runtime-generated fixed-seed request variant | Seed-bearing request fails validation |
 | `test_concrete_token_assignment_matches_parent_scanner` | New validator and parent scanner agree on concrete token assignment shape | Runtime-generated concrete token assignment | Assignment form is rejected by both scanner paths |
 | `test_bare_concrete_token_literals_are_66_validator_only` | #66 validator is stronger than parent scanner for non-assignment literals | Runtime-generated bare token and expected-output row variants | #66 validator rejects them without claiming parent-scanner parity |
@@ -268,7 +279,8 @@ verify()
 | `test_bad_fixture_rejects_hand_authored_concrete_public_token` | Good fixtures cannot smuggle concrete tokens | Runtime-generated bad fixture | Validator fails concrete token assignment |
 | `test_bad_fixture_rejects_malformed_request_marker` | Marker shape is strict | Runtime-generated malformed marker variants | Validator fails malformed request markers |
 | `test_bad_fixture_rejects_unknown_placeholder_kind` | Placeholder kinds are closed | Runtime-generated unknown placeholder variant | Validator fails unknown placeholder |
-| `test_bad_fixture_source_derived_token_examples_fail` | Unsafe deterministic token examples are rejected | Runtime-generated bad fixture variants | Validator fails every source/path/name/hash/key-derived attempt |
+| `test_bad_fixture_source_derived_token_examples_fail` | Unsafe deterministic token examples are rejected | Runtime-generated bad fixture variants | Validator fails every source/path/hash/key-derived attempt and separately fails name-derived attempts |
+| `test_bad_fixture_source_like_digest_terms_fail` | #65 source-like digest terms cannot leak through fixtures | Runtime-generated raw provenance/digest variants | Validator fails every imported source-like digest term, including provenance-pointer terms |
 | `test_bad_fixture_private_field_value_leaks_fail` | Private-field values cannot leak through fixtures | Runtime-generated bad fixture variants | Validator fails every private-value leak attempt |
 | `test_private_lookup_map_persistence_is_rejected` | Durable lookup persistence remains outside #66 | Runtime-generated persistence attempt | Validator fails and cites #61 ownership boundary |
 | `test_private_source_term_keyed_placeholder_maps_are_rejected` | Placeholder maps cannot use private field terms as keys | Runtime-generated map keyed by private source term | Validator fails and parent scanner would reject if committed |
@@ -276,11 +288,12 @@ verify()
 | `test_68_placeholder_consumer_boundary_is_recorded` | #68 can consume the grammar later | Contract metadata | #68 is listed as scanner consumer with no self-scan implementation in #66 |
 | `test_65_schema_split_row_is_cross_linked` | Machine-readable split registry does not remain plan-required after approved #66 implementation | #65 schema plus approval-marker fixtures | #66 row has this plan path and readiness follows parent approval-marker semantics |
 | `test_negative_fixtures_are_runtime_generated` | Tests do not commit self-blocking examples | Test source and fixture directory | Raw unsafe examples are assembled at runtime or temp-file scoped |
-| `test_public_scan_paths_cover_66_artifacts` | #66 artifacts stay public-scan clean | Planned artifact path list | Plan, contract, scripts, tests, safe fixtures, workflow, README, coordination, and retained plan review artifacts pass parent scanner when present |
+| `test_public_scan_paths_cover_66_artifacts` | #66 artifacts stay public-scan clean | Planned artifact path list | Plan, contract, scripts, tests, safe fixture file, workflow, README, coordination, approval marker when present, and retained plan review artifacts pass parent scanner when present |
 | `test_review_error_sidecars_are_not_retained_unscanned` | Provider stderr cannot become silent public residue | Review artifact directory with `.err` sidecar | Sidecar is normalized and scanned or absent before closeout |
 | `test_legal_scan_absence_blocks_full_closeout` | Missing #69 legal gate is not hidden | Repo without `scripts/legal/legal-sanity-scan.sh` | Closeout records `NO_LEGAL_SCAN_SCRIPT` and does not claim full closure |
 | `test_self_scanned_source_uses_fragmented_private_terms` | Validator/test source files do not self-block | New Python source text | Private/source-token deny constants are constructed from fragments, not direct assignment-shaped literals |
 | `test_ci_invokes_public_token_fixture_validator` | CI gate runs #66 checks | `.github/workflows/validate.yml` | Workflow invokes #66 validator and unit test |
+| `test_ci_invokes_parent_public_scan_for_66_paths` | CI enforces parent scanner over #66 artifacts | `.github/workflows/validate.yml` | Workflow passes #66 plan, contract, scripts, tests, fixture file, workflow, and approval marker path to `validate_ace_epic_wave_coordination.py` with explicit scan-path entries |
 
 ---
 
@@ -289,6 +302,7 @@ verify()
 - [ ] A standalone issue plan will exist for #66 and will not authorize implementation until adversarial plan review, user approval, `status:plan-approved`, and `.planning/plan-approved/66.md`.
 - [ ] `config/ace-public-token-fixture-contract.json` will define fixture-only mode, schema dependency, public-token fixture grammar, private-field placeholder grammar, and downstream ownership boundaries.
 - [ ] The fixture contract will import the public token field name and private source field terms from `artifacts/ace-wave0-ledger-schema.json` and will not redefine route or logical store enums.
+- [ ] The fixture contract will import the full #65 source-like raw digest term set and will test those terms, including provenance-pointer terms.
 - [ ] The fixture contract will record #66 as fixture-contract owner and preserve #65's #66/#63 public-token policy ownership.
 - [ ] If `config/ace-public-output-contract.json` exists, the #66 fixture contract will match its token prefix and public/private field policy; if it does not exist, #66 will mark the fixture contract provisional and subordinate to #63.
 - [ ] The public token generator will take no source, path, name, hash, private key, lookup, or raw provenance inputs.
@@ -304,13 +318,15 @@ verify()
 - [ ] Committed prose may name private source field terms only as policy/schema terms, never as assigned values or lookup maps.
 - [ ] Placeholder maps keyed by private source field terms will be rejected.
 - [ ] Grammar prose will be distinguished from parsed fixture/control-plane rows by parser context, not raw substring allowlisting.
-- [ ] Bad fixtures will prove source-derived token attempts, path-derived token attempts, name-derived token attempts, hash-derived token attempts, private lookup derived token attempts, and private-field value leaks fail validation.
+- [ ] Bad fixtures will prove source-derived token attempts, path-derived token attempts, hash-derived token attempts, private lookup derived token attempts, full source-like digest term attempts, and private-field value leaks fail validation.
+- [ ] Bad fixtures will also reject name-derived token attempts as #66 extra hardening, not as a #65 schema-derived field class.
 - [ ] Bad fixtures will also prove hand-authored concrete token assignments, malformed request markers, unknown placeholder kinds, and fixed-seed token attempts fail validation.
 - [ ] #66 will not allocate durable tokens for real ACE records and will not persist private token-to-source lookup maps.
 - [ ] Durable token lookup persistence will remain owned by #61.
 - [ ] Public-output certification and production/publication canary behavior will remain owned by #63.
 - [ ] #68 will be recorded as the downstream consumer of the placeholder grammar for public-surface self-scan contexts.
 - [ ] `artifacts/ace-wave0-ledger-schema.json` will cross-link the #66 split row to this plan and will keep readiness governed by the existing approval-marker semantics.
+- [ ] `.github/workflows/validate.yml` will include explicit `--scan-public-path` entries for the #66 plan, contract, scripts, tests, concrete safe fixture file, workflow, retained review artifacts where appropriate, and `.planning/plan-approved/66.md` when present.
 - [ ] Retained provider stderr/error sidecars will be normalized into public-safe review artifacts and scanned, or removed as transient non-evidence before closeout.
 - [ ] If `scripts/legal/legal-sanity-scan.sh` remains absent, #66 closeout will record `NO_LEGAL_SCAN_SCRIPT` and will not claim full closure until #69 supplies the gate or the user records an explicit deferral.
 - [ ] Negative fixtures will be runtime-generated or temp-file scoped so committed public artifacts and tests do not self-block the current parent scanner.
@@ -332,6 +348,9 @@ verify()
 | Claude r2 | MAJOR | Required string-fragment construction for self-scanned validator constants, literal `pst_` prefix, scanner parity wording, CI command wording, header/artifact consistency, and #65 readiness timing. Current draft patches these findings; re-review required. |
 | Codex r2 | MAJOR | Required closed request-marker grammar, scoped machine-readable private-term placement rule, and #63/#66 contract precedence. Current draft patches these findings; re-review required. |
 | Gemini r2 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
+| Claude r3 | MAJOR | Required explicit CI parent-scan wiring for #66 artifacts, #65-derived versus #66-hardening wording for name inputs, header/artifact consistency, and a concrete fixture file. Current draft patches these findings; re-review required. |
+| Codex r3 | MAJOR | Required `.planning/plan-approved/66.md` in the public-scan path set and full #65 source-like digest term import/test coverage. Current draft patches these findings; re-review required. |
+| Gemini r3 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
 
 **Overall result:** MAJOR - draft only; not ready for `status:plan-review` until a fresh active-provider re-review returns no unresolved MAJOR findings. Gemini remains unavailable and must be recorded as unavailable unless restored before re-review.
 
