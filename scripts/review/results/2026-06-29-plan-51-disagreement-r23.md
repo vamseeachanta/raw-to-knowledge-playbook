@@ -1,0 +1,36 @@
+review_artifact_role: public_history
+normalization_note: denied-token/private-field/local-absolute-path substitutions only; provider verdict unchanged
+
+# Disagreement report — plan #51 (2026-06-29)
+
+## Verdicts
+
+| Provider | Verdict |
+|---|---|
+| claude | MAJOR |
+| codex | MAJOR |
+| gemini | UNAVAILABLE (gemini CLI failed, rc=41: Error authenticating: FatalAuthenticationError: Manual authorization is required but the current session is non-interactive. Please run the Gemini CLI in an interactive terminal to log in, provide a GEMINI_API_KEY, or ensure Application Default Credentials are configured.     at initOauthClient (file:///home/vamsee/.npm-global/lib/node_modules/@google/gemini-cli/bundle/chunk-VLV2BYPM.js:269720:13)) |
+
+## Findings unique to each provider
+
+A finding is 'unique to X' if its text appears in X's artifact but not
+verbatim in any other provider's artifact.
+
+### claude
+
+- **The review gate is structurally unsatisfiable on the mechanical path — Gemini has failed identically (rc=41) for 20 consecutive rounds (r3-r22), per Adversarial Review Summary lines 699-756.** The plan's own degraded-quorum rule (lines 502-513, 688) states Gemini noninteractive auth failure "does not automatically authorize downgrade" and "blocks `status:plan-review` unless Gemini is restored or the user explicitly approves." Twenty rounds of identical failure is not a transient outage; the plan cannot advance via "fresh no-MAJOR round" alone — it *requires* an out-of-band user waiver every time. This is a process blocker that no amount of plan editing resolves.
+- **The plan has not converged after 22 rounds and its own latest verdict is double-MAJOR (line 758).** Issue #51's acceptance criteria are 5 bullets (verified in the live body: ledger schema, route distinction, issue/skill binding, bounded sampling, closeout method-gap rule). The plan expands this to ~30 acceptance criteria, 14 Created files, ~12 Modified files, edits to the #50 and #63 plans, edits to two live GitHub issue bodies, a repo-wide `sha256` hash-policy sweep, a legal scanner, and two config contracts. The Scope Decision (line 122) itself names a split point (move the source-hash sweep + shared-config creation to a follow-on issue). Persistent non-convergence across 22 rounds is direct evidence the artifact is too large to review tractably; the named split should be taken before plan-review, not offered conditionally.
+- **The core self-referential scanner mechanism is asserted but not specified — definitional-vs-fixture discrimination (lines 203-217).** The plan requires the not-yet-written #51 scanner to reject <PUBLIC_TOKEN_MARKER_EXAMPLE> "only when parsed as fixture/control-plane content … never by raw substring matching over methodology prose" (lines 207-209), and similarly for the private-field placeholders (lines 216-217). No parse contract is given for how the scanner decides a line inside the plan's own Markdown is "grammar specification" versus "a parsed ledger row." This same gap recurs in the review history (Codex r11 "marker self-scan/lint sequencing", r17, r18 "structural marker self-scan scoping"). Without a concrete discriminator, the scanner is at risk of either self-blocking the plan or admitting the very strings it must reject — and it is unverifiable until built.
+- **Acceptance criteria bundle multiple independent assertions into single non-atomic checkboxes, defeating objective pass/fail.** E.g. line 645 is a ~150-word paragraph asserting hit-key composition, dual-purpose precedence, two outcome classes, skill-catalog inclusion, and digest-value rules under one `- [ ]`. Line 642 and line 659 are similar. A checkbox that bundles 5+ verifiable conditions cannot be checked atomically; partial satisfaction is indistinguishable from full satisfaction.
+- **The "Repo file existence" evidence block (lines 76-80) is asymmetric/incomplete.** It records MISSING for only 4 of the 14 files the plan will Create — it omits `config/ace-public-output-contract.json`, `config/ace-public-surface-deny-list.json`, `.legal-deny-list.yaml`, and `scripts/legal/legal-sanity-scan.sh`. I verified all four are in fact currently MISSING, so the plan is not wrong — but its evidence section does not actually substantiate the create-state of the files it most depends on (the legal gate and the shared config that #63 already consumes).
+- **The plan binds itself to an "inherited AGENTS gate" / "AGENTS cross-review rule" (lines 504, 543; degraded-quorum policy) that does not exist in this repository.** `AGENTS.md` is present only at `workspace-hub/AGENTS.md` (adjacent checkout path elided). A contributor or reviewer operating within `raw-to-knowledge-playbook` cannot see the governing cross-review/quorum rule the entire plan-review process is predicated on. The plan correctly makes the *legal scanner* repo-local to avoid adjacent-checkout dependence (line 492-493) but leaves the *quorum rule itself* as an invisible cross-repo dependency.
+- **(Verified-not-a-defect, recorded per silence-is-failure.)** I specifically tested and could NOT fault: (a) the plan passes its own declared pre-label scanner (exit 0); (b) the `#63` shared-config dependency is real and reciprocal; (c) the `docs/plans` publication caution is correct given MkDocs orphan-page building; (d) the parent coordination validator genuinely implements the private-field/source-hash/denied-token pattern families the pre-label checklist relies on; (e) the YAML deny-list is parseable by a no-yq bash wrapper per the workspace-hub precedent, so the `.yaml`-vs-"JSON-only configs" wording is not a real contradiction (the JSON-only rule at line 241 is scoped to the two `config/*.json` files). These checks passed.
+
+### codex
+
+- `docs/plans/2026-06-29-issue-51-ace-wave-0-corpus-ledger-routing-firewall-sampling-protocol.md` lines 682-685 require the live [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) issue body snapshot to pass the parent fallback scanner before `status:plan-review`. It currently does not. The fetched body has bullet rows like `<ACE_METADATA_EVIDENCE_EXAMPLE>`, while plan lines 360-367 allow only exact `EXISTS <ROOT_ABSTRACTION_FIXED_PATH> type=<file|directory> details=withheld_public` evidence rows. The required scan failed on issue-body lines 15-19. Plan line 561 only says to “Verify and record” the [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) body is sanitized; unlike line 558 for [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63), it does not authorize/require editing the live issue body when the scanner fails.
+- The repo-local legal/security gate remains underspecified. Plan lines 490-501 require `.legal-deny-list.yaml` plus `scripts/legal/legal-sanity-scan.sh` and say the wrapper exits nonzero on “block-severity matches”; line 626 requires tests for “block-severity fixtures”; line 674 makes the command closeout-blocking. Nowhere does the plan define the deny-list schema, required block-severity pattern classes, or minimum contents. The plan’s own r22 summary at line 754 says “specifying legal deny-list contents” was a prior MAJOR requirement; the current draft still leaves the hard gate’s substance to implementer invention.
+
+### gemini
+
+- (none)
