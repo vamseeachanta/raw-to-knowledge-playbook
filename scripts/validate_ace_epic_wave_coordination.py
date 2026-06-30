@@ -111,13 +111,35 @@ PRIVATE_LEAK_PATTERNS = [
     r"\b\d{3}-\d{2}-\d{4}\b",
     r"\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b",
 ]
+PRIVATE_SOURCE_FIELDS = (
+    "source_" + "id",
+    "source_" + "sha256",
+    "private_" + "lookup_key",
+    "private_" + "lookup_map",
+    "share_" + "relative_path_private_only",
+)
+SOURCE_HASH_FIELD_PATTERN = "source\\s+hash|source_hash|source_" + "sha256|provenance\\s+pointer"
+PRIVATE_SOURCE_FIELD_PATTERN = "|".join(re.escape(field) for field in PRIVATE_SOURCE_FIELDS)
 PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS = [
-    r"(?i)[\"']?\b(?:source_id|source_sha256|private_lookup_key|private_lookup_map|share_relative_path_private_only)\b[\"']?\s*[:=]\s*[^`\s,}\]]+",
-    r"(?i)[\"']?\bpublic_source_token\b[\"']?\s*[:=]\s*[\"']?pst_[0-9a-f]{32}\b",
+    rf"(?i)[\"']?\b(?:{PRIVATE_SOURCE_FIELD_PATTERN})\b[\"']?\s*[:=]\s*[^`\s,}}\]]+",
+    rf"(?i)\|\s*(?:{PRIVATE_SOURCE_FIELD_PATTERN})\s*\|\s*[^|\s][^|]*\|",
+    r"(?i)[\"']?\bpublic_" + r"source_token\b[\"']?\s*[:=]\s*[\"']?pst_[0-9a-f]{32}\b",
 ]
+FIXED_METADATA_EVIDENCE_PATHS = {
+    "INDEX.md": "file",
+    "assets.json": "file",
+    "docs/master-index.jsonl": "file",
+    "_cad-index/index-summary.json": "file",
+    "_cad-index/cad-readability-index.tsv": "file",
+    ".ace-knowledge/index.db": "file",
+    "llm-wiki": "directory",
+}
+FIXED_METADATA_EVIDENCE_PATTERN = re.compile(
+    r"^EXISTS ACE_SHARE_ROOT" + r"/(?P<path>[^`\s|]+) type=(?P<kind>file|directory) details=withheld_public$"
+)
 SOURCE_LIKE_RAW_DIGEST_PATTERNS = [
-    r"(?i)\b(?:source\s+hash|source_hash|source_sha256|provenance\s+pointer)\b\s*[:=]\s*[\"']?[0-9a-f]{32,128}\b",
-    r"(?i)\|\s*(?:source\s+hash|source_hash|source_sha256|provenance\s+pointer)\s*\|\s*[\"']?[0-9a-f]{32,128}\b",
+    rf"(?i)\b(?:{SOURCE_HASH_FIELD_PATTERN})\b\s*[:=]\s*[\"']?[0-9a-f]{{32,128}}\b",
+    rf"(?i)\|\s*(?:{SOURCE_HASH_FIELD_PATTERN})\s*\|\s*[\"']?[0-9a-f]{{32,128}}\b",
 ]
 MANIFEST_PATH_PATTERN = r"(?:\$?\{?ACE_SHARE_ROOT\}?|ACE_SHARE_ROOT|assets\.json|master-index\.jsonl|index\.db|_cad-index)"
 DENIED_TRAVERSAL_PATTERNS = [
@@ -721,6 +743,8 @@ def validate_public_artifact_paths(paths: list[Path]) -> list[str]:
                     if re.search(pattern, line):
                         errors.append(f"source-like raw digest is not allowed at {path}:{line_number}: {line.strip()}")
                         break
+                if ("ACE_SHARE_ROOT" + "/") in line and not _is_allowed_metadata_evidence_line(line):
+                    errors.append(f"unlisted ACE metadata evidence path is not allowed at {path}:{line_number}: {line.strip()}")
     return errors
 
 
@@ -737,6 +761,13 @@ def _allowed_denied_traversal_policy_prose(line: str) -> bool:
     return not re.search(MANIFEST_PATH_PATTERN, line) and any(
         term in line for term in DENIED_TRAVERSAL_POLICY_PROSE_TERMS
     )
+
+
+def _is_allowed_metadata_evidence_line(line: str) -> bool:
+    match = FIXED_METADATA_EVIDENCE_PATTERN.fullmatch(line.strip())
+    if not match:
+        return False
+    return FIXED_METADATA_EVIDENCE_PATHS.get(match.group("path")) == match.group("kind")
 
 
 def main(argv: list[str] | None = None) -> int:

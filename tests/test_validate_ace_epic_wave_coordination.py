@@ -871,6 +871,21 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
 
         self.assertIn("private source field assignment", "\n".join(result))
 
+    def test_public_artifact_scan_rejects_private_source_field_table_rows(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "comment.md"
+            path.write_text(
+                "| field | value |\n"
+                "|---|---|\n"
+                "| source_id | PRIVATE-123 |\n"
+                "| private_lookup_key | lookup-abc |\n"
+                "| share_relative_path_private_only | reports/private.docx |\n"
+            )
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("private source field assignment", "\n".join(result))
+
     def test_public_artifact_scan_rejects_source_hash_values(self):
         validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:
@@ -882,6 +897,32 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
             result = validator.validate_public_artifact_paths([path])
 
         self.assertIn("source-like raw digest", "\n".join(result))
+
+    def test_public_artifact_scan_allows_fixed_metadata_evidence_rows(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "evidence.md"
+            path.write_text(
+                "EXISTS ACE_SHARE_ROOT/INDEX.md type=file details=withheld_public\n"
+                "EXISTS ACE_SHARE_ROOT/assets.json type=file details=withheld_public\n"
+                "EXISTS ACE_SHARE_ROOT/docs/master-index.jsonl type=file details=withheld_public\n"
+                "EXISTS ACE_SHARE_ROOT/_cad-index/index-summary.json type=file details=withheld_public\n"
+                "EXISTS ACE_SHARE_ROOT/_cad-index/cad-readability-index.tsv type=file details=withheld_public\n"
+                "EXISTS ACE_SHARE_ROOT/.ace-knowledge/index.db type=file details=withheld_public\n"
+                "EXISTS ACE_SHARE_ROOT/llm-wiki type=directory details=withheld_public\n"
+            )
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertEqual([], result)
+
+    def test_public_artifact_scan_rejects_unlisted_metadata_evidence_rows(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "evidence.md"
+            path.write_text("EXISTS ACE_SHARE_ROOT/private/internal/report.docx type=file details=withheld_public\n")
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("unlisted ACE metadata evidence path", "\n".join(result))
 
     def test_public_artifact_scan_allows_source_field_policy_prose(self):
         validator = load_validator()
