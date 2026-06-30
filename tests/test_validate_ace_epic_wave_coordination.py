@@ -818,6 +818,34 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
 
         self.assertIn("unbounded traversal", "\n".join(result))
 
+    def test_public_artifact_scan_rejects_assigned_private_source_fields(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "comment.md"
+            path.write_text(
+                "source_id: vendor_doc_001\n"
+                "source_sha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
+                "private_lookup_key: lookup_001\n"
+                "private_lookup_map: {lookup_001: vendor_doc_001}\n"
+                "public_source_token: pst_0123456789abcdef0123456789abcdef\n"
+            )
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("private source field assignment", "\n".join(result))
+
+    def test_public_artifact_scan_allows_source_field_policy_prose(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "plan.md"
+            path.write_text(
+                "Policy may name source_id, source_sha256, private_lookup_key, "
+                "private_lookup_map, share_relative_path_private_only, and "
+                "public_source_token as schema field names only.\n"
+            )
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertEqual([], result)
+
     def test_public_artifact_scan_allows_denied_traversal_policy_prose(self):
         validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:

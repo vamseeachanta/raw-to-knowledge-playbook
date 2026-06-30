@@ -96,6 +96,10 @@ PRIVATE_LEAK_PATTERNS = [
     r"\b\d{3}-\d{2}-\d{4}\b",
     r"\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b",
 ]
+PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS = [
+    r"(?i)[\"']?\b(?:source_id|source_sha256|private_lookup_key|private_lookup_map|share_relative_path_private_only)\b[\"']?\s*[:=]\s*[^`\s,}\]]+",
+    r"(?i)[\"']?\bpublic_source_token\b[\"']?\s*[:=]\s*[\"']?pst_[0-9a-f]{32}\b",
+]
 MANIFEST_PATH_PATTERN = r"(?:\$?\{?ACE_SHARE_ROOT\}?|ACE_SHARE_ROOT|assets\.json|master-index\.jsonl|index\.db|_cad-index)"
 DENIED_TRAVERSAL_PATTERNS = [
     rf"\bfind\s+[^\n`]*{MANIFEST_PATH_PATTERN}",
@@ -614,6 +618,10 @@ def validate_public_artifact_paths(paths: list[Path]) -> list[str]:
                 for pattern in PRIVATE_LEAK_PATTERNS:
                     if re.search(pattern, line):
                         errors.append(f"public artifact leak is not allowed at {path}:{line_number}: {line.strip()}")
+                        break
+                for pattern in PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS:
+                    if re.search(pattern, line):
+                        errors.append(f"private source field assignment is not allowed at {path}:{line_number}: {line.strip()}")
                         break
     return errors
 
