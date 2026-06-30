@@ -1,13 +1,13 @@
 # Plan for #65: ACE Wave 0 Ledger Schema and Route-Store Matrix
 
-> **Status:** draft
+> **Status:** plan-review
 > **Complexity:** T2
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:claude
-> **Review artifacts:** PENDING final no-MAJOR round
+> **Review artifacts:** r3 active-provider no-MAJOR; Gemini unavailable
 
 ---
 
@@ -91,6 +91,12 @@ N/A - governance/planning issue; no runtime failure is alleged.
 | Review artifact - Claude r1 | `scripts/review/results/2026-06-30-plan-65-claude-r1.md` |
 | Review artifact - Codex r1 | `scripts/review/results/2026-06-30-plan-65-codex-r1.md` |
 | Review artifact - Gemini r1 | `scripts/review/results/2026-06-30-plan-65-gemini-r1.md` |
+| Review artifact - Claude r2 | `scripts/review/results/2026-06-30-plan-65-claude-r2.md` |
+| Review artifact - Codex r2 | `scripts/review/results/2026-06-30-plan-65-codex-r2.md` |
+| Review artifact - Gemini r2 | `scripts/review/results/2026-06-30-plan-65-gemini-r2.md` |
+| Review artifact - Claude r3 | `scripts/review/results/2026-06-30-plan-65-claude-r3.md` |
+| Review artifact - Codex r3 | `scripts/review/results/2026-06-30-plan-65-codex-r3.md` |
+| Review artifact - Gemini r3 | `scripts/review/results/2026-06-30-plan-65-gemini-r3.md` |
 
 ---
 
@@ -250,8 +256,11 @@ run parent coordination validator as a compatibility check
 | Claude r2 | MINOR | Confirmed r1 MAJORs patched; requested exact parent approval-marker call semantics, clearer #65/#68 self-scan boundary, and exact set-membership wording for enum disjointness. Current draft patches these issues; re-review required because the plan changed after r2. |
 | Codex r2 | MINOR | Found prompt reviewed-head metadata typo: the r2 prompt named an unresolvable SHA while the actual local head was `ee0ef2221b928f78de50ed150aac2a87b1e6988a`. Next review must use the actual commit. |
 | Gemini r2 | UNAVAILABLE | Installed client returned unsupported-tier authentication error; no review performed. |
+| Claude r3 | MINOR | Verified r1 MAJORs and r2 MINORs patched; left three non-blocking spec-precision findings about import mechanism, comparison-source drift, and core-vs-conditional scan paths. No MAJOR remains. |
+| Codex r3 | APPROVE | Verified current head `937f9455c211a2329893556247645660392e9208`, validators/tests/scans, live issue assumptions, and no findings. |
+| Gemini r3 | UNAVAILABLE | Installed client returned unsupported-tier authentication error; no review performed. |
 
-**Overall result:** NEEDS RE-REVIEW - draft only; formal r1 review returned MAJOR from both active providers and r2 returned MINOR after the r1 patch. Current draft patches the r2 findings and must receive a fresh no-MAJOR provider round on the correct committed head before `status:plan-review`.
+**Overall result:** PLAN-REVIEW READY - r3 active-provider review returned no MAJOR (Claude MINOR, Codex APPROVE) on `937f9455c211a2329893556247645660392e9208`; Gemini was unavailable and is recorded explicitly. Implementation remains blocked until user approval moves the issue to `status:plan-approved`.
 
 ---
 
@@ -264,7 +273,7 @@ run parent coordination validator as a compatibility check
 - **Risk:** The new validator could require parent scanner self-exemptions. The implementation will avoid denied recursive traversal APIs in new source files by default and will add explicit tests before introducing any self-exemption.
 - **Risk:** The schema-local JSON scanner could reveal a broader public-scan defect. The implementation will keep the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) fix scoped to #65 artifacts and will update [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68)/[#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) or file a follow-on for any reusable scanner rule.
 - **Risk:** Parent and split registries could drift. The implementation will compare the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema against `docs/plans/ace-share-ingestion-wave-coordination.md`.
-- **Open:** Gemini review remains unavailable in current noninteractive runs. [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) cannot move to `status:plan-review` until fresh review evidence is available under the workspace quorum policy.
+- **Open:** Gemini review remains unavailable in current noninteractive runs because the installed client reports an unsupported tier. The r3 active-provider no-MAJOR round records this explicitly; restoration of Gemini should be handled separately and does not authorize implementation.
 
 ---
 
