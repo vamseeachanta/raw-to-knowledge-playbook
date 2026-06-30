@@ -1,6 +1,6 @@
 review_artifact_role: public_history
 
-# Disagreement report — plan #51 (2026-06-29)
+# Disagreement report - plan #51 (2026-06-29)
 
 ## Verdicts
 
@@ -8,7 +8,7 @@ review_artifact_role: public_history
 |---|---|
 | claude | MAJOR |
 | codex | MAJOR |
-| gemini | UNAVAILABLE (gemini CLI failed, rc=41: Error authenticating: FatalAuthenticationError: Manual authorization is required but the current session is non-interactive. Please run the Gemini CLI in an interactive terminal to log in, provide a GEMINI_API_KEY, or ensure Application Default Credentials are configured.     at initOauthClient (file:///home/vamsee/.npm-global/lib/node_modules/@google/gemini-cli/bundle/chunk-VLV2BYPM.js:269720:13)) |
+| gemini | UNAVAILABLE (gemini CLI failed, rc=41: Error authenticating: FatalAuthenticationError: Manual authorization is required but the current session is non-interactive. Please run the Gemini CLI in an interactive terminal to log in, provide a GEMINI_API_KEY, or ensure Application Default Credentials are configured.     at initOauthClient (<LOCAL_FILE_URI>)) |
 
 ## Findings unique to each provider
 

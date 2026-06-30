@@ -78,7 +78,7 @@ MISSING scripts/validate_ace_public_artifacts.py
 ```
 
 **Bounded source metadata proof** (point-in-time probe verified 2026-06-29T21:49:42Z; host-local existence/type probe over the fixed source list; no manifest materialization; exact size/mtime values are withheld from public artifacts and must move to a private/non-public evidence sidecar if needed):
-```
+```ace-metadata-index-evidence
 EXISTS ACE_SHARE_ROOT/INDEX.md type=file details=withheld_public
 EXISTS ACE_SHARE_ROOT/assets.json type=file details=withheld_public
 EXISTS ACE_SHARE_ROOT/docs/master-index.jsonl type=file details=withheld_public
@@ -300,11 +300,30 @@ define sampling command grammar:
   reject executable contexts that combine denied
   traversal/materialization tools with ACE_SHARE_ROOT, assets.json, master-index.jsonl,
   index.db, _cad-index, or other ACE manifest/source tokens
-  allow denied command names and private field names only in fixed methodology headings,
-  this grammar paragraph, the TDD/acceptance denied-token catalog rows, and the explicit
-  repo-local governance scan shape above; all allowed prose must avoid executable prefixes,
-  real source paths, pipes, redirects, and source-material command examples
+  allow denied command names and private field names only through machine-parseable
+  self-scan allow contexts; all allowed prose must avoid executable prefixes, real source
+  paths, pipes, redirects, and source-material command examples
   ambiguous context fails closed and must be rewritten as bounded helper prose or fixtures
+define self-scan allow contexts as data, not prose inference:
+  scripts/ace_public_surface_scan.py owns an ALLOWED_CONTEXTS table; each entry has
+  context_id, path_glob, heading_path, start_sentinel, end_sentinel, allowed_token_classes,
+  max_lines, and disallowed_context_patterns
+  markdown allow blocks use exact sentinels:
+    <!-- ace-public-scan-allow:start context_id=<id> token_classes=<csv> max_lines=<n> -->
+    allowed policy prose
+    <!-- ace-public-scan-allow:end context_id=<id> -->
+  sentinel blocks cannot nest; start/end ids must match; unknown context_id, missing end,
+  over-max-lines content, executable prefixes, pipes, redirects, raw host paths, raw source
+  paths, assigned private-source fields, or private lookup maps fail closed even inside an
+  allowed context
+  initial context_ids are denied-token-catalog, private-field-schema-terms,
+  public-token-grammar, metadata-index-evidence, review-artifact-finding-quote, and
+  governance-command-reference
+  metadata-index-evidence is allowed only in a fenced block with info string
+  ace-metadata-index-evidence and exact FIXED_METADATA_EVIDENCE_PATHS rows; any other
+  root-abstraction path row fails
+  TDD/acceptance table exceptions are recognized by exact heading_path plus test-name row
+  anchors, not by arbitrary paragraph text
 require ACE_SHARE_ROOT plus share-relative paths in scripts/tests
 require public surfaces to use public_source_token only for source references; allow literal
   private field names only in closed schema/policy discussion contexts, and reject raw
@@ -567,7 +586,8 @@ The parent coordination validator support remains outside #51 implementation sco
 | test_private_lookup_map_is_private_only | Public surfaces cannot contain private lookup maps | Control-plane/public-surface fixtures | Rejects `private_lookup_key` mappings in public docs, review artifacts, skills, or issue-comment body files |
 | test_ace_sampling_protocol_blocks_unbounded_crawls | Sampling rules do not allow unbounded crawls | Sampling section and bad fixtures | Fails on unbounded filesystem search, disk-usage traversal, recursive text search, recursive listing, recursive glob/Python traversal, unrestricted materializing query use, custom full-manifest loops, or full-file hashing/counting of large manifests |
 | test_ace_sampling_protocol_rejects_materialization_code | Python/shell fixture denial | Bad fixtures | Rejects full-json loading, text materialization, streaming custom manifest loops, query-length/materializing query invocations, file dumps, recursive grep/count/hash operations, recursive glob traversal, recursive Python traversal, and validator self-scan bypasses when the bad fixture pairs those executable patterns with ACE manifest/source tokens |
-| test_sampling_deny_tokens_are_scoped_to_executable_contexts | The plan can name denied commands without self-blocking | Prose policy section and bad executable fixtures | Allows denied command names only in fixed methodology headings, the grammar paragraph, and TDD/acceptance denied-token catalog rows without executable prefixes, real source paths, pipes, redirects, or source-material command examples; rejects shell/python fenced blocks, inline code, list/table command starts, pipes, redirects, command flags, and ambiguous contexts when paired with ACE source/manifest tokens |
+| test_sampling_deny_tokens_are_scoped_to_executable_contexts | The plan can name denied commands without self-blocking | Declared allow-context fixtures and bad executable fixtures | Allows denied command names only through declared `ALLOWED_CONTEXTS` sentinel blocks or exact heading/test-name anchors without executable prefixes, real source paths, pipes, redirects, or source-material command examples; rejects shell/python fenced blocks, inline code, list/table command starts, pipes, redirects, command flags, and ambiguous contexts when paired with ACE source/manifest tokens |
+| test_self_scan_allow_contexts_are_machine_parseable | Self-scan exceptions are deterministic rather than prose-inferred | `ALLOWED_CONTEXTS`, sentinel-block fixtures, heading-path fixtures, and malformed allow-context fixtures | Requires context_id/path_glob/heading_path/start/end/token_class/max_lines/disallowed-pattern fields, accepts only exact sentinel pairs and exact heading/test-name anchors, rejects nesting, unknown ids, missing ends, over-length blocks, executable prefixes, pipes, redirects, raw host/source paths, assigned private fields, and arbitrary paragraph text containing denied tokens |
 | test_metadata_only_evidence_block_is_allowed_but_not_generalized | The plan's own source evidence block can self-scan safely | Positive fixture with fenced metadata evidence rows using the root abstraction, one fixed source path, type, and `details=withheld_public`, plus negative fixtures | Allows only fixed `metadata_index_evidence_path` existence/type rows; rejects unlisted ACE paths, item-level source paths, rows publishing title/size/mtime/count/digest/content, executable/path-bearing commands, and private content snippets |
 | test_ace_sampling_protocol_requires_caps | Sampling rules are bounded | Sampling section | Manifest source, seed/sort, per-bucket caps, max files, and max bytes are present |
 | test_manifest_backed_waves_require_snapshot_id | #62 freshness gate is represented in #51 sampling contract | Wave map | #51/#61/#62/#63 are false, #52-#60 require `requires_manifest_snapshot_id=true`, and sampling is rejected without #62 snapshot evidence |
@@ -617,7 +637,8 @@ The parent coordination validator support remains outside #51 implementation sco
 - [ ] The closed `wave_class` matrix records [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) as `control_plane`, [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) as `storage_lifecycle_gate`, [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) as `manifest_freshness_gate`, and [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) as `public_canary_gate`, all with `requires_manifest_snapshot_id=false`; requires [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60) to be `wave_class=ingestion_wave` and carry `requires_manifest_snapshot_id=true`; and rejects any registered child row with ingestion-wave executable binding that omits `wave_class=ingestion_wave` or falsifies the snapshot field. Entirely unregistered future issue discovery remains a parent/portfolio maintenance obligation under [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50).
 - [ ] Downstream validator, canary, eval, example, and skill binding paths carry `binding_evidence_state=existing_repo_path` or `binding_evidence_state=planned_by_child_issue`; #51 rejects missing paths marked `existing_repo_path` and does not certify `planned_by_child_issue` paths as operational.
 - [ ] Sampling is rejected for [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60) unless [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) approval plus snapshot evidence is recorded.
-- [ ] Sampling firewall deny fixtures cover full-json loading, text materialization, custom line iteration, raw materializing query invocations against ACE manifest/source tokens, file dumps, recursive grep/count/hash operations, recursive glob/rglob traversal, recursive Python traversal, filesystem search/size/listing traversal, and validator self-scan safety. Denied-command prose is allowed only under fixed methodology headings, the grammar paragraph, and TDD/acceptance denied-token catalog rows without executable prefixes, real source paths, pipes, redirects, source-material command examples, or ambiguous command-like context; executable/path-bearing examples fail.
+- [ ] Sampling firewall deny fixtures cover full-json loading, text materialization, custom line iteration, raw materializing query invocations against ACE manifest/source tokens, file dumps, recursive grep/count/hash operations, recursive glob/rglob traversal, recursive Python traversal, filesystem search/size/listing traversal, and validator self-scan safety. Denied-command prose is allowed only through declared `ALLOWED_CONTEXTS` sentinel blocks or exact heading/test-name anchors without executable prefixes, real source paths, pipes, redirects, source-material command examples, or ambiguous command-like context; executable/path-bearing examples fail.
+- [ ] Public-surface self-scan allow contexts are data-driven and deterministic: `ALLOWED_CONTEXTS` records context_id, path_glob, heading_path, start/end sentinels, allowed token classes, max_lines, and disallowed patterns; sentinel blocks cannot nest; malformed, unknown, over-length, or executable/path-bearing allow contexts fail; TDD/acceptance table exceptions use exact heading/test-name anchors rather than paragraph inference.
 - [ ] Proposed scripts/tests use `ACE_SHARE_ROOT` plus share-relative paths.
 - [ ] The #51 control-plane artifact is created at `artifacts/ace-share-wave0-control-plane.md`, not under `docs/`; `docs/case-studies/ace-share-wave-0-control-plane.md` and any other `docs/**` copy are rejected until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval, local marker, implemented canary, and passing canary command exist.
 - [ ] #51-owned public-surface self-scan blocks raw host/source paths outside the fixed metadata-index evidence shape, generic private-like identifier patterns, generic personal-identifier regexes such as emails/phones/SSN, confidentiality-marker phrases, assigned raw source hash values, assigned private source fields, private lookup maps, and provider stderr/log sidecar leaks.
@@ -737,8 +758,11 @@ These are operator status-transition checks, not CI acceptance criteria. They mu
 | Claude r25 | MAJOR | Required revisiting scope/non-convergence, recording a fresh no-MAJOR round, resolving Gemini degraded quorum, removing stray `visibility` terminology, reducing manual-only planning-surface leak risk, replacing bash YAML parsing, and de-risking the self-referential scanner. |
 | Codex r25 | MAJOR | Required reconciling stale #50 provenance/sidecar language before plan-review, defining a closed deny-list config context, making legal scan candidate coverage fail closed for untracked files, and splitting tests to respect file-size guardrails. |
 | Gemini r25 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
+| Claude r26 | MAJOR | Required explicit user split-vs-bundled scope decision, machine-parseable self-scan allow-context anchors, Gemini restoration/waiver, fresher no-MAJOR evidence, and less compound acceptance criteria. |
+| Codex r26 | MAJOR | Required normalizing tracked r16-r23 review artifacts that exposed local runtime file URIs, hardening the fallback scanner for local file/home path leaks, fresh no-MAJOR evidence, and an explicit split-vs-bundled scope decision. |
+| Gemini r26 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
 
-**Overall result:** r25 returned MAJOR from Claude, MAJOR from Codex, and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. The current patch is intended to address actionable r25 defects by reconciling stale parent #50 language, replacing the bash YAML parser with a Python-JSON-parsed `.legal-deny-list.yaml` subset, defining a closed deny-list config-safe context, making `--diff-only` fail closed on untracked candidate public files, splitting the test plan by module boundary, and removing stray `visibility` terminology. Remaining user/transition blockers are not self-clearable: a fresh review round must return no active-provider MAJORs, Gemini must be restored or the user must explicitly approve one degraded-quorum review round after seeing the auth-failure evidence, and the user must decide whether to split #51 further or explicitly accept the broad bundled scope before any implementation approval request.
+**Overall result:** r26 returned MAJOR from Claude, MAJOR from Codex, and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. The current patch is intended to address actionable r26 defects by normalizing tracked r16-r23 review artifacts, adding a parent fallback scanner rule and tests for local runtime file/home path leaks, recording r26 public-history artifacts, and replacing prose-inferred self-scan exceptions with machine-parseable allow-context anchors. Remaining user/transition blockers are not self-clearable: a fresh review round must return no active-provider MAJORs, Gemini must be restored or the user must explicitly approve one degraded-quorum review round after seeing the auth-failure evidence, and the user must decide whether to split #51 further or explicitly accept the broad bundled scope before any implementation approval request.
 
 ---
 

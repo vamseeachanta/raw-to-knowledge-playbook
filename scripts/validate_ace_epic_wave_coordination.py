@@ -105,6 +105,7 @@ EVIDENCE_PLACEHOLDER_TERMS = (
 )
 PRIVATE_LEAK_PATTERNS = [
     re.escape("/mnt") + r"/(?:ace|[^`\s|)]*ace[^`\s|)]*)(?:/|\b)",
+    r"(?:file://)?" + re.escape("/" + "home") + r"/[A-Za-z0-9._-]+/[^\s`|)]*",
     r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
     r"(?i)\b(?:client|customer|project)[-_ ]?(?:id|name)\s*[:=]\s*[A-Za-z0-9_-]+",
     r"(?i)\b(?:" + "|".join(re.escape(term) for term in CONFIDENTIAL_TERMS) + r")\b",

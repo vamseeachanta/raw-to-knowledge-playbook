@@ -847,6 +847,24 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
 
         self.assertIn("public artifact leak", "\n".join(result))
 
+    def test_public_artifact_scan_rejects_local_runtime_file_uris(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "review.md"
+            path.write_text("provider trace: file://" + "/" + "home/agent/.npm-global/lib/tool.js\n")
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("public artifact leak", "\n".join(result))
+
+    def test_public_artifact_scan_rejects_local_home_paths(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "review.md"
+            path.write_text("provider trace: " + "/" + "home/agent/.codex/auth.json\n")
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("public artifact leak", "\n".join(result))
+
     def test_public_artifact_scan_rejects_unbounded_traversal_examples(self):
         validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:
