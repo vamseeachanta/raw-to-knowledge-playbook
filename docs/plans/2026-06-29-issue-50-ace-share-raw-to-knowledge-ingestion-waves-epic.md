@@ -115,7 +115,8 @@ assert implementation_ready=false unless:
 require every method gap to land as:
   playbook doc update, skill/eval update, or follow-on GitHub issue
 require public artifact safety gate before publication exposure:
-  no raw absolute source paths, no private identifiers, source_id/source_sha256 tokens only
+  no raw absolute source paths, no private identifiers, and only opaque public_source_token
+  references in public surfaces; raw source_id/source_sha256 values remain private-sidecar-only
 require branch publication rule:
   dedicated planning branch or explicit stacked-branch note; no accidental mix with unrelated feature branches
 ```
@@ -197,7 +198,7 @@ require branch publication rule:
 
 - **Risk:** The coordination artifact can drift from live GitHub labels; this plan will keep CI limited to repo-local snapshot fields and require a fresh `gh issue view` evidence comment before any label transition.
 - **Risk:** Planning artifacts currently live on `docs/ace-ingestion-wave-plans`, a dedicated planning branch stacked on `docs/cad-brep-geometry-lane`; publication exposure should wait until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has `status:plan-approved`, the local approval marker exists, the public-output canary is implemented, and the canary has a recorded passing-command result.
-- **Open:** [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) must name the private sidecar location before child waves rely on it for output routing.
+- **Open:** [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will define the logical route-to-store classes before child waves rely on them for output routing; [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) owns the physical private sidecar location and durable storage contract.
 - **Open:** [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) must define retrieval/evaluation gates before bulk ingestion expands beyond pilot size.
 
 ---

@@ -122,7 +122,10 @@ A documented and CI-validated ACE wave-0 control plane defining the ledger schem
 - `scripts/ace_public_surface_scan.py` will own generic public-surface scanning, review-artifact/sidecar scanning, operator-fetched issue body/comment scans, and restricted bad-fixture harness checks.
 - `scripts/ace_sampling_firewall.py` will own executable-context detection, bounded sampling grammar, metadata-evidence shape checks, and traversal/materialization denials.
 - `scripts/validate_ace_wave0_control_plane.py` will orchestrate those modules, validate the wave map/ledger/route matrix, and expose the CI/CLI entrypoint.
-- `tests/test_validate_ace_wave0_control_plane.py` will group tests by module boundary so token/contract, public-surface scanning, sampling firewall, and wave-map matrix failures can be debugged independently.
+- Split unit modules will mirror those boundaries: `tests/test_ace_public_tokens.py`,
+  `tests/test_ace_public_surface_scan.py`, `tests/test_ace_sampling_firewall.py`,
+  `tests/test_validate_ace_wave0_control_plane.py`, and
+  `tests/test_ace_legal_sanity_scan.py`.
 
 ---
 
@@ -445,13 +448,18 @@ define legal/security closeout gate:
   #51 creates a repo-local scripts/legal/legal-sanity-scan.sh wrapper and a repo-local
   .legal-deny-list.yaml so implementation closeout has an executable command in this repo
   rather than depending on an adjacent checkout artifact
-  the deny-list schema is a strict YAML subset parsed by the bash wrapper without yq:
-  top-level scalar keys version and default_severity; list keys exclusions and pattern_groups;
-  two-space indentation; one-line single-quoted string values; no anchors, aliases,
-  block scalars, multiline regexes, tabs, inline maps, or comments inside pattern entries
-  each pattern entry carries pattern, case_sensitive, description, and optional severity
-  defaulting to default_severity; literal single quotes inside regexes are represented by
-  two adjacent single quotes
+  the deny-list keeps the workspace-conventional .yaml filename but its content is a
+  JSON-compatible YAML object parsed by a Python stdlib json loader invoked by the bash
+  wrapper; the wrapper rejects anchors, aliases, block scalars, tabs, comments, and
+  non-JSON YAML forms rather than attempting a hand-rolled bash YAML parser
+  top-level keys are version, default_severity, exclusions, pattern_groups, and
+  config_contexts; each pattern entry carries pattern, case_sensitive, description,
+  and optional severity defaulting to default_severity
+  .legal-deny-list.yaml is a closed config-safe context only for JSON string regex values
+  under pattern entries; the public-surface scanner must still reject copied deny-list
+  pattern strings, confidentiality markers, private-like identifiers, or source-hash
+  assignment examples in arbitrary docs, plans, review artifacts, comments, skills, or
+  test good fixtures, and no whole-file/path blanket exemption is allowed
   the initial deny-list must include block-severity synthetic/generic patterns for:
     private host/source path root shapes without committing the real private mount root literal;
     machine-specific private roots are supplied only through a private #63 deny-list or local env
@@ -462,8 +470,13 @@ define legal/security closeout gate:
   the initial deny-list must not commit real client/project/customer names; those remain a
   #63/private-deny-list responsibility
   the wrapper loads only repo-local deny-list config, accepts --diff-only and --json,
-  scans changed tracked files plus staged content when invoked before commit, and exits
-  nonzero on block-severity matches
+  and exits nonzero on block-severity matches
+  before the required closeout command, the candidate implementation commit must be staged;
+  --diff-only scans the staged candidate blob set and unstaged tracked candidate edits,
+  and it fails closed if git status reports any untracked candidate files under the planned
+  public path prefixes (artifacts/, scripts/, .github/workflows/, skills/, docs/,
+  tests/fixtures/ace-wave0-control-plane/good/, or repo-root deny-list config) so new
+  public-surface files cannot bypass the gate by remaining untracked
   required closeout command:
     bash scripts/legal/legal-sanity-scan.sh --diff-only
   if that command is missing or cannot run, #51 implementation closeout fails; the operator
@@ -505,14 +518,18 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | Create | scripts/ace_public_surface_scan.py | Generic public-surface scanner, review-artifact scanner, issue body/comment scan helper, and restricted bad-fixture harness |
 | Create | scripts/ace_sampling_firewall.py | Bounded sampling and executable-context firewall helper module |
 | Create | scripts/validate_ace_wave0_control_plane.py | CI-checkable orchestrator for required fields, routes, wave bindings, module checks, and sampling constraints |
-| Create | .legal-deny-list.yaml | Repo-local legal/security deny-list source so #51 closeout has an executable legal gate independent of adjacent checkouts |
+| Create | .legal-deny-list.yaml | Repo-local legal/security deny-list source; keeps the workspace filename but uses a JSON-compatible YAML subset parsed by Python stdlib json |
 | Create | scripts/legal/legal-sanity-scan.sh | Repo-local legal/security scanner wrapper required by inherited AGENTS gate; authoritative closeout command is `bash scripts/legal/legal-sanity-scan.sh --diff-only` |
-| Create | tests/test_validate_ace_wave0_control_plane.py | TDD unit tests for the wave-0 validator and workflow wiring |
+| Create | tests/test_ace_public_tokens.py | TDD unit tests for opaque token generation and fixture token expansion |
+| Create | tests/test_ace_public_surface_scan.py | TDD unit tests for generic public-surface scanning, issue/comment snapshots, review artifacts, and policy-context allowlists |
+| Create | tests/test_ace_sampling_firewall.py | TDD unit tests for bounded sampling, executable-context detection, metadata evidence shape, and traversal/materialization denials |
+| Create | tests/test_validate_ace_wave0_control_plane.py | TDD unit tests for validator orchestration, ledger schema, route matrix, wave map, workflow wiring, and skill/doc contract checks |
+| Create | tests/test_ace_legal_sanity_scan.py | TDD unit tests for repo-local legal scan wrapper, JSON-compatible deny-list parsing, config-safe contexts, candidate staging, and untracked-file fail-closed behavior |
 | Create | tests/fixtures/ace-wave0-control-plane/good/ | Positive fixture control-plane doc, skill snippets, and bounded sampling examples |
 | Create | tests/fixtures/ace-wave0-control-plane/bad/ | Restricted adversarial fixtures for expected-failure tests; not part of the canonical public-surface scan set |
 | Reference | scripts/validate_ace_public_artifacts.py | Public-output safety gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63); #51 will define the route/token input contract only |
 | Modify | .github/workflows/validate.yml | Run the new validator |
-| Modify | docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md | Reconcile parent epic public provenance language with the #51 route/token boundary |
+| Modify | docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md | Keep parent epic public provenance and private-sidecar ownership language aligned with the #51 route/token boundary and #61 physical-store ownership |
 | Planning-surface update | docs/plans/ace-share-ingestion-wave-coordination.md | Record #51 review/status fields during plan-review and later closeout so the parent tracker does not remain stale; do not mark #51 implementation-ready before user approval |
 | Planning-surface update | docs/plans/README.md | Record #51 plan status/review notes during plan-review and later closeout; do not mark #51 implementation-ready before user approval |
 | GitHub issue metadata verification/conditional modify | https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51 | Verify the live issue body is sanitized before `status:plan-review`; edit it if needed so it has no raw host paths, exact counts, arbitrary root-prefixed source bullets, or denied command examples against the private share |
@@ -575,8 +592,9 @@ The parent coordination validator support remains outside #51 implementation sco
 | test_manifest_gate_boolean_matches_structural_registry | Existing coordination validator cannot contradict #51 matrix | Structural Wave Gate Registry rows and validator fixtures | #51/#61/#62/#63 are non-sampling rows with no own snapshot_id requirement; #52-#60 require #62 snapshot evidence; validator reads parseable `wave_class` and `requires_manifest_snapshot_id` fields instead of inferring booleans from prose |
 | test_every_downstream_wave_has_issue_skill_and_validator | #52-#63 each have bindings | Wave map | No missing issue, skill group, eval data, validator/canary contract path string, requires_manifest_snapshot_id, snapshot_id evidence rule, threshold, validation command, or binding_evidence_state; downstream paths marked `existing_repo_path` must exist, while paths marked `planned_by_child_issue` are recorded as intent only and are not certified as operational by #51 |
 | test_public_canary_is_referenced_not_required | #51/#63 dependency boundary | Control-plane contract | #51 records the #63 scanner interface but does not require `scripts/validate_ace_public_artifacts.py` to exist or pass |
-| test_wave0_workflow_runs_validator_and_tests | CI wiring exists | `.github/workflows/validate.yml` | Workflow invokes `scripts/validate_ace_wave0_control_plane.py` and `tests.test_validate_ace_wave0_control_plane` |
-| test_legal_sanity_scan_is_repo_local_and_executable | Inherited legal/security gate is concrete | `.legal-deny-list.yaml`, `scripts/legal/legal-sanity-scan.sh`, and changed-file fixtures | Repo-local command `bash scripts/legal/legal-sanity-scan.sh --diff-only` exists, loads the strict repo-local YAML subset, scans changed/staged files, passes clean fixtures, rejects unsupported YAML constructs, and fails block-severity fixtures for the minimum pattern classes named in the legal/security closeout gate without committing the real private mount root literal |
+| test_wave0_workflow_runs_validator_and_tests | CI wiring exists | `.github/workflows/validate.yml` | Workflow invokes `scripts/validate_ace_wave0_control_plane.py` and every split wave-0 unit test module named in Acceptance Criteria |
+| test_legal_deny_list_config_context_is_closed | Deny-list regex config is self-scan-safe without becoming a blanket exemption | `.legal-deny-list.yaml`, public-surface fixtures, copied-pattern negative fixtures | Allows only JSON string regex values under the closed deny-list pattern schema, rejects unsupported YAML constructs, rejects copied confidentiality/source-hash/private-like patterns outside the config context, and proves no whole-file/path blanket exemption exists |
+| test_legal_sanity_scan_is_repo_local_and_executable | Inherited legal/security gate is concrete | `.legal-deny-list.yaml`, `scripts/legal/legal-sanity-scan.sh`, staged/unstaged/untracked candidate fixtures | Repo-local command `bash scripts/legal/legal-sanity-scan.sh --diff-only` exists, loads the JSON-compatible YAML deny-list through Python stdlib json, scans staged candidate blobs and unstaged tracked candidate edits, fails on untracked candidate files under planned public path prefixes, passes clean fixtures, and fails block-severity fixtures for the minimum pattern classes named in the legal/security closeout gate without committing the real private mount root literal |
 | test_skill_updates_include_ace_sections | Planned skill edits are substantive | Modified skill files | Required ACE route, exclusion, ledger, page-shape, and method-gap closeout sections/terms are present |
 | test_closeout_requires_method_gap_disposition | Method gaps cannot disappear | Closeout rule | Requires doc/skill update or follow-on issue |
 
@@ -617,13 +635,13 @@ The parent coordination validator support remains outside #51 implementation sco
 - [ ] Any `docs/` placement, `docs/index.md`, or `mkdocs.yml` publication of the #51 control-plane artifact requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) `status:plan-approved`, local approval marker, implemented redaction canary, and recorded passing-command result.
 - [ ] `% ingested success` formula, denominator source, threshold, validation command, and closeout measured numerator/denominator requirement are recorded for every downstream wave. #51/#61/#62/#63 control/gate rows use `success_metric_applicability=not_applicable_control_plane` as a non-computing zero-denominator sentinel, while #52-#60 require `successful_routed_items` and `eligible_candidate_items` sources plus a nonzero denominator at ingestion-wave closeout; #51 does not fabricate measured downstream numerator/denominator values before those waves execute.
 - [ ] Exclusion classes are fail-closed for PII, client-confidential, third-party-confidential, binary noise, and low-value material.
-- [ ] Unit tests live in `tests/test_validate_ace_wave0_control_plane.py` with fixtures under `tests/fixtures/ace-wave0-control-plane/`.
+- [ ] Unit tests are split across `tests/test_ace_public_tokens.py`, `tests/test_ace_public_surface_scan.py`, `tests/test_ace_sampling_firewall.py`, `tests/test_validate_ace_wave0_control_plane.py`, and `tests/test_ace_legal_sanity_scan.py`, with fixtures under `tests/fixtures/ace-wave0-control-plane/`.
 - [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python scripts/validate_ace_wave0_control_plane.py` passes.
-- [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python -m unittest tests.test_validate_ace_wave0_control_plane` passes.
-- [ ] `.github/workflows/validate.yml` invokes both the wave-0 validator and the wave-0 unit test module.
+- [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run python -m unittest tests.test_ace_public_tokens tests.test_ace_public_surface_scan tests.test_ace_sampling_firewall tests.test_validate_ace_wave0_control_plane tests.test_ace_legal_sanity_scan` passes.
+- [ ] `.github/workflows/validate.yml` invokes both the wave-0 validator and the split wave-0 unit test modules.
 - [ ] The validator and unit tests pass with `ACE_SHARE_ROOT` unset in CI by validating repo fixtures/docs only.
 - [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run skills/validate_skill.py` passes after skill updates.
-- [ ] Legal/security gate evidence is recorded with the repo-local command `bash scripts/legal/legal-sanity-scan.sh --diff-only`. #51 creates `scripts/legal/legal-sanity-scan.sh` and `.legal-deny-list.yaml`; the deny list uses the schema and minimum block-severity pattern classes named in this plan. If the repo-local command is missing, cannot load the repo-local deny list, or exits nonzero, implementation closeout fails rather than substituting an unspecified adjacent-checkout scan.
+- [ ] Legal/security gate evidence is recorded after staging the candidate implementation commit with the repo-local command `bash scripts/legal/legal-sanity-scan.sh --diff-only`. #51 creates `scripts/legal/legal-sanity-scan.sh` and `.legal-deny-list.yaml`; the deny list keeps the .yaml filename but uses the JSON-compatible schema and minimum block-severity pattern classes named in this plan. If the repo-local command is missing, cannot load the repo-local deny list, finds block-severity matches, or detects untracked candidate files under planned public path prefixes, implementation closeout fails rather than substituting an unspecified adjacent-checkout scan.
 
 ---
 
@@ -716,15 +734,18 @@ These are operator status-transition checks, not CI acceptance criteria. They mu
 | Claude r24 | MINOR | Required resolving the Gemini/degraded-quorum gate before status transition; noted residual scope/non-convergence, #63 coupling, fallback scanner sufficiency, compound acceptance criteria, and token-prefix clarity. |
 | Codex r24 | MAJOR | Required removing leftover source-hash sweep implementation wording, making the legal deny-list self-scan-safe and parser-specific, distinguishing planned downstream bindings from existing paths, and defining phase-specific public-scan manifests. |
 | Gemini r24 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
+| Claude r25 | MAJOR | Required revisiting scope/non-convergence, recording a fresh no-MAJOR round, resolving Gemini degraded quorum, removing stray `visibility` terminology, reducing manual-only planning-surface leak risk, replacing bash YAML parsing, and de-risking the self-referential scanner. |
+| Codex r25 | MAJOR | Required reconciling stale #50 provenance/sidecar language before plan-review, defining a closed deny-list config context, making legal scan candidate coverage fail closed for untracked files, and splitting tests to respect file-size guardrails. |
+| Gemini r25 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
 
-**Overall result:** r24 returned MINOR from Claude, MAJOR from Codex, and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. The current patch is intended to address the actionable r24 Codex blockers by removing the leftover #51 source-hash sweep implementation requirement, making the legal deny-list self-scan-safe with an exact YAML subset, distinguishing `existing_repo_path` from `planned_by_child_issue` downstream bindings, defining phase-specific scan manifests, and spelling out the `pst_` token prefix. A fresh review round must return no active-provider MAJORs before any plan-review label or user approval request; Gemini must be restored or the user must explicitly approve one degraded-quorum review round after seeing the auth-failure evidence.
+**Overall result:** r25 returned MAJOR from Claude, MAJOR from Codex, and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. The current patch is intended to address actionable r25 defects by reconciling stale parent #50 language, replacing the bash YAML parser with a Python-JSON-parsed `.legal-deny-list.yaml` subset, defining a closed deny-list config-safe context, making `--diff-only` fail closed on untracked candidate public files, splitting the test plan by module boundary, and removing stray `visibility` terminology. Remaining user/transition blockers are not self-clearable: a fresh review round must return no active-provider MAJORs, Gemini must be restored or the user must explicitly approve one degraded-quorum review round after seeing the auth-failure evidence, and the user must decide whether to split #51 further or explicitly accept the broad bundled scope before any implementation approval request.
 
 ---
 
 ## Risks and Open Questions
 
 - **Risk:** ACE inventory can drift; implementation must use exact manifests, bounded freshness probes, and `ACE_SHARE_ROOT` rather than hardcoded host paths.
-- **Risk:** `visibility` remains hand-set; implementation must fail closed unless public clearance evidence, structural reviewer identity, and review artifact all exist. True independence is not proven by local validation; publication still requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) and user approval.
+- **Risk:** Public eligibility remains hand-set through `sensitivity` and `public_clearance_evidence`; implementation must fail closed unless public clearance evidence, structural reviewer identity, and review artifact all exist. True independence is not proven by local validation; publication still requires [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) and user approval.
 - **Risk:** #51's generic self-scan is not a real private-identifier/publication certification. This is intentional to avoid duplicating #63; any public-output certification remains blocked until #63 is approved and implemented.
 - **Risk:** Gemini has been unavailable in noninteractive review runs; final review evidence must disclose any degraded provider quorum and cannot count `UNAVAILABLE` artifacts as provider approval. Provider quota/outage may degrade T3 to a disclosed two-active-provider quorum; Gemini auth/config failure blocks `status:plan-review` unless Gemini is restored or the user explicitly approves a one-round degraded quorum after seeing the auth-failure evidence. Under any allowed degraded quorum, Claude and Codex must both be fresh no-MAJOR for the same committed post-patch draft.
 - **Open:** The physical private sidecar backing store remains owned by [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61); #51 defines only logical target-store classes.
