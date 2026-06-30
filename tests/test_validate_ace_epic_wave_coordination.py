@@ -809,6 +809,28 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
 
         self.assertIn("public artifact leak", "\n".join(result))
 
+    def test_public_artifact_scan_rejects_unbounded_traversal_examples(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "comment.md"
+            path.write_text("Example to reject: `find ACE_SHARE_ROOT -type f`.\n")
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("unbounded traversal", "\n".join(result))
+
+    def test_public_artifact_scan_allows_denied_traversal_policy_prose(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "plan.md"
+            path.write_text(
+                "- Denied traversal patterns: recursive walk; `os.walk`; `ls -R`; `find`.\n"
+                "| test_unbounded_manifest_traversal_is_denied | Recursive share walk, unrestricted `jq`, "
+                "`os.walk`, `ls -R`, `find`, `du`, `rg`, and `fd` patterns fail validation |\n"
+            )
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertEqual([], result)
+
     def test_validator_source_is_not_self_blocking_public_artifact(self):
         validator = load_validator()
         result = validator.validate_public_artifact_paths([VALIDATOR_PATH])

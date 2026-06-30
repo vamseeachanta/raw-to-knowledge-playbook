@@ -111,6 +111,15 @@ DENIED_TRAVERSAL_PATTERNS = [
     rf"\bwc(?:\s+-[A-Za-z]*[clmw][A-Za-z]*\b)?[^\n`]*{MANIFEST_PATH_PATTERN}",
     rf"\bsha256sum\b[^\n`]*{MANIFEST_PATH_PATTERN}",
 ]
+INTERNAL_TRAVERSAL_SENTINEL = "public-artifact-scan-internal-directory-walk-ok"
+DENIED_TRAVERSAL_POLICY_PROSE_TERMS = (
+    "Denied traversal patterns",
+    "unbounded traversal",
+    "unbounded crawls",
+    "Sampling firewall deny fixtures",
+    "denied-command prose",
+    "patterns fail validation",
+)
 REQUIRED_APPROVAL_MARKER_FIELDS = [
     "Approved by:",
     "Approval date:",
@@ -590,17 +599,38 @@ def validate_public_artifact_paths(paths: list[Path]) -> list[str]:
             continue
         candidates = [root]
         if root.is_dir():
-            candidates = [path for path in root.rglob("*") if path.is_file()]
+            candidates = [path for path in root.rglob("*") if path.is_file()]  # public-artifact-scan-internal-directory-walk-ok
         for path in candidates:
             if path.suffix == ".pyc":
                 continue
             text = path.read_text(errors="ignore")
             for line_number, line in enumerate(text.splitlines(), start=1):
+                for pattern in DENIED_TRAVERSAL_PATTERNS:
+                    if re.search(pattern, line):
+                        if _allowed_internal_traversal_line(path, line) or _allowed_denied_traversal_policy_prose(line):
+                            continue
+                        errors.append(f"unbounded traversal command is not allowed at {path}:{line_number}: {line.strip()}")
+                        break
                 for pattern in PRIVATE_LEAK_PATTERNS:
                     if re.search(pattern, line):
                         errors.append(f"public artifact leak is not allowed at {path}:{line_number}: {line.strip()}")
                         break
     return errors
+
+
+def _allowed_internal_traversal_line(path: Path, line: str) -> bool:
+    return (
+        path.name == "validate_ace_epic_wave_coordination.py"
+        and INTERNAL_TRAVERSAL_SENTINEL in line
+        and ("root." + "rglob") in line
+        and "path.is_file" in line
+    )
+
+
+def _allowed_denied_traversal_policy_prose(line: str) -> bool:
+    return not re.search(MANIFEST_PATH_PATTERN, line) and any(
+        term in line for term in DENIED_TRAVERSAL_POLICY_PROSE_TERMS
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
