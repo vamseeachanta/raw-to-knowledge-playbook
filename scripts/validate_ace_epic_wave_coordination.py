@@ -100,6 +100,10 @@ PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS = [
     r"(?i)[\"']?\b(?:source_id|source_sha256|private_lookup_key|private_lookup_map|share_relative_path_private_only)\b[\"']?\s*[:=]\s*[^`\s,}\]]+",
     r"(?i)[\"']?\bpublic_source_token\b[\"']?\s*[:=]\s*[\"']?pst_[0-9a-f]{32}\b",
 ]
+SOURCE_LIKE_RAW_DIGEST_PATTERNS = [
+    r"(?i)\b(?:source\s+hash|source_hash|source_sha256|provenance\s+pointer)\b\s*[:=]\s*[\"']?[0-9a-f]{32,128}\b",
+    r"(?i)\|\s*(?:source\s+hash|source_hash|source_sha256|provenance\s+pointer)\s*\|\s*[\"']?[0-9a-f]{32,128}\b",
+]
 MANIFEST_PATH_PATTERN = r"(?:\$?\{?ACE_SHARE_ROOT\}?|ACE_SHARE_ROOT|assets\.json|master-index\.jsonl|index\.db|_cad-index)"
 DENIED_TRAVERSAL_PATTERNS = [
     rf"\bfind\s+[^\n`]*{MANIFEST_PATH_PATTERN}",
@@ -622,6 +626,10 @@ def validate_public_artifact_paths(paths: list[Path]) -> list[str]:
                 for pattern in PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS:
                     if re.search(pattern, line):
                         errors.append(f"private source field assignment is not allowed at {path}:{line_number}: {line.strip()}")
+                        break
+                for pattern in SOURCE_LIKE_RAW_DIGEST_PATTERNS:
+                    if re.search(pattern, line):
+                        errors.append(f"source-like raw digest is not allowed at {path}:{line_number}: {line.strip()}")
                         break
     return errors
 

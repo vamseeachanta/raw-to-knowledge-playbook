@@ -833,6 +833,18 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
 
         self.assertIn("private source field assignment", "\n".join(result))
 
+    def test_public_artifact_scan_rejects_source_hash_values(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "comment.md"
+            path.write_text(
+                "source hash: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
+                "| source_sha256 | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef |\n"
+            )
+            result = validator.validate_public_artifact_paths([path])
+
+        self.assertIn("source-like raw digest", "\n".join(result))
+
     def test_public_artifact_scan_allows_source_field_policy_prose(self):
         validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:

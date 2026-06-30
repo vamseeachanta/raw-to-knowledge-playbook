@@ -115,6 +115,10 @@ N/A - governance/planning issue; no runtime failure is alleged.
 
 A documented and CI-validated ACE wave-0 control plane defining the ledger schema, routing firewall, exclusion classes, bounded sampling protocol, and downstream wave issue/skill map. Implementation will be decomposed into small validator modules rather than one monolithic parser.
 
+### Scope Decision
+
+#51 intentionally front-loads cross-wave interface governance because it is the wave-0 control plane for all ACE ingestion waves under [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50). It will define shared field names, route states, token grammar, and public-output contract inputs that [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) and [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) consume. It will not implement durable token lookup storage, durable private-sidecar output, or publication certification. If the user later chooses to trim scope, the split point will be: keep the ledger/routing/sampling matrix in #51 and move source-hash sweep plus shared public-output config creation to a new explicit follow-on issue before implementation approval.
+
 ### Implementation Decomposition
 
 - `scripts/ace_public_contract.py` will own JSON contract loading, private/public field classifications, and source-hash sweep classification helpers. It may import token grammar metadata from `scripts/ace_public_tokens.py`, but it must not define token-generation helpers, wrappers, or source-derived token functions.
@@ -301,12 +305,14 @@ scan #51 public surfaces before commit/comment:
   .github/workflows/validate.yml, scripts/ace_public_tokens.py,
   scripts/ace_public_contract.py, scripts/ace_public_surface_scan.py,
   scripts/ace_sampling_firewall.py, scripts/validate_ace_wave0_control_plane.py,
-  tests/test_validate_ace_wave0_control_plane.py, tests/fixtures/ace-wave0-control-plane/good/,
+  tests/fixtures/ace-wave0-control-plane/good/,
   touched skills, this plan, the #63 plan, docs/plans/README.md,
   docs/plans/ace-share-ingestion-wave-coordination.md, every retained plan-51 review artifact,
-  scripts/validate_ace_epic_wave_coordination.py, tests/test_validate_ace_epic_wave_coordination.py,
+  scripts/validate_ace_epic_wave_coordination.py,
   same-stem `.md.err`, `.err`, `.stderr`, and `.log` sidecars present at commit/comment time,
   and operator-fetched issue body/comment snapshot files
+  test source files run through unit tests and restricted fixture harnesses rather than the
+  generic public-text scan because they intentionally contain expected-failure examples
 define forensic bad-fixture handling:
   tests/fixtures/ace-wave0-control-plane/bad/ is not part of the canonical passing public-surface set;
   it is a restricted adversarial fixture root consumed only by tests expecting validation failure
@@ -369,6 +375,9 @@ reconcile #63 public-output plan contract:
   source_id, raw source_sha256, private lookup keys, token/hash/provenance IDs, or lookup
   maps as public-safe source identifiers, edit the public issue text to match the shared
   config boundary and scan the fetched body snapshot before relying on it as public metadata
+  #63's plan already references config/ace-public-output-contract.json; until #51 creates
+  that config, #63 implementation tests that load it are expected to remain blocked/red
+  and #63 must not be implemented independently of the #51 contract artifact
 reconcile existing governance docs and public methodology skills:
   operator preview may run `rg -n "sha256|source hash|provenance pointer" docs skills --glob "*.md"`
   CI/report generation uses a Python stdlib scanner over repo-tracked `docs/**/*.md` and
@@ -398,7 +407,7 @@ define #51 generic self-scan boundary:
   artifacts/ace-source-hash-policy-sweep.md,
   scripts/ace_public_tokens.py, scripts/ace_public_contract.py,
   scripts/ace_public_surface_scan.py, scripts/ace_sampling_firewall.py,
-  scripts/validate_ace_wave0_control_plane.py, tests/test_validate_ace_wave0_control_plane.py,
+  scripts/validate_ace_wave0_control_plane.py,
   tests/fixtures/ace-wave0-control-plane/good/, config/ace-public-output-contract.json,
   config/ace-public-surface-deny-list.json, .github/workflows/validate.yml, touched skills,
   the #51 plan, the #63 plan, README/coordination planning surfaces, parent coordination
@@ -551,7 +560,7 @@ The parent coordination validator support remains outside #51 implementation sco
 | test_ace_share_root_required | Host portability | Script/test examples | Uses `ACE_SHARE_ROOT` plus share-relative paths |
 | test_control_plane_artifact_is_not_under_docs_before_publication_gate | MkDocs cannot publish the artifact before #63 | File paths and repo tree | The #51 control-plane artifact is under `artifacts/`; any `docs/**/ace-share-wave-0-control-plane.md` path fails until #63 approval evidence exists |
 | test_bad_fixtures_are_forensic_inputs_not_public_surfaces | Negative fixtures do not self-block the public-surface scan | `tests/fixtures/ace-wave0-control-plane/bad/` with fixture metadata | Bad fixtures are rejected by the expected-failure harness, require `expected_failure`, `synthetic_only=true`, and `forbidden_pattern_class`, and are not included in the canonical passing public-surface scan set |
-| test_public_surface_self_scan_blocks_raw_identifiers | #51 public-surface safety | Control-plane artifact, hash-policy sweep artifact, token generator, decomposed modules, validator, deny-list config, public-output contract config, workflow, good fixtures, plan, #63 plan, README, coordination doc, parent coordination validator/tests, touched skills, review artifacts, sidecars, and operator-fetched issue body/comment snapshots | Blocks raw host/source paths outside the fixed metadata-index evidence shape, generic private-like identifier patterns, generic personal-identifier regexes such as emails/phones/SSN, confidentiality-marker phrases, assigned raw source hash values, assigned private source fields, and private lookup maps before commit/comment/status transition; real proprietary-snippet, client/project/internal-name, and publication-certification coverage remains a #63 gate |
+| test_public_surface_self_scan_blocks_raw_identifiers | #51 public-surface safety | Control-plane artifact, hash-policy sweep artifact, token generator, decomposed modules, validator, deny-list config, public-output contract config, workflow, good fixtures, plan, #63 plan, README, coordination doc, parent coordination validator, touched skills, review artifacts, sidecars, and operator-fetched issue body/comment snapshots | Blocks raw host/source paths outside the fixed metadata-index evidence shape, generic private-like identifier patterns, generic personal-identifier regexes such as emails/phones/SSN, confidentiality-marker phrases, assigned raw source hash values, source-like digest values/table rows, assigned private source fields, and private lookup maps before commit/comment/status transition; real proprietary-snippet, client/project/internal-name, and publication-certification coverage remains a #63 gate |
 | test_public_surface_scanner_self_safety_for_policy_examples | Scanner avoids self-blocking policy text without bypasses | Touched skill files, committed allowlist entries, and bad leak fixtures | Allows only fixed policy-example phrase patterns in skills when a matching allowlist entry and negative fixture are present; rejects arbitrary sentinel use, rejects synthetic private-like identifiers even if marker-wrapped, and scans all planned touched skills without blanket exemptions |
 | test_public_surface_scans_review_history_and_sidecars | Provider review artifacts are not an unscanned publication surface | Historical `plan-51-*.md` artifacts plus `.md.err`, `.err`, `.stderr`, and `.log` fixtures next to a review artifact | All retained review history and same-stem sidecars present at commit/comment time are scanned and leaks fail before commit/comment |
 | test_review_artifacts_are_non_empty_and_verdict_bearing | Empty in-flight review placeholders cannot support plan-review | Review artifact fixtures | Rejects zero-byte artifacts, artifacts whose first verdict heading/line does not start with `APPROVE`/`MINOR`/`MAJOR`, verdict words that appear only later in prose, and `UNAVAILABLE` artifacts as provider-review evidence before status evidence or review evidence supporting user approval is accepted |
@@ -575,7 +584,7 @@ The parent coordination validator support remains outside #51 implementation sco
 
 ## Acceptance Criteria
 
-- [ ] Ledger schema covers all fields named in #51 plus `downstream_issue`, `wave_class`, skill, `eval_data`, `validator_canary_contract_path`, `requires_manifest_snapshot_id`, `snapshot_id_evidence_rule`, `token_generation_method`, `success_metric_applicability`, public clearance evidence, `extraction_author`, `independent_public_reviewer`, `public_route_review_artifact`, `target_store`, `verification_state`, measured success numerator/denominator, success threshold, and validation command.
+- [ ] Ledger schema covers all fields named in #51 plus `downstream_issue`, `wave_class`, `method_issues`, `skill_group`, `eval_data`, `validator_canary_contract_path`, `requires_manifest_snapshot_id`, `snapshot_id_evidence_rule`, `token_generation_method`, `success_metric_applicability`, public clearance evidence, `extraction_author`, `independent_public_reviewer`, `public_route_review_artifact`, `target_store`, `verification_state`, measured success numerator/denominator, success threshold, and validation command.
 - [ ] Ledger distinguishes public `llm-wiki`, private sidecar, metadata-only, and excluded/no-ingest routing.
 - [ ] The closed route-to-store matrix maps `public_llm_wiki` to `logical_public_llm_wiki`, `private_sidecar` to `logical_private_sidecar`, `metadata_only` to `logical_metadata_ledger`, and `excluded_no_ingest` to `logical_no_store`; #51 rejects physical private sidecar paths because [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) owns physical storage.
 - [ ] The closed `verification_state` enum is `not_verified`, `validator_passed`, `independent_review_passed`, and `rejected`.
@@ -611,6 +620,7 @@ The parent coordination validator support remains outside #51 implementation sco
 - [ ] `.github/workflows/validate.yml` invokes both the wave-0 validator and the wave-0 unit test module.
 - [ ] The validator and unit tests pass with `ACE_SHARE_ROOT` unset in CI by validating repo fixtures/docs only.
 - [ ] `UV_CACHE_DIR=.claude/state/uv-cache uv run skills/validate_skill.py` passes after skill updates.
+- [ ] Legal/security gate evidence is recorded. Preferred command is the workspace-hub legal scan for this repo when available from the control-plane checkout; if the repo-local `scripts/legal/legal-sanity-scan.sh` path remains absent, implementation closeout must run and record an equivalent `.legal-deny-list.yaml` diff scan over changed files plus explain the missing repo-local script path.
 
 ---
 
@@ -684,8 +694,11 @@ These are operator status-transition checks, not CI acceptance criteria. They mu
 | Claude r19 | MAJOR | Required governing rule for the seven fixed metadata/index paths versus private per-row source paths, robust review-artifact denied-token normalization, and clarified downstream metric/manifest authority wording. |
 | Codex r19 | MAJOR | Required parent fallback scanner coverage for assigned source/private fields, narrower #51 generic-leak claims, and explicit local_transient disposition for untracked r1-r15 review artifacts. |
 | Gemini r19 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
+| Claude r20 | MAJOR | Required explicit scope decision for front-loaded cross-wave interface governance, coordination tracker update to current review artifacts, Gemini gate disposition, and minor field/config dependency cleanup. |
+| Codex r20 | MAJOR | Required resolving test-source scan contradiction, raw digest/table-row fallback scanner coverage, and inherited legal/security gate evidence. |
+| Gemini r20 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
 
-**Overall result:** r19 returned MAJOR from both active providers and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. This draft has since been patched for r19 findings: fixed metadata-index evidence path boundary, parent fallback assigned-field scanning under approved [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) support, narrower #51 generic-leak claims, local_transient disposition for untracked r1-r15 artifacts, and updated pre-label fallback scope. A fresh post-patch review round must return no-MAJOR before any status transition.
+**Overall result:** r20 returned MAJOR from both active providers and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. This draft has since been patched for r20 findings: explicit scope decision for front-loaded cross-wave interface governance, test-source exclusion from generic public-text scan, parent fallback raw-digest/table-row coverage under approved [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) support, legal/security gate evidence, coordination tracker r20 pointer update, #63 config dependency note, and canonical `method_issues`/`skill_group` field naming. A fresh post-patch review round must return no-MAJOR before any status transition.
 
 ---
 
