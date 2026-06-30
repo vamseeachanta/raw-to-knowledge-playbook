@@ -1,3 +1,5 @@
+review_artifact_role: public_history
+
 # Disagreement report — plan #51 (2026-06-29)
 
 ## Verdicts
