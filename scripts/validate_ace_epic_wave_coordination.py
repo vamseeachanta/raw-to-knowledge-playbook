@@ -12,7 +12,9 @@ from pathlib import Path
 EXPECTED_CHILD_ISSUES = set(range(51, 64))
 DOWNSTREAM_WAVES = set(range(52, 61))
 PUBLICATION_GATE_ISSUES = DOWNSTREAM_WAVES | {61, 63}
-MANIFEST_GATE_ISSUES = EXPECTED_CHILD_ISSUES
+MANIFEST_GATE_ISSUES = DOWNSTREAM_WAVES
+NON_SAMPLING_MANIFEST_GATE_ISSUES = {51, 61, 62, 63}
+CONTROL_SUCCESS_SENTINEL_ISSUES = NON_SAMPLING_MANIFEST_GATE_ISSUES
 CROSS_WAVE_GATE_ISSUES = {61, 62, 63}
 PARENT_ISSUE = 50
 PARENT_PLAN_PATH = "docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md"
@@ -51,6 +53,8 @@ EXPECTED_EXECUTABLE_BINDINGS = {
 VALID_LANES = {"lane:claude", "lane:codex"}
 VALID_COMPLEXITIES = {"T2", "T3"}
 VALID_PLAN_STATUSES = {"draft", "plan-review", "plan-approved", "completed"}
+REVIEW_VERDICTS = {"APPROVE", "MINOR", "MAJOR"}
+REVIEW_HISTORY_VERDICTS = REVIEW_VERDICTS | {"UNAVAILABLE"}
 EXPECTED_CHILD_LEDGER_HEADERS = [
     "issue",
     "plan",
@@ -221,6 +225,24 @@ def _contains_executable_binding(issue: int, cell: str) -> bool:
     return bool(required) and all(binding.lower() in lower for binding in required)
 
 
+def _contains_control_success_sentinel(issue: int, cell: str) -> bool:
+    lower = cell.lower()
+    required_terms = [
+        "0%",
+        "success_metric_applicability=not_applicable_control_plane",
+        "expected_yield=0",
+        "measured_success_numerator=0",
+        "measured_success_denominator=0",
+        "success_threshold=0",
+        "validation_command=",
+        "difficulty",
+    ]
+    if not all(term in lower for term in required_terms):
+        return False
+    required_paths = EXPECTED_EXECUTABLE_BINDINGS.get(issue, set())
+    return bool(required_paths) and all(path.lower() in lower for path in required_paths)
+
+
 def _review_artifacts_recorded(cell: str) -> bool:
     provider_status: dict[str, str] = {}
     for part in [part.strip() for part in cell.split(";") if part.strip()]:
@@ -241,7 +263,7 @@ def _review_status_valid(status: str) -> bool:
     return _review_artifact_path_valid(status)
 
 
-def _review_artifact_path_valid(path_text: str) -> bool:
+def _review_artifact_path_valid(path_text: str, *, allow_unavailable: bool = False) -> bool:
     path = Path(path_text)
     if path.is_absolute() or ".." in path.parts or path.suffix != ".md":
         return False
@@ -254,7 +276,40 @@ def _review_artifact_path_valid(path_text: str) -> bool:
         resolved.relative_to(root)
     except ValueError:
         return False
-    return True
+    if resolved.stat().st_size == 0:
+        return False
+    try:
+        text = resolved.read_text(errors="replace")
+    except OSError:
+        return False
+    verdict = _extract_review_verdict(text)
+    allowed = REVIEW_HISTORY_VERDICTS if allow_unavailable else REVIEW_VERDICTS
+    return verdict in allowed
+
+
+def _extract_review_verdict(text: str) -> str | None:
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        heading_match = re.match(r"(?i)^\s*(?:##\s+)?Verdict\s*:?\s*(.*)$", line)
+        bullet_match = re.match(r"(?i)^\s*-\s+\*\*Verdict:\*\*\s*(.*)$", line)
+        value = ""
+        if bullet_match:
+            value = bullet_match.group(1)
+        elif heading_match:
+            value = heading_match.group(1)
+            if not value:
+                for next_line in lines[index + 1 :]:
+                    value = next_line.strip()
+                    if value:
+                        break
+        else:
+            continue
+        candidate = re.sub(r"^[\s`*_]+", "", value.strip())
+        match = re.match(r"(APPROVE|MINOR|MAJOR|UNAVAILABLE)(?:\b|[^A-Za-z0-9_])", candidate, flags=re.IGNORECASE)
+        if match:
+            return match.group(1).upper()
+        return None
+    return None
 
 
 def _method_gap_disposition_closed(cell: str) -> bool:
@@ -296,7 +351,7 @@ def validate_approval_marker(marker_path: Path, issue: int, expected_plan: str) 
     if not artifact_paths:
         errors.append(f"#{issue} approval marker must include review artifact bullet paths")
     for path in artifact_paths:
-        if not _review_artifact_path_valid(path):
+        if not _review_artifact_path_valid(path, allow_unavailable=True):
             errors.append(f"#{issue} approval marker review artifact must be an existing scripts/review/results/*.md path: {path}")
     return errors
 
@@ -339,8 +394,8 @@ def _validate_global_contract(text: str, errors: list[str]) -> None:
     if not _has_all(text, ["Branch publication rule", "dedicated planning branch", "stacked-branch note"]):
         errors.append("branch publication rule must require a dedicated planning branch or explicit stacked-branch note")
 
-    if not _has_all(text, ["Public artifact safety gate", "path-tokenization", "source_id/source_sha256", "deny-list", "private identifier", "personal identifier", "proprietary snippet", "docs nav", "mkdocs", "llm-wiki"]):
-        errors.append("public artifact safety gate must cover path-tokenization, source_id/source_sha256 tokens, deny-list/private identifier/personal identifier/proprietary snippet checks, docs nav, mkdocs, and llm-wiki publication")
+    if not _has_all(text, ["Public artifact safety gate", "path-tokenization", "public_source_token", "raw source id/hash denial", "generic private-like identifier", "personal identifier", "proprietary snippet", "deny-list certification", "#63 gate", "docs nav", "mkdocs", "llm-wiki"]):
+        errors.append("public artifact safety gate must cover path-tokenization, opaque public_source_token use, raw source id/hash denial, generic private-like/personal/proprietary checks, #63 deny-list certification, docs nav, mkdocs, and llm-wiki publication")
 
     if "successful_routed_items / eligible_candidate_items * 100" not in text:
         errors.append("ingested success metric must be `successful_routed_items / eligible_candidate_items * 100`")
@@ -467,14 +522,25 @@ def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, e
             errors.append(f"#{issue} #61 gate must require status:plan-approved, approval marker, implemented validator, and recorded passing-command")
 
     metric = row.get("expected useful ingestion / success metric / difficulty", "")
-    if "%" not in metric or "successful_routed_items / eligible_candidate_items * 100" not in metric or "difficulty" not in metric.lower():
+    if issue in CONTROL_SUCCESS_SENTINEL_ISSUES:
+        if not _contains_control_success_sentinel(issue, metric):
+            errors.append(f"#{issue} ingestion metric must use the non-computing zero success sentinel with validation_command and difficulty rank")
+    elif (
+        "%" not in metric
+        or "successful_routed_items / eligible_candidate_items * 100" not in metric
+        or "difficulty" not in metric.lower()
+        or "success_metric_applicability=not_applicable_control_plane" in metric.lower()
+    ):
         errors.append(f"#{issue} ingestion metric must include expected %, success formula, and difficulty rank")
 
     manifest_gate = row.get("manifest gate", "")
+    manifest_phrase = "status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id"
     if issue in MANIFEST_GATE_ISSUES:
-        manifest_phrase = "status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id"
         if not _has_gate_phrase(manifest_gate, 62, manifest_phrase):
             errors.append(f"#{issue} manifest gate must require #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling")
+    elif issue in NON_SAMPLING_MANIFEST_GATE_ISSUES:
+        if "not applicable for own sampling" not in manifest_gate.lower() or "#62 gate applies to downstream sampling" not in manifest_gate:
+            errors.append(f"#{issue} manifest gate must state not applicable for own sampling while preserving #62 downstream sampling gate")
 
     public_gate = row.get("public canary gate", "")
     public_phrase = "status:plan-approved+approval marker+implemented canary+recorded passing-command"

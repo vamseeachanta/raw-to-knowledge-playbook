@@ -15,8 +15,8 @@
 
 ### Existing repo code/docs
 - `docs/07-data-governance.md`, `docs/18-security-and-pii.md`, and `docs/19-trust-boundary-and-private-mode.md` require raw/private material to stay out of public artifacts.
-- `docs/plans/README.md` now requires public artifacts to use `source_id`, `source_sha256`, `public_source_token`, and private-sidecar lookup keys rather than raw paths.
-- [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will define the route enum and public/private routing control plane.
+- `docs/plans/README.md` now requires public artifacts to use opaque `public_source_token` references rather than raw paths, raw source IDs, raw source hashes, private lookup keys, or private lookup maps.
+- [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will define the route enum, public/private routing control plane, and shared `config/ace-public-output-contract.json`.
 - [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) will define durable output and lifecycle gates.
 
 ### Related issues
@@ -32,7 +32,8 @@
 ### Gaps identified
 - No reusable public-output scanner exists for ACE-derived plans, docs, skills, issue comments, and future `llm-wiki` outputs.
 - No explicit canary fixture set exists for path leaks, client-like identifiers, personal identifiers, EXIF/GPS leakage, title blocks, BOM names, table/field names, or copied private snippets.
-- No allowlist mechanism exists for intentional aggregate counts and sanitized examples.
+- No content-pattern-restricted allowlist mechanism exists for intentional aggregate counts and sanitized examples.
+- No implemented #63 scanner consumes the shared `config/ace-public-output-contract.json` yet.
 
 ### Evidence
 
@@ -61,6 +62,7 @@ N/A - planning/governance issue; no runtime failure is alleged.
 |---|---|
 | This plan | docs/plans/2026-06-29-issue-63-ace-public-output-redaction-and-identifier-canary.md |
 | Redaction contract | docs/case-studies/ace-public-output-redaction-contract.md |
+| Shared public contract | config/ace-public-output-contract.json |
 | Validator | scripts/validate_ace_public_artifacts.py |
 | Canary fixtures | tests/fixtures/ace-public-artifact-safety/ |
 | Review artifact - Claude | scripts/review/results/2026-06-29-plan-63-claude.md |
@@ -80,18 +82,27 @@ A public-output redaction contract and executable canary that blocks raw private
 ```text
 require #51 route enum and public/private routing contract
 require #61 durable-output lifecycle contract
-define public-safe source fields:
-  source_id, source_sha256, public_source_token, private_lookup_key
-define forbidden public artifact patterns:
+load shared public contract from config/ace-public-output-contract.json:
+  public-safe source references, token grammar, private-only provenance fields,
+  git-SHA governance exceptions, allowlist policy, and banned public fields
+parse the shared contract with Python stdlib json; no YAML-only syntax or PyYAML dependency
+  is required in CI
+do not redefine token grammar or private-only provenance fields in #63-local constants;
+  the shared config is authoritative
+derive forbidden public artifact pattern classes from the shared config plus #63-owned
+  non-source privacy scanners; the list below is illustrative and subordinate to config:
   raw absolute host paths, private share-relative path fragments,
+  raw source_id values, raw source_sha256 values, private lookup key values,
+  private lookup maps,
   email addresses, phone numbers, client-like/project-like identifiers,
   EXIF/GPS coordinates, title-block/BOM strings, unsafe table/field names,
   copied private snippets
-define allowlist mechanism:
-  path-scoped and line-scoped sentinels for sanitized aggregate counts only
+derive allowlist mechanism from the shared config:
+  content-pattern-restricted allowlists for sanitized aggregate counts and fixed examples only;
+  no author-controlled arbitrary line/path sentinels and no blanket file/path exemptions
 scan planned public targets:
   docs, skills, review artifacts, issue-comment body files, future llm-wiki outputs
-fail closed unless every finding is removed or explicitly allowed by a narrow sentinel
+fail closed unless every finding is removed or explicitly allowed by a narrow committed pattern
 ```
 
 ---
@@ -100,7 +111,7 @@ fail closed unless every finding is removed or explicitly allowed by a narrow se
 
 | Action | Path | Reason |
 |---|---|---|
-| Create | docs/case-studies/ace-public-output-redaction-contract.md | Public-safe artifact and allowlist contract |
+| Create | docs/case-studies/ace-public-output-redaction-contract.md | Public-safe artifact and content-pattern-restricted allowlist contract |
 | Create | scripts/validate_ace_public_artifacts.py | Executable scanner/canary |
 | Create | tests/fixtures/ace-public-artifact-safety/ | Synthetic positive/negative canary fixtures |
 | Modify | .github/workflows/validate.yml | Run public artifact scanner against fixtures and public docs |
@@ -109,6 +120,7 @@ fail closed unless every finding is removed or explicitly allowed by a narrow se
 | Modify | docs/19-trust-boundary-and-private-mode.md | Add public/private publication gate |
 | Modify | skills/public-private-routing/SKILL.md | Require canary before public outputs |
 | Modify | skills/public-private-routing/evals/evals.json | Add public-output canary eval data |
+| Reference | config/ace-public-output-contract.json | Shared #51-owned token/redaction contract consumed by this canary |
 
 ---
 
@@ -120,17 +132,21 @@ fail closed unless every finding is removed or explicitly allowed by a narrow se
 | test_blocks_private_identifier_patterns | Identifier leakage | Synthetic client/project/email/phone strings | Validation fails |
 | test_blocks_exif_gps_and_media_metadata | Image/media leakage | Synthetic EXIF/GPS metadata fixture | Validation fails |
 | test_blocks_title_block_bom_and_field_names | Engineering metadata leakage | Synthetic CAD/DB/table examples | Validation fails |
-| test_allows_source_tokens_and_hashes | Safe provenance | `source_id`, SHA-256, public token | Validation passes |
-| test_allowlist_is_narrow | Exception hygiene | Whole-file allowlist attempt | Validation fails; line/path-scoped sentinel required |
+| test_allows_opaque_public_source_tokens | Safe public provenance | `public_source_token` values accepted by `config/ace-public-output-contract.json` | Validation passes |
+| test_blocks_raw_source_ids_hashes_and_private_lookup_maps | Private provenance leakage | Raw `source_id`, `source_sha256`, `private_lookup_key`, lookup map, or share-relative path value | Validation fails |
+| test_loads_shared_public_output_contract | Cross-wave contract reuse | `config/ace-public-output-contract.json` | Validator uses the shared token grammar, private-only fields, git-SHA governance exceptions, and allowlist policy |
+| test_allowlist_is_narrow | Exception hygiene | Whole-file allowlist, arbitrary line/path sentinel, or author-controlled bypass attempt | Validation fails; only committed content-pattern-restricted examples are allowed |
 | test_downstream_wave_publication_requires_canary | Gate binding | Wave closeout/publication checklist | Canary command required before closeout |
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Public artifacts use token/hash/provenance IDs rather than raw private paths.
+- [ ] Public artifacts use only the public-safe source reference fields and token grammar from `config/ace-public-output-contract.json`.
+- [ ] The canary loads `config/ace-public-output-contract.json` rather than redefining the token/private-field contract in #63-local prose or constants.
+- [ ] Raw `source_id`, raw `source_sha256`, `private_lookup_key`, private lookup maps, and `share_relative_path_private_only` values are private-only because they are declared by `config/ace-public-output-contract.json`; #63 fails validation when public surfaces contain those fields as values or lookup maps.
 - [ ] Redaction canary blocks raw host paths, private path fragments, client-like identifiers, personal identifiers, emails, phones, EXIF/GPS, title-block/BOM strings, unsafe table/field names, and copied private snippets.
-- [ ] Sanitized aggregate counts are allowed only through narrow path-scoped or line-scoped sentinels.
+- [ ] Sanitized aggregate counts are allowed only through narrow committed content-pattern-restricted allowlists loaded from or mechanically subordinate to `config/ace-public-output-contract.json`; arbitrary author-controlled line/path sentinels and blanket file/path exemptions fail.
 - [ ] Downstream wave plans reference `uv run python scripts/validate_ace_public_artifacts.py` before docs/mkdocs publication and issue closeout.
 - [ ] The canary uses synthetic fixtures only and does not require reading private ACE source content.
 - [ ] `uv run python scripts/validate_ace_public_artifacts.py` and `uv run skills/validate_skill.py` pass.
@@ -151,7 +167,7 @@ fail closed unless every finding is removed or explicitly allowed by a narrow se
 
 ## Risks and Open Questions
 
-- **Risk:** Over-broad deny patterns can block their own tests and docs; implementation must use narrow fixture paths and scoped sentinels.
+- **Risk:** Over-broad deny patterns can block their own tests and docs; implementation must use narrow committed content-pattern fixtures and must not rely on author-controlled line/path sentinels or blanket file/path exemptions.
 - **Risk:** Under-broad patterns can create false confidence; the canary must focus on defect classes surfaced by actual ACE wave plans.
 - **Open:** [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) must define route targets before downstream waves rely on publication decisions.
 
@@ -159,4 +175,4 @@ fail closed unless every finding is removed or explicitly allowed by a narrow se
 
 ## Complexity
 
-**T3** - security-sensitive public artifact scanner with canary fixtures, allowlist design, docs, skill updates, and cross-wave closeout binding.
+**T3** - security-sensitive public artifact scanner with canary fixtures, content-pattern-restricted allowlist design, docs, skill updates, and cross-wave closeout binding.

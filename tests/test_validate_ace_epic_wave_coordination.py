@@ -56,6 +56,40 @@ EXECUTABLE_BINDINGS = {
     63: "public-private-routing; scripts/validate_ace_public_artifacts.py; tests/fixtures/ace-public-artifact-safety/",
 }
 
+DIFFICULTY_RANK = {
+    51: "1/11",
+    52: "2/11",
+    53: "3/11",
+    54: "4/11",
+    55: "5/11",
+    56: "6/11",
+    57: "7/11",
+    58: "8/11",
+    59: "9/11",
+    60: "10/11",
+    61: "11/11",
+    62: "2/11",
+    63: "11/11",
+}
+
+CONTROL_GATE_ISSUES = {51, 61, 62, 63}
+
+
+def metric_cell(issue: int) -> str:
+    if issue in CONTROL_GATE_ISSUES:
+        return (
+            "0% direct source ingestion; "
+            "success_metric_applicability=not_applicable_control_plane; "
+            "expected_yield=0; measured_success_numerator=0; "
+            "measured_success_denominator=0; success_threshold=0; "
+            f"validation_command={EXECUTABLE_BINDINGS[issue]}; "
+            f"difficulty {DIFFICULTY_RANK[issue]}"
+        )
+    return (
+        "70-95%; success = successful_routed_items / eligible_candidate_items * 100; "
+        f"difficulty {DIFFICULTY_RANK[issue]}"
+    )
+
 
 def valid_marker(issue: int) -> str:
     return "\n".join(
@@ -72,12 +106,16 @@ def valid_marker(issue: int) -> str:
 
 
 def row(issue: int) -> str:
+    manifest_gate = (
+        "not applicable for own sampling; #62 gate applies to downstream sampling"
+        if issue in {51, 61, 62, 63}
+        else "yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling"
+    )
     return (
         f"| #{issue} | docs/plans/issue-{issue}.md | lane:claude | T2 | draft | "
         f"2026-06-29 no status label; no approval marker | false | {METHOD_ISSUES[issue]} | "
         f"{EXECUTABLE_BINDINGS[issue]} | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | "
-        "#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate | 70-95%; success = successful_routed_items / eligible_candidate_items * 100; "
-        "difficulty 2/11 | yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling | "
+        f"#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate | {metric_cell(issue)} | {manifest_gate} | "
         "yes; #63 status:plan-approved+approval marker+implemented canary+recorded passing-command before publication | "
         "closed-set: doc-update, skill-eval-update, follow-on-issue | false |"
     )
@@ -97,7 +135,7 @@ GOOD_DOC = "\n".join(
         "",
         "## Epic Gates",
         "- Branch publication rule: dedicated planning branch or explicit stacked-branch note is required.",
-        "- Public artifact safety gate: path-tokenization, source_id/source_sha256 tokens, deny-list scan, private identifier check, personal identifier check, and proprietary snippet check before docs nav, mkdocs, llm-wiki, GitHub comments, or external publication.",
+        "- Public artifact safety gate: path-tokenization, opaque `public_source_token` use, raw source id/hash denial, generic private-like identifier check, personal identifier check, and proprietary snippet check before docs nav, mkdocs, llm-wiki, GitHub comments, or external publication; maintained deny-list certification is the #63 gate.",
         "- `% ingested success` = `successful_routed_items / eligible_candidate_items * 100`; hard exclusions are reported as `% excluded`.",
         "- Method gap disposition closed set: `doc-update`, `skill-eval-update`, `follow-on-issue`.",
         "- Wave #0 / #51 lifecycle contract: downstream waves depend on #51; durable outputs depend on #61 status:plan-approved plus approval marker plus implemented validators and recorded passing-command evidence.",
@@ -165,6 +203,166 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
             1,
         )
         self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_empty_artifact_file(self):
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-empty-review-artifact.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-empty-review-artifact.md; Codex: pending; Gemini: not-run",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_requires_verdict_section(self):
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-no-verdict.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("# Review\n\nNo verdict section.\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-no-verdict.md; Codex: pending; Gemini: not-run",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_verdict_heading_without_value(self):
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-empty-verdict.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("## Verdict\n\nProvider failed before producing a verdict.\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-empty-verdict.md; Codex: pending; Gemini: not-run",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_unavailable_artifact_path(self):
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-unavailable.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("## Verdict\nUNAVAILABLE (provider auth failed)\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: pending; Codex: scripts/review/results/test-review-artifact-unavailable.md; Gemini: unavailable: auth exit 41",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_verdict_word_not_at_value_start(self):
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-late-verdict-word.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("## Verdict\nThis is not a verdict, but APPROVE appears later.\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-late-verdict-word.md; Codex: pending; Gemini: not-run",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_rejects_same_line_verdict_word_not_at_value_start(self):
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-same-line-late-verdict-word.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("Verdict: unresolved, maybe MINOR after more review\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        bad_doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-same-line-late-verdict-word.md; Codex: pending; Gemini: not-run",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 review artifacts")
+
+    def test_review_artifact_status_accepts_verdict_with_explanatory_prose(self):
+        validator = load_validator()
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-verdict-with-prose.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("## Verdict\n**MINOR** - no MAJOR findings remain.\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-verdict-with-prose.md; Codex: pending; Gemini: unavailable: auth exit 41",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_text(doc, approval_root=Path(tmp))
+
+        self.assertEqual([], result.errors)
+
+    def test_review_artifact_status_accepts_uppercase_bold_verdict_heading(self):
+        validator = load_validator()
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-uppercase-bold-verdict.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("## VERDICT\n\n**MAJOR**\n\nFindings follow.\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-uppercase-bold-verdict.md; Codex: pending; Gemini: unavailable: auth exit 41",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_text(doc, approval_root=Path(tmp))
+
+        self.assertEqual([], result.errors)
+
+    def test_review_artifact_status_accepts_legacy_verdict_heading(self):
+        validator = load_validator()
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-legacy-verdict.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("Provider\n\nCodex\n\nVerdict\n\nMINOR\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        doc = GOOD_DOC.replace(
+            "Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41",
+            "Claude: scripts/review/results/test-review-artifact-legacy-verdict.md; Codex: pending; Gemini: unavailable: auth exit 41",
+            1,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            result = validator.validate_text(doc, approval_root=Path(tmp))
+
+        self.assertEqual([], result.errors)
+
+    def test_approval_marker_can_preserve_unavailable_provider_history(self):
+        validator = load_validator()
+        artifact = REPO_ROOT / "scripts" / "review" / "results" / "test-review-artifact-unavailable-history.md"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("- **Verdict:** UNAVAILABLE\n\nProvider authentication failed.\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "51.md"
+            marker.write_text(
+                "\n".join(
+                    [
+                        "Approved by: vamseeachanta",
+                        "Approval date: 2026-06-29",
+                        "Issue: https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51",
+                        "Plan path: docs/plans/issue-51.md",
+                        "Reviewed commit: ba1041f117f00a6c36fd35298b84856d1dd92f56",
+                        "Review artifacts:",
+                        f"  - {artifact.relative_to(REPO_ROOT)}",
+                    ]
+                )
+            )
+
+            result = validator.validate_approval_marker(
+                marker,
+                51,
+                "docs/plans/issue-51.md",
+            )
+
+        self.assertEqual([], result)
 
     def test_status_gate_records_unapproved_children(self):
         bad_doc = GOOD_DOC.replace("2026-06-29 no status label; no approval marker | false | #1, #12", "2026-06-29 no status label; no approval marker | true | #1, #12", 1)
@@ -325,7 +523,7 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         self.assert_rejects(bad_doc, "#51 method gap disposition")
 
     def test_public_artifact_safety_gate_required(self):
-        bad_doc = GOOD_DOC.replace("path-tokenization, source_id/source_sha256 tokens, deny-list scan, private identifier check, personal identifier check, and proprietary snippet check", "manual review")
+        bad_doc = GOOD_DOC.replace("path-tokenization, opaque `public_source_token` use, raw source id/hash denial, generic private-like identifier check, personal identifier check, and proprietary snippet check", "manual review")
         self.assert_rejects(bad_doc, "public artifact safety gate")
 
     def test_public_artifact_safety_gate_blocks_raw_private_leaks(self):
@@ -358,8 +556,36 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         bad_doc = GOOD_DOC.replace("successful_routed_items / eligible_candidate_items * 100", "manual estimate")
         self.assert_rejects(bad_doc, "ingested success")
 
-    def test_manifest_snapshot_gate_bound_per_row(self):
-        bad_doc = GOOD_DOC.replace("yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling", "yes; snapshot later", 1)
+    def test_control_gate_rows_require_zero_success_sentinel(self):
+        bad_doc = GOOD_DOC.replace(
+            metric_cell(51),
+            "0% direct source ingestion; success = successful_routed_items / eligible_candidate_items * 100; difficulty 1/11",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#51 ingestion metric")
+
+    def test_downstream_rows_reject_zero_success_sentinel(self):
+        bad_doc = GOOD_DOC.replace(
+            metric_cell(52),
+            "0% direct source ingestion; success_metric_applicability=not_applicable_control_plane; expected_yield=0; measured_success_numerator=0; measured_success_denominator=0; success_threshold=0; validation_command=scripts/validate_ace_wave1_text_json.py; difficulty 2/11",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#52 ingestion metric")
+
+    def test_manifest_snapshot_gate_bound_per_downstream_sampling_row(self):
+        bad_doc = GOOD_DOC.replace(
+            "yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling",
+            "yes; snapshot later",
+            1,
+        )
+        self.assert_rejects(bad_doc, "#52 manifest gate")
+
+    def test_non_sampling_manifest_gate_is_explicit(self):
+        bad_doc = GOOD_DOC.replace(
+            "not applicable for own sampling; #62 gate applies to downstream sampling",
+            "yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling",
+            1,
+        )
         self.assert_rejects(bad_doc, "#51 manifest gate")
 
     def test_manifest_snapshot_gate_rejects_negated_wording(self):
@@ -368,7 +594,7 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
             "yes; #62 does not require status:plan-approved approval marker implemented validator recorded passing-command snapshot_id",
             1,
         )
-        self.assert_rejects(bad_doc, "#51 manifest gate")
+        self.assert_rejects(bad_doc, "#52 manifest gate")
 
     def test_public_redaction_canary_gate_bound_per_row(self):
         bad_doc = GOOD_DOC.replace("yes; #63 status:plan-approved+approval marker+implemented canary+recorded passing-command before publication", "yes; canary later", 1)
