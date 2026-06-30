@@ -4,7 +4,7 @@
 
 | Provider | Verdict |
 |---|---|
-| claude | UNKNOWN |
+| claude | MAJOR |
 | codex | MAJOR |
 | gemini | UNAVAILABLE (gemini CLI failed, rc=41: Error authenticating: FatalAuthenticationError: Manual authorization is required but the current session is non-interactive. Please run the Gemini CLI in an interactive terminal to log in, provide a GEMINI_API_KEY, or ensure Application Default Credentials are configured.     at initOauthClient (file:///home/vamsee/.npm-global/lib/node_modules/@google/gemini-cli/bundle/chunk-VLV2BYPM.js:269720:13)) |
 
@@ -26,4 +26,3 @@ verbatim in any other provider's artifact.
 ### gemini
 
 - (none)
-
