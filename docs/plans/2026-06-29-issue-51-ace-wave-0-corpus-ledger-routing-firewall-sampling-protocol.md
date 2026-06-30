@@ -45,9 +45,7 @@
 - The downstream sampling contract needs an explicit per-wave `requires_manifest_snapshot_id` field so manifest-backed waves cannot sample before [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) supplies snapshot evidence.
 - No validator CLI contract exists yet for the #51 self-scan. The validator must have separate modes for canonical public-surface scans, adversarial bad-fixture checks, and optional extra `--scan-public-path` inputs for operator-fetched issue body/comment snapshots before posting or status transition.
 - Public provenance currently risks overexposing raw source hashes; public surfaces must not publish raw private source identifiers, raw private source hashes, private lookup keys, or private lookup maps. Public methodology docs may discuss these schema field names only in closed parseable contexts defined by the validator.
-- Existing governance docs, sibling plans, and public methodology skills include mixed `sha256` references. #51 must classify every stable hit key surfaced by the Python stdlib hash-policy scanner over repo-tracked `docs/**/*.md` and `skills/**/*.md` (including top-level skill catalog markdown such as `skills/README.md`), modify claims that describe raw source hashes/sha256 pointers as always safe, public-safe, public provenance, or public source references, and record no-change rationale for private-sidecar, LFS/OID, census, schema, validator, or private-ledger contexts. If a hit has both public-safe and private/schema/census language, `modify_public_safe_hash_claim` wins. Any assigned raw source hash, source-like digest value, or source hash table value must be modified/removed even when framed as a private-ledger example; no-change private-ledger examples may keep field names or synthetic placeholders only. After the sweep, raw `source_sha256` values are private-sidecar provenance while public artifacts reference only opaque `public_source_token` values.
-- Every public doc, plan, skill, top-level skill catalog, or methodology file modified because of that hash-policy sweep becomes a canonical #51 self-scan target for the same patch. The self-scan target set is therefore not limited to the fixed docs named in this plan; implementation must derive the final scan list from the sweep report plus the git diff before commit/status transition.
-- Source hashes have two separate threat models that must not be collapsed: a raw hash is not content, but it can still reveal membership in a private ACE corpus if an observer can compare candidate hashes or recognize repository-visible provenance. #51 will make an ACE-scoped governance decision that public ACE artifacts do not publish raw source hashes or sha256 provenance pointers as source references; broader docs may continue to discuss hashes as content-integrity metadata only when they do not claim public ACE source-reference safety.
+- Source hashes have two separate threat models that must not be collapsed: a raw hash is not content, but it can still reveal membership in a private ACE corpus if an observer can compare candidate hashes or recognize repository-visible provenance. #51 blocks assigned raw source hashes only in its own public control-plane surfaces; the repo-wide source-hash policy sweep and shared public-output config creation are moved to [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63).
 - Durable ACE token allocation and the private token-to-source lookup map are not implemented by #51. #51 defines the schema, opaque token grammar, fixture generator, and validation contract; [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) owns durable private-sidecar storage and token lookup-map persistence; [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) owns public-output certification against that shared contract. #51 will record this ownership boundary so implementers do not treat fixture-only token generation as real corpus token allocation.
 - The fixed source-evidence path list is not currently a named contract. #51 must define one authoritative `ACE_WAVE0_FIXED_SOURCE_EVIDENCE_PATHS` list and use it for the metadata-evidence positive fixture, so the prose inventory and fenced evidence rows cannot drift.
 - The fixed metadata-index evidence path list needs an explicit threat-model boundary: the allowlist exposes only aggregate/index source inputs needed to understand the control plane, with no item-level path, count, title, size, mtime, digest, or content value. Public source references for individual corpus records still use only `public_source_token`; item-level `share_relative_path_private_only` values remain private-sidecar-only.
@@ -102,9 +100,6 @@ N/A - governance/planning issue; no runtime failure is alleged.
 |---|---|
 | This plan | docs/plans/2026-06-29-issue-51-ace-wave-0-corpus-ledger-routing-firewall-sampling-protocol.md |
 | Control-plane artifact | artifacts/ace-share-wave0-control-plane.md |
-| Source-hash policy sweep report | artifacts/ace-source-hash-policy-sweep.md |
-| Shared public contract | config/ace-public-output-contract.json |
-| Generic public-surface deny-list | config/ace-public-surface-deny-list.json |
 | Validator | scripts/validate_ace_wave0_control_plane.py |
 | Review artifacts - committed public history | Tracked/cited `scripts/review/results/2026-06-29-plan-51-*-r*.md` artifacts only, each with `review_artifact_role=public_history` unless promoted to final status evidence |
 | Review artifacts - local transient history | Untracked r1-r15 local transcripts under `scripts/review/results/` are local operator residue only; they are not cited, committed, posted, or scanned as status evidence |
@@ -119,11 +114,11 @@ A documented and CI-validated ACE wave-0 control plane defining the ledger schem
 
 ### Scope Decision
 
-#51 intentionally front-loads cross-wave interface governance because it is the wave-0 control plane for all ACE ingestion waves under [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50). It will define shared field names, route states, token grammar, and public-output contract inputs that [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) and [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) consume. It will not implement durable token lookup storage, durable private-sidecar output, or publication certification. If the user later chooses to trim scope, the split point will be: keep the ledger/routing/sampling matrix in #51 and move source-hash sweep plus shared public-output config creation to a new explicit follow-on issue before implementation approval.
+#51 will define only the ledger/routing/sampling matrix, token grammar, fixture-generation contract, and generic self-scan required before downstream ACE waves start. It will not implement durable token lookup storage, durable private-sidecar output, publication certification, repo-wide source-hash policy sweep, or shared public-output config creation. The previously identified split point is now taken: [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) owns the source-hash sweep, `config/ace-public-output-contract.json`, and `config/ace-public-surface-deny-list.json`.
 
 ### Implementation Decomposition
 
-- `scripts/ace_public_contract.py` will own JSON contract loading, private/public field classifications, and source-hash sweep classification helpers. It may import token grammar metadata from `scripts/ace_public_tokens.py`, but it must not define token-generation helpers, wrappers, or source-derived token functions.
+- `scripts/ace_public_tokens.py` will own zero-source-input public token generation for #51 fixtures.
 - `scripts/ace_public_surface_scan.py` will own generic public-surface scanning, review-artifact/sidecar scanning, operator-fetched issue body/comment scans, and restricted bad-fixture harness checks.
 - `scripts/ace_sampling_firewall.py` will own executable-context detection, bounded sampling grammar, metadata-evidence shape checks, and traversal/materialization denials.
 - `scripts/validate_ace_wave0_control_plane.py` will orchestrate those modules, validate the wave map/ledger/route matrix, and expose the CI/CLI entrypoint.
@@ -239,23 +234,14 @@ define opaque public token grammar:
   production generation call collides, the implementation must regenerate within a bounded
   retry budget and fail only when the retry budget is exhausted; injected duplicate tests
   force the exhausted-budget failure path deterministically
-define shared public-output contract artifact:
-  config/ace-public-output-contract.json records public_source_token grammar,
-  private-only provenance fields, git-SHA exception contexts, content-pattern-restricted
-  allowlist policy, and banned public source-reference fields
-  config/ace-public-surface-deny-list.json records generic public-surface deny patterns
-  both config files are strict JSON loaded with Python stdlib json; no PyYAML or YAML-only
-  syntax is required in CI
-  #51 creates and validates this config; #63 consumes this config rather than being parsed
-  by #51 CI through brittle plan-prose matching
-define ACE source-hash governance decision:
-  raw source hashes and sha256 provenance pointers are not treated as content excerpts, but
-  they can disclose membership in a private ACE corpus when a public observer can compare
-  candidate hashes or follow repository-visible provenance
-  for ACE public surfaces, source_sha256 and equivalent raw source-hash pointers are
-  private-sidecar provenance only; public source references use public_source_token
-  existing general governance language may keep hash/content-integrity examples only when
-  the text does not claim that raw source hashes are public-safe ACE source references
+defer shared public-output config and source-hash sweep:
+  #51 defines the route/token/field boundary that #63 will consume
+  #63 creates config/ace-public-output-contract.json and
+  config/ace-public-surface-deny-list.json
+  #63 owns the repo-wide source-hash policy sweep and any public-methodology edits that
+  reframe raw source hashes as private-sidecar provenance
+  #51 still rejects assigned raw source hashes, source-like digest values, private lookup
+  maps, and path-bearing values in #51-owned public surfaces
 for every wave issue #52-#63:
   record wave_class, extension family, inventory evidence, method issues, skill group, sampling rule,
   validator/canary contract path string, requires_manifest_snapshot_id, snapshot_id evidence rule,
@@ -299,10 +285,6 @@ define closed snapshot gate matrix:
 define sampling command grammar:
   allow only metadata stat probes and bounded helper calls that specify manifest source,
   seed/sort, row_cap, byte_cap, and max_files
-  repo-local governance scans such as `rg -n "sha256|source hash|provenance pointer" docs skills --glob "*.md"`
-  are allowed only when their targets are repo-owned docs/skills/plans and they do not
-  mention ACE_SHARE_ROOT, source manifests, source paths, pipes, redirects, or shell
-  expansion over source material; they are not sampling commands
   classify executable context as fenced code blocks tagged shell/bash/sh/zsh/python/py,
   inline code beginning with a shell prompt, denied command, `python -c`, `uv run`,
   `subprocess`, `os.walk`, `.rglob`, `.read_text`, `open(`, `json.load`, or a pipe/redirection,
@@ -322,10 +304,9 @@ require public surfaces to use public_source_token only for source references; a
   private lookup key values, and private lookup maps in public/comment/review surfaces
 define the public-output canary input contract consumed by #63 without invoking #63's scanner
 scan #51 public surfaces before commit/comment:
-  artifacts/ace-share-wave0-control-plane.md, artifacts/ace-source-hash-policy-sweep.md,
-  config/ace-public-surface-deny-list.json, config/ace-public-output-contract.json,
+  artifacts/ace-share-wave0-control-plane.md,
   .github/workflows/validate.yml, scripts/ace_public_tokens.py,
-  scripts/ace_public_contract.py, scripts/ace_public_surface_scan.py,
+  scripts/ace_public_surface_scan.py,
   scripts/ace_sampling_firewall.py, scripts/validate_ace_wave0_control_plane.py,
   scripts/legal/legal-sanity-scan.sh, .legal-deny-list.yaml,
   tests/fixtures/ace-wave0-control-plane/good/,
@@ -336,7 +317,6 @@ scan #51 public surfaces before commit/comment:
   docs/plans/ace-share-ingestion-wave-coordination.md, every tracked/cited plan-51 review artifact,
   scripts/validate_ace_epic_wave_coordination.py,
   same-stem `.md.err`, `.err`, `.stderr`, and `.log` sidecars present at commit/comment time,
-  every public docs/plans/skills/skill-catalog file modified by the hash-policy sweep,
   and operator-fetched issue body/comment snapshot files
   test source files run through unit tests and restricted fixture harnesses rather than the
   generic public-text scan because they intentionally contain expected-failure examples
@@ -381,16 +361,10 @@ define public-surface scanner field-name policy:
   literal schema field names such as source_id, source_sha256, private_lookup_key, and
   share_relative_path_private_only are methodology terms and may appear in plans,
   coordination docs, artifacts/ace-share-wave0-control-plane.md,
-  artifacts/ace-source-hash-policy-sweep.md, skill instructions, validator constants, tests,
-  and the designated policy/schema config files config/ace-public-output-contract.json
-  and config/ace-public-surface-deny-list.json
+  skill instructions, validator constants, and tests
   parsed #51 good fixture ledger rows may use only the closed placeholder tokens named in
   the private-field placeholder grammar above for private-only required fields; any other
   assigned value fails, and placeholder use outside the parsed good-fixture context fails
-  config files may contain these field names only as string enum/list values describing
-  private-only or banned-public fields; JSON objects that assign real private values,
-  maps from private lookup keys to source identifiers, path-bearing values, or raw digests
-  still fail
   assignments, JSON key-value pairs, table rows containing real values, private
   lookup maps, path-bearing values, and source-like raw digests are rejected everywhere;
   git commit SHAs are allowed only in explicit governance contexts such as Reviewed commit,
@@ -398,57 +372,26 @@ define public-surface scanner field-name policy:
   no author-controlled sentinels, arbitrary line allowlists, or blanket file/path exemptions
 reconcile #63 public-output plan contract:
   update docs/plans/2026-06-29-issue-63-ace-public-output-redaction-and-identifier-canary.md
-  so config/ace-public-output-contract.json is the authoritative source for source-token
-  grammar, private-only fields, git-SHA exceptions, allowlist policy, and banned public
-  source-reference fields; any #63 prose lists are explicitly non-authoritative examples
-  loaded from or subordinate to the shared config, and contradictory local constants fail
+  so #63, not #51, owns config/ace-public-output-contract.json,
+  config/ace-public-surface-deny-list.json, and the source-hash policy sweep
   this is an operator pre-label reconciliation check and one-time plan patch; #51 CI does
-  not parse the #63 plan prose after the shared config exists
+  not parse the #63 plan prose after the ownership boundary is recorded
   verify the live #63 issue body before #51 status transition; if it still describes raw
   source_id, raw source_sha256, private lookup keys, token/hash/provenance IDs, or lookup
   maps as public-safe source identifiers, edit the public issue text to match the shared
   config boundary and scan the fetched body snapshot before relying on it as public metadata
-  #63's plan already references config/ace-public-output-contract.json; until #51 creates
-  that config, #63 implementation tests that load it are expected to remain blocked/red
-  and #63 must not be implemented independently of the #51 contract artifact
-reconcile existing governance docs and public methodology skills:
-  operator preview may run `rg -n "sha256|source hash|provenance pointer" docs skills --glob "*.md"`
-  CI/report generation uses a Python stdlib scanner over repo-tracked `docs/**/*.md` and
-  `skills/**/*.md`, including top-level skill catalog markdown, so no rg binary/version is required
-  dedupe hits by stable hit key: canonical path, matched term, normalized line text, and
-  same-file duplicate ordinal among identical normalized hit texts; line number is recorded
-  only as human navigation metadata and is not the report identity
-  classify each hit in artifacts/ace-source-hash-policy-sweep.md as:
-    modify_public_safe_hash_claim when it says a raw source hash/sha256 pointer is
-    always safe, public-safe, public provenance, public source metadata, repository-visible
-    provenance substitute, or a public source reference
-    no_change_private_context when it is an LFS/OID example, private-sidecar provenance,
-    attachment/manifest census field, schema-field-name discussion, validator metadata,
-    or sample private ledger row and does not make a public-safety/source-reference claim
-    and does not publish an assigned raw source hash, source-like digest value, or source
-    hash table value
-  if one hit has both public-safety/source-reference language and private/schema/census
-  language, modify_public_safe_hash_claim takes precedence over no_change_private_context
-  if one hit contains an assigned raw source hash/source-like digest value, modify/remove
-  takes precedence even when the surrounding prose calls the row private-sidecar-only
-  update every modify_public_safe_hash_claim so raw source_sha256 values are
-  private-sidecar provenance, not public-safe source references; public artifacts use
-  public_source_token only
 define #51 generic self-scan boundary:
   #51 implements only repo-local generic public-surface self-scan for the artifacts it
   creates/touches, including artifacts/ace-share-wave0-control-plane.md,
-  artifacts/ace-source-hash-policy-sweep.md,
-  scripts/ace_public_tokens.py, scripts/ace_public_contract.py,
+  scripts/ace_public_tokens.py,
   scripts/ace_public_surface_scan.py, scripts/ace_sampling_firewall.py,
   scripts/validate_ace_wave0_control_plane.py, scripts/legal/legal-sanity-scan.sh,
-  tests/fixtures/ace-wave0-control-plane/good/, config/ace-public-output-contract.json,
-  config/ace-public-surface-deny-list.json, .legal-deny-list.yaml,
+  tests/fixtures/ace-wave0-control-plane/good/, .legal-deny-list.yaml,
   .github/workflows/validate.yml, touched skills, docs/04-failure-modes.md,
   docs/05-good-practices.md, docs/07-data-governance.md,
   docs/18-security-and-pii.md, docs/19-trust-boundary-and-private-mode.md,
   the #51 plan, the parent #50 plan, the #63 plan, README/coordination planning surfaces, parent coordination
-  validator files, every public docs/plans/skills/skill-catalog file modified by the
-  hash-policy sweep, committed/cited review artifacts, same-stem review sidecars present at
+  validator files, committed/cited review artifacts, same-stem review sidecars present at
   commit/comment time, and operator-fetched issue body/comment snapshots
   it does not load private deny-lists, does not certify real public exposure, and does not
   duplicate the #63 public-output scanner
@@ -548,14 +491,10 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | Action | Path | Reason |
 |---|---|---|
 | Create | artifacts/ace-share-wave0-control-plane.md | Durable ACE ledger/routing/sampling contract kept outside MkDocs publication surfaces until #63 |
-| Create | artifacts/ace-source-hash-policy-sweep.md | Public-safe classification report for every `sha256`/source-hash/provenance-pointer hit in docs and public methodology skills, with modify/no-change rationale and dual-purpose-hit precedence |
 | Create | scripts/ace_public_tokens.py | Reusable zero-source-input CSPRNG public token generator consumed by the wave-0 validator and downstream canary plans |
-| Create | scripts/ace_public_contract.py | JSON contract loader, private/public field classifier, and hash-policy helper module; token generation remains exclusively in `scripts/ace_public_tokens.py` |
 | Create | scripts/ace_public_surface_scan.py | Generic public-surface scanner, review-artifact scanner, issue body/comment scan helper, and restricted bad-fixture harness |
 | Create | scripts/ace_sampling_firewall.py | Bounded sampling and executable-context firewall helper module |
 | Create | scripts/validate_ace_wave0_control_plane.py | CI-checkable orchestrator for required fields, routes, wave bindings, module checks, and sampling constraints |
-| Create | config/ace-public-surface-deny-list.json | Generic public-surface deny patterns for #51 self-scan; no private names committed and no private-deny-list certification in #51 |
-| Create | config/ace-public-output-contract.json | Shared public token/redaction contract consumed by #51 and #63 instead of prose-matching another draft plan |
 | Create | .legal-deny-list.yaml | Repo-local legal/security deny-list source so #51 closeout has an executable legal gate independent of adjacent checkouts |
 | Create | scripts/legal/legal-sanity-scan.sh | Repo-local legal/security scanner wrapper required by inherited AGENTS gate; authoritative closeout command is `bash scripts/legal/legal-sanity-scan.sh --diff-only` |
 | Create | tests/test_validate_ace_wave0_control_plane.py | TDD unit tests for the wave-0 validator and workflow wiring |
@@ -563,16 +502,7 @@ require every closeout to update a playbook doc/skill or file a follow-on issue 
 | Create | tests/fixtures/ace-wave0-control-plane/bad/ | Restricted adversarial fixtures for expected-failure tests; not part of the canonical public-surface scan set |
 | Reference | scripts/validate_ace_public_artifacts.py | Public-output safety gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63); #51 will define the route/token input contract only |
 | Modify | .github/workflows/validate.yml | Run the new validator |
-| Audit/conditional modify | docs/04-failure-modes.md | Classify `sha256` hits; modify only if a hit claims raw source hashes are public-safe source references |
-| Audit/conditional modify | docs/05-good-practices.md | Classify `sha256` hits; modify only if a hit claims raw source hashes are public-safe source references |
-| Modify | docs/07-data-governance.md | Reconcile raw source hash guidance so raw `source_sha256` stays private-sidecar provenance and public artifacts use `public_source_token` |
-| Audit/conditional modify | docs/18-security-and-pii.md | Classify `sha256` hits; modify only if a hit claims raw source hashes are public-safe source references |
-| Modify | docs/19-trust-boundary-and-private-mode.md | Reconcile trust-boundary examples so raw source hashes are not described as public-safe source references |
-| Modify | docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md | Reconcile parent epic public provenance language with the #51 token/hash contract |
-| Audit/conditional modify | docs/plans/2026-06-29-issue-*.md returned by the sweep | Classify every plan hit in the sweep report; modify only files whose hit claims raw source hashes are public-safe source references |
-| Audit/conditional modify | public methodology skill markdown returned by the sweep, including touched skills and top-level skill catalog files | Classify every skill hit in the sweep report; modify only files whose hit claims raw source hashes are public-safe source references |
-| Verify/conditional modify | docs/plans/2026-06-29-issue-63-ace-public-output-redaction-and-identifier-canary.md | Verify the draft #63 public-output canary plan treats `config/ace-public-output-contract.json` as authority and local lists as examples only; modify only if drift is found |
-| GitHub issue metadata verification/conditional modify | https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63 | Verify the live #63 issue body does not describe raw source IDs, raw source hashes, private lookup keys, or token/hash/provenance IDs as public-safe source identifiers; edit and scan it before #51 status transition if drift is found |
+| Modify | docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md | Reconcile parent epic public provenance language with the #51 route/token boundary |
 | Planning-surface update | docs/plans/ace-share-ingestion-wave-coordination.md | Record #51 review/status fields during plan-review and later closeout so the parent tracker does not remain stale; do not mark #51 implementation-ready before user approval |
 | Planning-surface update | docs/plans/README.md | Record #51 plan status/review notes during plan-review and later closeout; do not mark #51 implementation-ready before user approval |
 | GitHub issue metadata verification/conditional modify | https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51 | Verify the live issue body is sanitized before `status:plan-review`; edit it if needed so it has no raw host paths, exact counts, arbitrary root-prefixed source bullets, or denied command examples against the private share |
@@ -608,10 +538,6 @@ The parent coordination validator support remains outside #51 implementation sco
 | test_good_fixture_private_fields_use_placeholders | Required private ledger fields can be represented without leaking values | Parsed good JSON fixture ledger rows and negative public-surface fixtures | Allows only the closed private-field placeholder tokens in `fixture_kind=ace_wave0_ledger_row` JSON files under the good fixture path; rejects concrete private source IDs, raw source digests, lookup keys/maps, path-bearing values, and placeholder use outside parsed good fixtures |
 | test_public_surfaces_reject_raw_source_hashes | Public provenance cannot reveal corpus membership | Public-surface fixtures | Allows schema field-name discussion in methodology prose, but rejects assigned raw `source_id`/`source_sha256` values, private lookup key values, private lookup maps, path-bearing values, and SHA-like digests in public surfaces |
 | test_private_lookup_map_is_private_only | Public surfaces cannot contain private lookup maps | Control-plane/public-surface fixtures | Rejects `private_lookup_key` mappings in public docs, review artifacts, skills, or issue-comment body files |
-| test_shared_public_output_contract_is_consumed | Downstream canary contract cannot drift from #51 | `config/ace-public-output-contract.json` and a synthetic #63 consumer fixture | Shared config contains token grammar, private-only fields, git-SHA governance exceptions, and allowlist policy; consumer fixtures load the shared config instead of redefining or contradicting it. The live #63 plan text is reconciled by operator pre-label check, not parsed by #51 CI |
-| test_public_config_field_names_are_closed_schema_context | Config self-scan does not block its own schema contract | `config/ace-public-output-contract.json`, `config/ace-public-surface-deny-list.json`, and negative config fixtures | Allows private field names only as string enum/list values in designated config files; rejects assigned private values, private lookup maps, path-bearing values, and raw digest values |
-| test_existing_governance_docs_and_skills_do_not_publish_raw_hashes | Existing docs/plans/skills cannot contradict #51 token policy | Stable-hit-key results from the Python stdlib hash-policy scanner over `docs/**/*.md` and `skills/**/*.md` plus `artifacts/ace-source-hash-policy-sweep.md` | Every stable hit key is classified as `modify_public_safe_hash_claim` or `no_change_private_context`; top-level skill catalog markdown is included; line numbers are navigation-only; modified claims no longer say raw hash pointers are always/public safe; dual-purpose hits with public-safety/source-reference language are modified; any assigned raw source hash/source-like digest value is modified or removed; no-change hits have an allowed private/LFS/census/schema/validator rationale without published digest values |
-| test_repo_local_hash_sweep_command_is_allowed | Hash-governance scan is not mistaken for ACE source sampling | Plan and sampling-firewall fixtures | Allows the repo-local `rg` docs/skills hash-policy sweep only as operator preview; CI uses Python stdlib scanning; rejects `rg`, `find`, `jq`, `cat`, `wc`, or hash commands when combined with ACE_SHARE_ROOT or source manifest tokens |
 | test_ace_sampling_protocol_blocks_unbounded_crawls | Sampling rules do not allow unbounded crawls | Sampling section and bad fixtures | Fails on unbounded filesystem search, disk-usage traversal, recursive text search, recursive listing, recursive glob/Python traversal, unrestricted materializing query use, custom full-manifest loops, or full-file hashing/counting of large manifests |
 | test_ace_sampling_protocol_rejects_materialization_code | Python/shell fixture denial | Bad fixtures | Rejects full-json loading, text materialization, streaming custom manifest loops, query-length/materializing query invocations, file dumps, recursive grep/count/hash operations, recursive glob traversal, recursive Python traversal, and validator self-scan bypasses when the bad fixture pairs those executable patterns with ACE manifest/source tokens |
 | test_sampling_deny_tokens_are_scoped_to_executable_contexts | The plan can name denied commands without self-blocking | Prose policy section and bad executable fixtures | Allows denied command names only in fixed methodology headings, the grammar paragraph, and TDD/acceptance denied-token catalog rows without executable prefixes, real source paths, pipes, redirects, or source-material command examples; rejects shell/python fenced blocks, inline code, list/table command starts, pipes, redirects, command flags, and ambiguous contexts when paired with ACE source/manifest tokens |
@@ -623,7 +549,7 @@ The parent coordination validator support remains outside #51 implementation sco
 | test_ace_share_root_required | Host portability | Script/test examples | Uses `ACE_SHARE_ROOT` plus share-relative paths |
 | test_control_plane_artifact_is_not_under_docs_before_publication_gate | MkDocs cannot publish the artifact before #63 | File paths and repo tree | The #51 control-plane artifact is under `artifacts/`; any `docs/**/ace-share-wave-0-control-plane.md` path fails until #63 approval evidence exists |
 | test_bad_fixtures_are_forensic_inputs_not_public_surfaces | Negative fixtures do not self-block the public-surface scan | `tests/fixtures/ace-wave0-control-plane/bad/` with fixture metadata | Bad fixtures are rejected by the expected-failure harness, require `expected_failure`, `synthetic_only=true`, and `forbidden_pattern_class`, and are not included in the canonical passing public-surface scan set |
-| test_public_surface_self_scan_blocks_raw_identifiers | #51 public-surface safety | Control-plane artifact, hash-policy sweep artifact, token generator, decomposed modules, validator, legal scanner/config, workflow, good fixtures, fixed docs named in this plan, #50/#51/#63 plans, README, coordination doc, parent coordination validator, touched skills, every public docs/plans/skills/skill-catalog file modified by the hash-policy sweep, review artifacts, sidecars, and operator-fetched issue body/comment snapshots | Blocks raw host/source paths outside the fixed metadata-index evidence shape, generic private-like identifier patterns, generic personal-identifier regexes such as emails/phones/SSN, confidentiality-marker phrases, assigned raw source hash values, source-like digest values/table rows, assigned private source fields, and private lookup maps before commit/comment/status transition; real proprietary-snippet, client/project/internal-name, and publication-certification coverage remains a #63 gate |
+| test_public_surface_self_scan_blocks_raw_identifiers | #51 public-surface safety | Control-plane artifact, token generator, scanner/sampling/validator modules, legal scanner/config, workflow, good fixtures, fixed docs named in this plan, #50/#51/#63 plans, README, coordination doc, parent coordination validator, touched skills, review artifacts, sidecars, and operator-fetched issue body/comment snapshots | Blocks raw host/source paths outside the fixed metadata-index evidence shape, generic private-like identifier patterns, generic personal-identifier regexes such as emails/phones/SSN, confidentiality-marker phrases, assigned raw source hash values, source-like digest values/table rows, assigned private source fields, and private lookup maps before commit/comment/status transition; real proprietary-snippet, client/project/internal-name, source-hash sweep, shared public-output config, and publication-certification coverage remain #63 gates |
 | test_public_surface_scanner_self_safety_for_policy_examples | Scanner avoids self-blocking policy text without bypasses | Touched skill files, committed allowlist entries, and bad leak fixtures | Allows only fixed policy-example phrase patterns in skills when a matching allowlist entry and negative fixture are present; rejects arbitrary sentinel use, rejects synthetic private-like identifiers even if marker-wrapped, and scans all planned touched skills without blanket exemptions |
 | test_public_surface_scans_review_history_and_sidecars | Provider review artifacts are not an unscanned publication surface | Historical `plan-51-*.md` artifacts plus `.md.err`, `.err`, `.stderr`, and `.log` fixtures next to a review artifact | All retained review history and same-stem sidecars present at commit/comment time are scanned and leaks fail before commit/comment |
 | test_review_artifacts_are_non_empty_and_verdict_bearing | Empty in-flight review placeholders cannot support plan-review | Review artifact fixtures | Rejects zero-byte artifacts, artifacts whose first verdict heading/line does not start with `APPROVE`/`MINOR`/`MAJOR`, verdict words that appear only later in prose, and `UNAVAILABLE` artifacts as provider-review evidence before status evidence or review evidence supporting user approval is accepted |
@@ -655,11 +581,9 @@ The parent coordination validator support remains outside #51 implementation sco
 - [ ] `public_llm_wiki` is allowed only with structural public-review bookkeeping: affirmative public clearance evidence, opaque public token, `verification_state=independent_review_passed`, a non-empty public route review artifact, and `independent_public_reviewer != extraction_author`. The validator enforces structural evidence and author/reviewer non-equality only; it does not prove human/provider independence. Genuine independent-review confidence remains a publication approval gate owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) and user approval. Missing, ambiguous, self-reviewed, or unverified sensitivity/public eligibility routes fail closed to `metadata_only`, `private_sidecar`, or `excluded_no_ingest`.
 - [ ] Public source token generation for #51 fixtures is validator-owned and enforceable: good JSON fixtures carry generation request markers rather than committed concrete `pst_[0-9a-f]{32}` values; `scripts/ace_public_tokens.py::generate_public_source_token()` takes no source/path/name/hash/key inputs and uses `secrets.token_hex(16)`.
 - [ ] The validator expands public token request markers only in JSON files under `tests/fixtures/ace-wave0-control-plane/good/` with `fixture_kind=ace_wave0_ledger_row` and `synthetic_only=true`, verifies grammar/uniqueness/`token_generation_method=random_csprng`, rejects hand-authored concrete public tokens in good fixtures, and exercises duplicate-token failure with an injected deterministic duplicate generator that exhausts a bounded retry budget without making the production generator deterministic.
-- [ ] `scripts/ace_public_contract.py`, `scripts/ace_public_surface_scan.py`, `scripts/ace_sampling_firewall.py`, and `scripts/validate_ace_wave0_control_plane.py` do not define token-generation helpers/wrappers or source-derived token APIs; #51 does not claim static cryptographic proof that arbitrary already-written public tokens were random rather than deterministic transforms.
+- [ ] `scripts/ace_public_surface_scan.py`, `scripts/ace_sampling_firewall.py`, and `scripts/validate_ace_wave0_control_plane.py` do not define token-generation helpers/wrappers or source-derived token APIs; #51 does not claim static cryptographic proof that arbitrary already-written public tokens were random rather than deterministic transforms.
 - [ ] Parsed #51 good JSON fixture rows use only the closed private-field placeholder grammar for required private-only ledger fields. Public surfaces may mention literal private schema field names as methodology terms, but they reject assigned raw `source_id` values, raw `source_sha256` values, `share_relative_path_private_only` values, `private_lookup_key` values, private lookup maps, path-bearing values, and source-like raw digests; raw source hashes remain private-sidecar provenance only. Git commit SHAs are allowed only in explicit governance contexts such as `Reviewed commit`, `reviewed_tree_sha`, `marker_commit_sha`, or review metadata.
-- [ ] `config/ace-public-output-contract.json` and `config/ace-public-surface-deny-list.json` are closed policy/schema contexts: they may contain private field names only as string enum/list values for private-only or banned-public fields, and they reject assigned private values, private lookup maps, path-bearing values, and raw digest values.
-- [ ] `config/ace-public-output-contract.json` defines the shared public-token/redaction contract: `public_source_token` grammar, private-only provenance fields, git-SHA governance exceptions, content-pattern-restricted allowlists, and banned public source-reference fields. The draft [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) plan references this config instead of redefining or contradicting it.
-- [ ] Every stable hit key from the Python stdlib hash-policy scanner over repo-tracked `docs/**/*.md` and `skills/**/*.md`, including top-level skill catalog markdown, is recorded in `artifacts/ace-source-hash-policy-sweep.md` with one of two outcomes: `modify_public_safe_hash_claim` for claims that raw source hashes/sha256 pointers are always safe, public-safe, public provenance, public source metadata, repository-visible provenance substitutes, public source references, or any assigned raw source hash/source-like digest value; or `no_change_private_context` for LFS/OID examples, private-sidecar provenance, attachment/manifest census fields, schema-field-name discussion, validator metadata, and sample private ledger rows that do not make a public-safety/source-reference claim and do not publish digest values. Stable hit keys use canonical path, matched term, normalized line text, and same-file duplicate ordinal; line number is navigation-only. Dual-purpose hits are deterministic: public-safety/source-reference language and assigned digest values take precedence and must be modified. Every `modify_public_safe_hash_claim` hit is edited so raw `source_sha256` values are private-sidecar provenance and are not described as public-safe source references.
+- [ ] #51 records that [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) owns the shared public-output config files, source-hash policy sweep, maintained private deny-list, and publication certification.
 - [ ] Route targets are separate from #61-owned lifecycle states; #51 validates only the `lifecycle_state` field boundary and does not define lifecycle enum values.
 - [ ] Every downstream ACE wave has a bounded sampling protocol and no unbounded share crawl, full-manifest materialization, or full-file hashing/counting of large manifests.
 - [ ] The closed `wave_class` matrix records [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) as `control_plane`, [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) as `storage_lifecycle_gate`, [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) as `manifest_freshness_gate`, and [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) as `public_canary_gate`, all with `requires_manifest_snapshot_id=false`; requires [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60) to be `wave_class=ingestion_wave` and carry `requires_manifest_snapshot_id=true`; and rejects any registered child row with ingestion-wave executable binding that omits `wave_class=ingestion_wave` or falsifies the snapshot field. Entirely unregistered future issue discovery remains a parent/portfolio maintenance obligation under [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50).
@@ -668,7 +592,7 @@ The parent coordination validator support remains outside #51 implementation sco
 - [ ] Proposed scripts/tests use `ACE_SHARE_ROOT` plus share-relative paths.
 - [ ] The #51 control-plane artifact is created at `artifacts/ace-share-wave0-control-plane.md`, not under `docs/`; `docs/case-studies/ace-share-wave-0-control-plane.md` and any other `docs/**` copy are rejected until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval, local marker, implemented canary, and passing canary command exist.
 - [ ] #51-owned public-surface self-scan blocks raw host/source paths outside the fixed metadata-index evidence shape, generic private-like identifier patterns, generic personal-identifier regexes such as emails/phones/SSN, confidentiality-marker phrases, assigned raw source hash values, assigned private source fields, private lookup maps, and provider stderr/log sidecar leaks.
-- [ ] The canonical #51 self-scan target set includes the control-plane artifact, `artifacts/ace-source-hash-policy-sweep.md`, token/contract/scanner/sampling/validator modules, repo-local legal scanner/config, `tests/fixtures/ace-wave0-control-plane/good/`, public contract config, `.github/workflows/validate.yml`, touched skills, fixed docs named in this plan, #50/#51/#63 plans, `docs/plans/README.md`, `docs/plans/ace-share-ingestion-wave-coordination.md`, `scripts/validate_ace_epic_wave_coordination.py`, every public docs/plans/skills/skill-catalog file modified by the hash-policy sweep, every tracked/cited `plan-51-*.md` review artifact, same-stem sidecars present at commit/comment time, and operator-fetched issue body/comment snapshots before commit/posting/status transition.
+- [ ] The canonical #51 self-scan target set includes the control-plane artifact, token/scanner/sampling/validator modules, repo-local legal scanner/config, `tests/fixtures/ace-wave0-control-plane/good/`, `.github/workflows/validate.yml`, touched skills, fixed docs named in this plan, #50/#51/#63 plans, `docs/plans/README.md`, `docs/plans/ace-share-ingestion-wave-coordination.md`, `scripts/validate_ace_epic_wave_coordination.py`, every tracked/cited `plan-51-*.md` review artifact, same-stem sidecars present at commit/comment time, and operator-fetched issue body/comment snapshots before commit/posting/status transition.
 - [ ] Test source files run through unit tests and restricted bad-fixture harnesses rather than the generic public-text scan, because they intentionally contain expected-failure examples. Provider review output that includes raw source paths must be normalized before commit. Real proprietary-snippet detection, private identifier denial using maintained client/project/internal-name lists, and publication certification remain owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63).
 - [ ] `tests/fixtures/ace-wave0-control-plane/bad/` is handled only as a restricted forensic expected-failure fixture root. Each bad fixture declares `expected_failure`, `synthetic_only=true`, and `forbidden_pattern_class`; bad fixtures are rejected if they contain raw host/share path patterns, synthetic private-like identifiers outside the fixture contract, or unclassified arbitrary content; copying a bad fixture into the canonical public-surface scan set fails. Real client/project/internal-name detection remains owned by [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63).
 - [ ] The public-surface scanner includes a positive fixture for the plan's fenced metadata evidence shape: the literal `EXISTS` prefix, the root abstraction, one fixed source path, type, and `details=withheld_public` pass only for the fixed metadata-index evidence paths named in this plan, while unlisted ACE paths, item-level source paths, rows publishing title/size/mtime/count/digest/content, executable/path-bearing commands, and private content snippets fail.
@@ -775,7 +699,7 @@ These are operator status-transition checks, not CI acceptance criteria. They mu
 | Codex r23 | MAJOR | Required fixing live #51 issue-body fallback-scan failure and specifying the repo-local legal/security deny-list schema and minimum block-severity contents. |
 | Gemini r23 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
 
-**Overall result:** r23 returned MAJOR from both active providers and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. The current patch is intended to address the actionable r23 technical blockers by requiring live #51 issue-body repair when fallback scanning fails, specifying the legal/security deny-list schema and minimum block-severity pattern classes, and defining the path-and-format fixture parse contract for good JSON ledger rows. Remaining decision blockers are the broad front-loaded #51 scope versus the named split point, and Gemini restoration or explicit user approval of one degraded-quorum review round. A fresh review round must return no active-provider MAJORs before any plan-review label or user approval request.
+**Overall result:** r23 returned MAJOR from both active providers and Gemini UNAVAILABLE due noninteractive auth. This plan remains draft-only and must not move to `status:plan-review`. The current patch is intended to address the actionable r23 technical blockers by requiring live #51 issue-body repair when fallback scanning fails, specifying the legal/security deny-list schema and minimum block-severity pattern classes, defining the path-and-format fixture parse contract for good JSON ledger rows, and taking the named scope split so #63 owns the source-hash sweep plus shared public-output config creation. A fresh review round must return no active-provider MAJORs before any plan-review label or user approval request; Gemini must be restored or the user must explicitly approve one degraded-quorum review round after seeing the auth-failure evidence.
 
 ---
 
