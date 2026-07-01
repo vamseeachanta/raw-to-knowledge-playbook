@@ -45,7 +45,7 @@ EXPECTED_SPLIT_DEPENDENCIES = {
     66: [65],
     67: [65],
     68: [65, 66],
-    69: [68],
+    69: [65],
 }
 EXPECTED_CORE_PUBLIC_PATHS = {
     "docs/plans/2026-06-30-issue-65-ace-wave-0-ledger-schema-route-store-matrix.md",
@@ -218,6 +218,199 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         }
 
         self.assertEqual(EXPECTED_SPLIT_DEPENDENCIES, dependencies)
+
+    def test_non_ready_split_registry_rejects_wrong_issue_plan_path(self):
+        validator = load_validator()
+        schema = load_schema()
+        rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
+        mutated = copy.deepcopy(schema)
+        mutated_rows = {row["issue"]: row for row in mutated["wave0_split_registry"]}
+
+        mutated_rows[66]["plan_path"] = rows[67]["plan_path"]
+        mutated_rows[66]["implementation_ready"] = False
+
+        errors = validator.validate_schema(mutated)
+
+        self.assertIn("#66 split plan_path", "\n".join(errors))
+
+    def test_non_ready_split_registry_rejects_empty_plan_path_when_expected_file_exists(self):
+        validator = load_validator()
+        schema = load_schema()
+        mutated = copy.deepcopy(schema)
+        rows = {row["issue"]: row for row in mutated["wave0_split_registry"]}
+
+        rows[68]["plan_path"] = ""
+        rows[68]["implementation_ready"] = False
+
+        errors = validator.validate_schema(mutated)
+
+        self.assertIn("#68 split plan_path", "\n".join(errors))
+
+    def test_non_ready_split_registry_rejects_invalid_status_snapshot(self):
+        validator = load_validator()
+        schema = load_schema()
+        mutated = copy.deepcopy(schema)
+        rows = {row["issue"]: row for row in mutated["wave0_split_registry"]}
+
+        rows[67]["status_snapshot"] = "nonsense-stale-status"
+        rows[67]["implementation_ready"] = False
+
+        errors = validator.validate_schema(mutated)
+
+        self.assertIn("#67 split status_snapshot", "\n".join(errors))
+
+    def test_non_ready_split_registry_rejects_status_drift_from_readme(self):
+        validator = load_validator()
+        schema = load_schema()
+        mutated = copy.deepcopy(schema)
+        rows = {row["issue"]: row for row in mutated["wave0_split_registry"]}
+
+        rows[66]["status_snapshot"] = "status:blocked-draft"
+        rows[66]["implementation_ready"] = False
+
+        errors = validator.validate_schema(mutated)
+
+        self.assertIn("#66 split status_snapshot must match repo-local status", "\n".join(errors))
+
+    def test_split_registry_rejects_lower_precedence_status_contradiction(self):
+        validator = load_validator()
+        schema = load_schema()
+        readme_path = REPO_ROOT / "docs" / "plans" / "README.md"
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_readme = Path(tmp) / "README.md"
+            fake_readme.write_text(readme_path.read_text().replace(
+                "| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | ace-public-token-fixtures-private-field-placeholders | `docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md` | 2026-06-30 | plan-review |",
+                "| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | ace-public-token-fixtures-private-field-placeholders | `docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md` | 2026-06-30 | draft |",
+            ))
+            original_repo_path = validator._repo_path
+
+            def mapped_repo_path(path: Path) -> Path:
+                if Path(path).as_posix() == "docs/plans/README.md":
+                    return fake_readme
+                return original_repo_path(path)
+
+            validator._repo_path = mapped_repo_path
+            try:
+                errors = validator.validate_schema(schema)
+            finally:
+                validator._repo_path = original_repo_path
+
+        self.assertIn("lower-precedence README contradicts", "\n".join(errors))
+
+    def test_split_registry_requires_plan_required_state_when_expected_plan_missing(self):
+        validator = load_validator()
+        schema = load_schema()
+        original_paths = dict(validator.EXPECTED_SPLIT_PLAN_PATHS)
+
+        validator.EXPECTED_SPLIT_PLAN_PATHS[66] = "docs/plans/nonexistent-issue-66-plan.md"
+        try:
+            errors = validator.validate_schema(schema)
+        finally:
+            validator.EXPECTED_SPLIT_PLAN_PATHS.clear()
+            validator.EXPECTED_SPLIT_PLAN_PATHS.update(original_paths)
+
+        joined = "\n".join(errors)
+        self.assertIn("#66 split plan_path must be empty", joined)
+        self.assertIn("#66 split status_snapshot must be status:plan-required", joined)
+
+    def test_split_registry_covers_66_67_swapped_regression(self):
+        validator = load_validator()
+        schema = load_schema()
+        rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
+        mutated = copy.deepcopy(schema)
+        mutated_rows = {row["issue"]: row for row in mutated["wave0_split_registry"]}
+
+        mutated_rows[66]["plan_path"] = rows[67]["plan_path"]
+        mutated_rows[66]["implementation_ready"] = False
+        mutated_rows[67]["plan_path"] = ""
+        mutated_rows[67]["status_snapshot"] = "nonsense-stale-status"
+        mutated_rows[67]["implementation_ready"] = False
+
+        errors = "\n".join(validator.validate_schema(mutated))
+
+        self.assertIn("#66 split plan_path", errors)
+        self.assertIn("#67 split plan_path", errors)
+        self.assertIn("#67 split status_snapshot", errors)
+
+    def test_split_registry_normalizes_current_68_69_rows(self):
+        schema = load_schema()
+        rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
+
+        self.assertEqual(
+            "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md",
+            rows[68]["plan_path"],
+        )
+        self.assertEqual("status:blocked-draft", rows[68]["status_snapshot"])
+        self.assertFalse(rows[68]["implementation_ready"])
+        self.assertEqual(
+            "docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md",
+            rows[69]["plan_path"],
+        )
+        self.assertEqual("status:plan-approved", rows[69]["status_snapshot"])
+        self.assertTrue(rows[69]["implementation_ready"])
+
+    def test_split_registry_records_69_dependency_correction(self):
+        schema = load_schema()
+        rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
+
+        self.assertEqual([65], rows[69]["depends_on"])
+        self.assertNotIn(68, rows[69]["depends_on"])
+
+    def test_non_ready_split_registry_allows_no_approval_marker(self):
+        validator = load_validator()
+        schema = load_schema()
+        rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
+
+        self.assertFalse(rows[66]["implementation_ready"])
+        self.assertEqual("status:plan-review", rows[66]["status_snapshot"])
+        self.assertNotIn("#66 implementation_ready", "\n".join(validator.validate_schema(schema)))
+
+    def test_split_registry_allows_65_implemented_note_with_approval_marker(self):
+        validator = load_validator()
+        schema = load_schema()
+
+        errors = validator.validate_schema(schema)
+
+        self.assertNotIn("#65 split status_snapshot", "\n".join(errors))
+
+    def test_split_registry_allows_68_readme_draft_coarsening_when_blocked_draft_source_exists(self):
+        validator = load_validator()
+        schema = load_schema()
+
+        errors = validator.validate_schema(schema)
+
+        self.assertNotIn("#68 split status_snapshot", "\n".join(errors))
+
+    def test_split_registry_uses_68_plan_body_when_coordination_status_is_silent(self):
+        validator = load_validator()
+        schema = load_schema()
+        coordination_path = REPO_ROOT / "docs" / "plans" / "ace-share-ingestion-wave-coordination.md"
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_coordination = Path(tmp) / "coordination.md"
+            fake_coordination.write_text(coordination_path.read_text().replace(
+                "blocked-draft: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
+                "decision pending in plan body: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
+            ))
+            original_repo_path = validator._repo_path
+
+            def mapped_repo_path(path: Path) -> Path:
+                if Path(path).as_posix() == "docs/plans/ace-share-ingestion-wave-coordination.md":
+                    return fake_coordination
+                return original_repo_path(path)
+
+            validator._repo_path = mapped_repo_path
+            try:
+                errors = validator.validate_schema(schema)
+            finally:
+                validator._repo_path = original_repo_path
+
+        self.assertNotIn("#68 split status_snapshot", "\n".join(errors))
+
+    def test_schema_normalizes_status_snapshot_vocabulary(self):
+        schema = load_schema()
+
+        for row in schema["wave0_split_registry"]:
+            self.assertTrue(row["status_snapshot"].startswith("status:"))
 
     def test_split_registry_requires_approval_marker_contract(self):
         validator = load_validator()

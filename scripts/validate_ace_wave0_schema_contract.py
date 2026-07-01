@@ -42,7 +42,21 @@ EXPECTED_SPLIT_DEPENDENCIES = {
     66: [65],
     67: [65],
     68: [65, 66],
-    69: [68],
+    69: [65],
+}
+EXPECTED_SPLIT_PLAN_PATHS = {
+    65: "docs/plans/2026-06-30-issue-65-ace-wave-0-ledger-schema-route-store-matrix.md",
+    66: "docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md",
+    67: "docs/plans/2026-06-30-issue-67-ace-wave-0-bounded-sampling-firewall.md",
+    68: "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md",
+    69: "docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md",
+}
+ALLOWED_SPLIT_STATUS_SNAPSHOTS = {
+    "status:plan-approved",
+    "status:plan-review",
+    "status:blocked-draft",
+    "status:draft",
+    "status:plan-required",
 }
 PRIVATE_SOURCE_TERMS = {
     "source_" + "id",
@@ -255,6 +269,25 @@ def _validate_split_registry(schema: dict, approval_root: Path, errors: list[str
         row = rows.get(issue, {})
         if row.get("depends_on") != expected_dependencies:
             errors.append(f"#{issue} split dependencies must be {expected_dependencies}")
+        if row.get("status_snapshot") not in ALLOWED_SPLIT_STATUS_SNAPSHOTS:
+            errors.append(f"#{issue} split status_snapshot must use the canonical status vocabulary")
+        expected_plan_path = EXPECTED_SPLIT_PLAN_PATHS[issue]
+        if _repo_path(Path(expected_plan_path)).exists():
+            if row.get("plan_path") != expected_plan_path:
+                errors.append(f"#{issue} split plan_path must be {expected_plan_path}")
+        else:
+            if row.get("plan_path") != "":
+                errors.append(f"#{issue} split plan_path must be empty until expected plan exists")
+            if row.get("status_snapshot") != "status:plan-required":
+                errors.append(f"#{issue} split status_snapshot must be status:plan-required until expected plan exists")
+            if row.get("implementation_ready"):
+                errors.append(f"#{issue} split implementation_ready must be false until expected plan exists")
+            continue
+        status_sources = _split_status_sources(issue, expected_plan_path, approval_root, parent)
+        expected_status = status_sources[0][1] if status_sources else None
+        if expected_status and row.get("status_snapshot") != expected_status:
+            errors.append(f"#{issue} split status_snapshot must match repo-local status {expected_status}")
+        _validate_lower_precedence_split_statuses(issue, status_sources, errors)
         if not row.get("implementation_ready"):
             continue
         if "status:plan-approved" not in row.get("status_snapshot", ""):
@@ -266,6 +299,94 @@ def _validate_split_registry(schema: dict, approval_root: Path, errors: list[str
         if marker_errors:
             errors.append(f"#{issue} implementation_ready requires valid approval marker")
             errors.extend(marker_errors)
+
+
+def _split_status_sources(issue: int, plan_path: str, approval_root: Path, parent) -> list[tuple[str, str]]:
+    sources: list[tuple[str, str]] = []
+    marker_path = approval_root / f"{issue}.md"
+    if marker_path.exists() and not parent.validate_approval_marker(marker_path, issue, plan_path):
+        sources.append(("approval marker", "status:plan-approved"))
+    for name, status in [
+        ("coordination", _coordination_split_status(issue)),
+        ("plan file", _plan_file_status(plan_path)),
+        ("README", _readme_plan_status(issue)),
+    ]:
+        if status:
+            sources.append((name, status))
+    return sources
+
+
+def _validate_lower_precedence_split_statuses(
+    issue: int,
+    sources: list[tuple[str, str]],
+    errors: list[str],
+) -> None:
+    if not sources:
+        return
+    expected_status = sources[0][1]
+    for source_name, status in sources[1:]:
+        if not _compatible_split_status(expected_status, status):
+            errors.append(
+                f"#{issue} split status_snapshot lower-precedence {source_name} "
+                f"contradicts {expected_status}"
+            )
+
+
+def _compatible_split_status(expected_status: str, lower_status: str) -> bool:
+    if expected_status == lower_status:
+        return True
+    return expected_status == "status:blocked-draft" and lower_status == "status:draft"
+
+
+def _coordination_split_status(issue: int) -> str | None:
+    text = _repo_path(COORDINATION_PATH).read_text()
+    for line in text.splitlines():
+        if f"[#{issue}]" not in line or not line.lstrip().startswith("|"):
+            continue
+        cells = _markdown_cells(line)
+        if len(cells) >= 4 and _markdown_issue_cell_matches(cells[0], issue):
+            return _normalize_split_status(cells[3])
+    return None
+
+
+def _plan_file_status(plan_path: str) -> str | None:
+    path = _repo_path(Path(plan_path))
+    if not path.exists():
+        return None
+    text = path.read_text()
+    blocked_match = re.search(r"(?i)\bOverall result:\s*[*_\s]*BLOCKED-DRAFT\b", text)
+    if blocked_match:
+        return "status:blocked-draft"
+    header_match = re.search(r"(?im)^>\s+\*\*Status:\*\*\s*(.+)$", text)
+    return _normalize_split_status(header_match.group(1)) if header_match else None
+
+
+def _readme_plan_status(issue: int) -> str | None:
+    text = _repo_path(Path("docs/plans/README.md")).read_text()
+    for line in text.splitlines():
+        if f"[#{issue}]" not in line or not line.lstrip().startswith("|"):
+            continue
+        cells = _markdown_cells(line)
+        if len(cells) >= 5 and _markdown_issue_cell_matches(cells[0], issue):
+            return _normalize_split_status(cells[4])
+    return None
+
+
+def _markdown_cells(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def _markdown_issue_cell_matches(cell: str, issue: int) -> bool:
+    match = re.fullmatch(r"(?:#(\d+)|\[#(\d+)\]\([^)]+\))", cell.strip())
+    return bool(match and int(match.group(1) or match.group(2)) == issue)
+
+
+def _normalize_split_status(text: str | None) -> str | None:
+    lowered = (text or "").strip().lower()
+    for token in ["plan-approved", "plan-review", "blocked-draft", "plan-required", "draft"]:
+        if token in lowered:
+            return f"status:{token}"
+    return None
 
 
 def _validate_canonical_wave_registry(schema: dict, errors: list[str]) -> None:

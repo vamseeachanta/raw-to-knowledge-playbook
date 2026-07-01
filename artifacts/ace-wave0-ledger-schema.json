@@ -283,7 +283,7 @@
       "scope": "public_token_fixtures_private_field_placeholders",
       "lane": "lane:codex",
       "plan_path": "docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md",
-      "status_snapshot": "plan-review",
+      "status_snapshot": "status:plan-review",
       "implementation_ready": false,
       "depends_on": [
         65
@@ -294,7 +294,7 @@
       "scope": "bounded_sampling_firewall",
       "lane": "lane:codex",
       "plan_path": "docs/plans/2026-06-30-issue-67-ace-wave-0-bounded-sampling-firewall.md",
-      "status_snapshot": "plan-review",
+      "status_snapshot": "status:plan-review",
       "implementation_ready": false,
       "depends_on": [
         65
@@ -304,8 +304,8 @@
       "issue": 68,
       "scope": "public_surface_self_scan",
       "lane": "lane:claude",
-      "plan_path": "",
-      "status_snapshot": "plan-required",
+      "plan_path": "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md",
+      "status_snapshot": "status:blocked-draft",
       "implementation_ready": false,
       "depends_on": [
         65,
@@ -316,11 +316,11 @@
       "issue": 69,
       "scope": "repo_local_legal_security_scan",
       "lane": "lane:claude",
-      "plan_path": "",
-      "status_snapshot": "plan-required",
-      "implementation_ready": false,
+      "plan_path": "docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md",
+      "status_snapshot": "status:plan-approved",
+      "implementation_ready": true,
       "depends_on": [
-        68
+        65
       ]
     }
   ],

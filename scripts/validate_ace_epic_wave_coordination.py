@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_CHILD_ISSUES = set(range(51, 64))
 DOWNSTREAM_WAVES = set(range(52, 61))
 PUBLICATION_GATE_ISSUES = DOWNSTREAM_WAVES | {61, 63}
@@ -29,6 +30,7 @@ EXPECTED_REQUIRES_MANIFEST_SNAPSHOT_ID = {issue: issue in MANIFEST_GATE_ISSUES f
 PARENT_ISSUE = 50
 PARENT_PLAN_PATH = "docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md"
 REVIEW_ARTIFACT_ROOT = Path("scripts/review/results")
+MANIFEST_CONTRACT_PATH = Path("config/ace-manifest-evidence-contract.json")
 ALLOWED_METHOD_GAP_DISPOSITIONS = {"doc-update", "skill-eval-update", "follow-on-issue"}
 EXPECTED_METHOD_ISSUES = {
     51: {"#1", "#12"},
@@ -129,23 +131,9 @@ PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS = [
     rf"(?i)\|\s*(?:{PRIVATE_SOURCE_FIELD_PATTERN})\s*\|\s*[^|\s][^|]*\|",
     r"(?i)[\"']?\bpublic_" + r"source_token\b[\"']?\s*[:=]\s*[\"']?pst_[0-9a-f]{32}\b",
 ]
-FIXED_METADATA_EVIDENCE_PATHS = {
-    "INDEX.md": "file",
-    "assets.json": "file",
-    "docs/master-index.jsonl": "file",
-    "_cad-index/index-summary.json": "file",
-    "_cad-index/cad-readability-index.tsv": "file",
-    ".ace-knowledge/index.db": "file",
+FIXED_NON_MANIFEST_METADATA_EVIDENCE_PATHS = {
     "llm-wiki": "directory",
 }
-EXPECTED_MANIFEST_SOURCES = [
-    "INDEX.md",
-    "assets.json",
-    "docs/master-index.jsonl",
-    "_cad-index/index-summary.json",
-    "_cad-index/cad-readability-index.tsv",
-    ".ace-knowledge/index.db",
-]
 ISSUE_62_EVIDENCE_ROOTS = [
     Path("artifacts/ace-manifest-freshness"),
     Path("tests/fixtures/ace-manifest-freshness"),
@@ -196,6 +184,59 @@ class ValidationResult:
     errors: list[str]
 
 
+@dataclass(frozen=True)
+class ManifestEvidenceContract:
+    owner_issue: int
+    depends_on_schema_issue: int
+    downstream_consumer_issue: int
+    blocked_operational_issue: int
+    source_root_env_var: str
+    manifest_source_keys: list[str]
+
+
+def _load_manifest_contract(path: Path = MANIFEST_CONTRACT_PATH) -> tuple[ManifestEvidenceContract | None, list[str]]:
+    errors: list[str] = []
+    contract_path = _repo_path(path)
+    try:
+        record = json.loads(contract_path.read_text())
+    except FileNotFoundError:
+        return None, [f"manifest evidence contract missing: {path}"]
+    except json.JSONDecodeError as exc:
+        return None, [f"manifest evidence contract JSON is invalid: {exc}"]
+    required_fields = {
+        "owner_issue": int,
+        "depends_on_schema_issue": int,
+        "downstream_consumer_issue": int,
+        "blocked_operational_issue": int,
+        "source_root_env_var": str,
+        "manifest_source_keys": list,
+    }
+    for field, expected_type in required_fields.items():
+        if not isinstance(record.get(field), expected_type):
+            errors.append(f"manifest evidence contract requires {field}")
+    keys = record.get("manifest_source_keys")
+    if isinstance(keys, list):
+        if not keys:
+            errors.append("manifest evidence contract requires non-empty manifest_source_keys")
+        if any(not isinstance(key, str) or not key for key in keys):
+            errors.append("manifest evidence contract manifest_source_keys must be non-empty strings")
+        if len(keys) != len(set(keys)):
+            errors.append("manifest evidence contract manifest_source_keys must be unique")
+    if errors:
+        return None, errors
+    return (
+        ManifestEvidenceContract(
+            owner_issue=record["owner_issue"],
+            depends_on_schema_issue=record["depends_on_schema_issue"],
+            downstream_consumer_issue=record["downstream_consumer_issue"],
+            blocked_operational_issue=record["blocked_operational_issue"],
+            source_root_env_var=record["source_root_env_var"],
+            manifest_source_keys=list(keys),
+        ),
+        [],
+    )
+
+
 def _parse_child_issues(text: str) -> set[int]:
     issues: set[int] = set()
     for line in text.splitlines():
@@ -210,6 +251,10 @@ def _parse_child_issues(text: str) -> set[int]:
 
 def _split_markdown_row(line: str) -> list[str]:
     return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def _repo_path(path: Path) -> Path:
+    return path if path.is_absolute() else REPO_ROOT / path
 
 
 def _normalise_header(header: str) -> str:
@@ -509,7 +554,6 @@ def _validate_global_contract(text: str, errors: list[str]) -> None:
     ]
     if not _has_all(text, bounded_terms):
         errors.append("bounded read contract must declare ACE_SHARE_ROOT, named manifests, seed/sort, row caps, file/byte caps, and denied traversal patterns")
-    _validate_manifest_inventory(text, errors)
 
     if not _has_all(text, ["Branch publication rule", "dedicated planning branch", "stacked-branch note"]):
         errors.append("branch publication rule must require a dedicated planning branch or explicit stacked-branch note")
@@ -537,18 +581,23 @@ def _validate_global_contract(text: str, errors: list[str]) -> None:
                 break
 
 
-def _row_ready(row: dict[str, str], issue: int, approval_root: Path | None) -> bool:
+def _row_ready(
+    row: dict[str, str],
+    issue: int,
+    approval_root: Path | None,
+    contract: ManifestEvidenceContract,
+) -> bool:
     ready = row.get("implementation ready", "").strip().lower() in {"true", "yes"}
     snapshot = row.get("status snapshot", "")
     plan = row.get("plan", "").strip("`")
     marker_valid = False
     if approval_root is not None:
         marker_valid = _approval_marker_valid(approval_root / f"{issue}.md", issue, plan)
-    gate_evidence_ready = issue not in CROSS_WAVE_GATE_ISSUES or not _gate_readiness_errors(row, issue)
+    gate_evidence_ready = issue not in CROSS_WAVE_GATE_ISSUES or not _gate_readiness_errors(row, issue, contract)
     return ready and "status:plan-approved" in snapshot and marker_valid and gate_evidence_ready
 
 
-def _gate_readiness_errors(row: dict[str, str], issue: int) -> list[str]:
+def _gate_readiness_errors(row: dict[str, str], issue: int, contract: ManifestEvidenceContract) -> list[str]:
     if issue not in CROSS_WAVE_GATE_ISSUES:
         return []
     errors: list[str] = []
@@ -570,7 +619,7 @@ def _gate_readiness_errors(row: dict[str, str], issue: int) -> list[str]:
     if issue == 62 and not SNAPSHOT_ID_RE.fullmatch(evidence.get("snapshot_id", "")):
         errors.append(f"#{issue} gate readiness requires snapshot_id: opaque ams_ plus 32 lowercase hex characters")
     if issue == 62:
-        _validate_issue_62_snapshot_evidence(evidence, errors)
+        _validate_issue_62_snapshot_evidence(evidence, errors, contract)
     if any(_has_placeholder_evidence(value) for value in [implemented, command, exit_code]):
         errors.append(f"#{issue} gate readiness rejects placeholder, negated, pending, or expected evidence")
     return errors
@@ -586,7 +635,11 @@ def _parse_status_snapshot_evidence(snapshot: str) -> dict[str, str]:
     return evidence
 
 
-def _validate_issue_62_snapshot_evidence(evidence: dict[str, str], errors: list[str]) -> None:
+def _validate_issue_62_snapshot_evidence(
+    evidence: dict[str, str],
+    errors: list[str],
+    contract: ManifestEvidenceContract,
+) -> None:
     snapshot_id = evidence.get("snapshot_id", "")
     if not SNAPSHOT_ID_RE.fullmatch(snapshot_id):
         return
@@ -600,8 +653,8 @@ def _validate_issue_62_snapshot_evidence(evidence: dict[str, str], errors: list[
         errors.append("#62 gate readiness requires readable validated evidence JSON")
         return
     snapshots = record.get("snapshot_ids_by_manifest_source")
-    if not isinstance(snapshots, dict) or sorted(snapshots) != sorted(EXPECTED_MANIFEST_SOURCES):
-        errors.append("#62 gate readiness requires evidence with exact six manifest snapshot IDs")
+    if not isinstance(snapshots, dict) or sorted(snapshots) != sorted(contract.manifest_source_keys):
+        errors.append("#62 gate readiness requires evidence matching manifest contract source keys")
         return
     if snapshot_id not in snapshots.values():
         errors.append("#62 gate readiness snapshot_id must match validated evidence")
@@ -647,7 +700,13 @@ def _has_placeholder_evidence(value: str) -> bool:
     return any(term in normalised for term in EVIDENCE_PLACEHOLDER_TERMS) or "notrun" in compact
 
 
-def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, errors: list[str]) -> None:
+def _validate_row(
+    issue: int,
+    row: dict[str, str],
+    approval_root: Path | None,
+    errors: list[str],
+    contract: ManifestEvidenceContract,
+) -> None:
     plan = row.get("plan", "").strip("`")
     if not plan or f"issue-{issue}" not in plan or not plan.endswith(".md"):
         errors.append(f"#{issue} plan must name an issue-specific markdown plan file")
@@ -687,11 +746,11 @@ def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, e
         if approval_root is not None and (approval_root / f"{issue}.md").exists() and not marker_valid:
             errors.append(f"#{issue} approval marker must include required approval fields")
     if ready:
-        errors.extend(_gate_readiness_errors(row, issue))
+        errors.extend(_gate_readiness_errors(row, issue, contract))
 
     dependencies = row.get("dependencies", "")
     if issue == 62:
-        _validate_issue_62_dependency_handoff(dependencies, errors)
+        _validate_issue_62_dependency_handoff(dependencies, errors, contract)
     if issue in DOWNSTREAM_WAVES and "#51" not in dependencies:
         errors.append(f"#{issue} dependencies must include #51 wave-0 control-plane gate")
     if issue in PUBLICATION_GATE_ISSUES and "#61" not in dependencies:
@@ -736,25 +795,49 @@ def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, e
         errors.append(f"#{issue} publication exposure must be true or false")
 
 
-def _validate_manifest_inventory(text: str, errors: list[str]) -> None:
+def _validate_manifest_inventory(text: str, errors: list[str], contract: ManifestEvidenceContract) -> None:
     match = re.search(r"(?m)^-\s+Named manifest sources:\s*(.+)$", text)
     if not match:
         errors.append("manifest source inventory must name the six #62 manifest sources")
         return
     sources = re.findall(r"`([^`]+)`", match.group(1))
-    if sources != EXPECTED_MANIFEST_SOURCES:
-        errors.append("manifest source inventory must match the exact six #62 manifest sources")
+    if sources != contract.manifest_source_keys:
+        errors.append("manifest source inventory must match the #62 manifest evidence contract")
 
 
-def _validate_issue_62_dependency_handoff(dependencies: str, errors: list[str]) -> None:
+def _validate_issue_62_dependency_handoff(
+    dependencies: str,
+    errors: list[str],
+    contract: ManifestEvidenceContract,
+) -> None:
     required = [
-        "#65 schema is the canonical registry source",
-        "#70 consumes the #62 evidence contract",
-        "#67 integration",
+        f"#{contract.depends_on_schema_issue} schema is the canonical registry source",
+        f"#{contract.downstream_consumer_issue} consumes the #62 evidence contract",
         "#51 remains umbrella context only",
     ]
     if not all(term in dependencies for term in required):
         errors.append("#62 dependency handoff must preserve #65 schema source, #70 consumer, #67 integration, and #51 umbrella-only boundary")
+        return
+    blocked_issue = f"#{contract.blocked_operational_issue}"
+    contradiction_terms = [
+        "no longer blocked",
+        "unblocked",
+        "released",
+        "complete",
+        "completed",
+        "operational use",
+    ]
+    for clause in re.split(r"[.;|]", dependencies):
+        lowered = clause.lower()
+        if blocked_issue in clause and any(term in lowered for term in contradiction_terms):
+            errors.append("#62 dependency handoff must not contradict the blocked operational issue boundary")
+            return
+    if not any(
+        blocked_issue in clause and "blocked" in clause.lower() and "operational" in clause.lower()
+        for clause in re.split(r"[.;|]", dependencies)
+    ):
+        errors.append("#62 dependency handoff must assert the blocked operational issue boundary")
+        return
 
 
 def _validate_structural_wave_gate_row(issue: int, row: dict[str, str], errors: list[str]) -> None:
@@ -772,9 +855,18 @@ def _validate_structural_wave_gate_row(issue: int, row: dict[str, str], errors: 
         errors.append(f"#{issue} success_denominator_field must be {expected_denominator}")
 
 
-def validate_text(text: str, approval_root: Path | None = None) -> ValidationResult:
+def validate_text(
+    text: str,
+    approval_root: Path | None = None,
+    manifest_contract_path: Path = MANIFEST_CONTRACT_PATH,
+) -> ValidationResult:
     errors: list[str] = []
     _validate_global_contract(text, errors)
+    contract, contract_errors = _load_manifest_contract(manifest_contract_path)
+    errors.extend(contract_errors)
+    if contract is None:
+        return ValidationResult(errors)
+    _validate_manifest_inventory(text, errors, contract)
     structural_rows, structural_parse_errors = _parse_structural_wave_gate_rows(text)
     errors.extend(structural_parse_errors)
     rows, parse_errors = _parse_child_rows(text)
@@ -796,21 +888,27 @@ def validate_text(text: str, approval_root: Path | None = None) -> ValidationRes
     if extra:
         errors.append(f"unexpected child issues: {', '.join(f'#{issue}' for issue in extra)}")
     for issue in sorted(EXPECTED_CHILD_ISSUES & set(rows)):
-        _validate_row(issue, rows[issue], approval_root, errors)
+        _validate_row(issue, rows[issue], approval_root, errors, contract)
     if 61 in rows:
-        issue_61_ready = _row_ready(rows[61], 61, approval_root)
+        issue_61_ready = _row_ready(rows[61], 61, approval_root, contract)
         for issue, row in sorted(rows.items()):
             if issue in DOWNSTREAM_WAVES and row.get("implementation ready", "").strip().lower() in {"true", "yes"} and not issue_61_ready:
                 errors.append(f"#{issue} #61 dependency must be implementation-ready before downstream durable output is ready")
-    issue_63_ready = 63 in rows and _row_ready(rows[63], 63, approval_root)
+    issue_63_ready = 63 in rows and _row_ready(rows[63], 63, approval_root, contract)
     for issue, row in sorted(rows.items()):
         if row.get("publication exposure", "").strip().lower() == "true" and not issue_63_ready:
             errors.append(f"#{issue} publication exposure requires #63 implementation-ready approval marker and canary evidence")
     return ValidationResult(errors)
 
 
-def validate_public_artifact_paths(paths: list[Path]) -> list[str]:
+def validate_public_artifact_paths(
+    paths: list[Path],
+    manifest_contract_path: Path = MANIFEST_CONTRACT_PATH,
+) -> list[str]:
     errors: list[str] = []
+    contract, contract_errors = _load_manifest_contract(manifest_contract_path)
+    errors.extend(contract_errors)
+    allowed_metadata_paths = _fixed_metadata_evidence_paths(contract)
     for root in paths:
         if not root.exists():
             errors.append(f"missing public artifact scan path: {root}")
@@ -841,7 +939,7 @@ def validate_public_artifact_paths(paths: list[Path]) -> list[str]:
                     if re.search(pattern, line):
                         errors.append(f"source-like raw digest is not allowed at {path}:{line_number}: {line.strip()}")
                         break
-                if ("ACE_SHARE_ROOT" + "/") in line and not _is_allowed_metadata_evidence_line(line):
+                if ("ACE_SHARE_ROOT" + "/") in line and not _is_allowed_metadata_evidence_line(line, allowed_metadata_paths):
                     errors.append(f"unlisted ACE metadata evidence path is not allowed at {path}:{line_number}: {line.strip()}")
     return errors
 
@@ -861,11 +959,18 @@ def _allowed_denied_traversal_policy_prose(line: str) -> bool:
     )
 
 
-def _is_allowed_metadata_evidence_line(line: str) -> bool:
+def _fixed_metadata_evidence_paths(contract: ManifestEvidenceContract | None) -> dict[str, str]:
+    paths = dict(FIXED_NON_MANIFEST_METADATA_EVIDENCE_PATHS)
+    if contract is not None:
+        paths.update({source_key: "file" for source_key in contract.manifest_source_keys})
+    return paths
+
+
+def _is_allowed_metadata_evidence_line(line: str, allowed_paths: dict[str, str]) -> bool:
     match = FIXED_METADATA_EVIDENCE_PATTERN.fullmatch(line.strip())
     if not match:
         return False
-    return FIXED_METADATA_EVIDENCE_PATHS.get(match.group("path")) == match.group("kind")
+    return allowed_paths.get(match.group("path")) == match.group("kind")
 
 
 def main(argv: list[str] | None = None) -> int:

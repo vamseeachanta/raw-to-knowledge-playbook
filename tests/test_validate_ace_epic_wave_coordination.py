@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -14,6 +15,30 @@ PRIVATE_SOURCE_PATH = "/mnt" + "/ace/private/source.docx"
 PRIVATE_EMAIL = "person" + "@example.com"
 CLIENT_ID_SNIPPET = "client_" + "id=ACME-123"
 CONFIDENTIAL_SNIPPET = "PROPRIETARY " + "CONFIDENTIAL payload"
+
+
+def ace_root() -> str:
+    return "ACE" + "_SHARE_ROOT"
+
+
+def ace_path(relative_path: str, *, shell_prefix: str = "") -> str:
+    return f"{shell_prefix}{ace_root()}/{relative_path}"
+
+
+def source_field(*parts: str) -> str:
+    return "_".join(parts)
+
+
+def digest_value() -> str:
+    return "0123456789abcdef" * 4
+
+
+def public_token_value() -> str:
+    return "pst_" + ("0123456789abcdef" * 2)
+
+
+def metadata_evidence_line(relative_path: str, kind: str) -> str:
+    return f"EXISTS {ace_path(relative_path)} type={kind} details=withheld_public\n"
 
 
 def load_validator():
@@ -113,6 +138,43 @@ def valid_marker(issue: int) -> str:
     )
 
 
+def manifest_contract_record(
+    keys: list[str] | None = None,
+    *,
+    depends_on_schema_issue: int = 65,
+    downstream_consumer_issue: int = 70,
+    blocked_operational_issue: int = 67,
+) -> dict:
+    return {
+        "contract_id": "ace-manifest-evidence-contract",
+        "contract_version": "1.0.0",
+        "owner_issue": 62,
+        "depends_on_schema_issue": depends_on_schema_issue,
+        "downstream_consumer_issue": downstream_consumer_issue,
+        "blocked_operational_issue": blocked_operational_issue,
+        "source_root_env_var": ace_root(),
+        "manifest_source_keys": [
+            "INDEX.md",
+            "assets.json",
+            "docs/master-index.jsonl",
+            "_cad-index/index-summary.json",
+            "_cad-index/cad-readability-index.tsv",
+            ".ace-knowledge/index.db",
+        ]
+        if keys is None
+        else keys,
+    }
+
+
+def doc_with_manifest_sources(keys: list[str]) -> str:
+    rendered = ", ".join(f"`{key}`" for key in keys[:-1])
+    if rendered:
+        rendered = rendered + f", and `{keys[-1]}`"
+    else:
+        rendered = f"`{keys[-1]}`"
+    return re.sub(r"(?m)^-\s+Named manifest sources:\s*.+$", f"- Named manifest sources: {rendered}.", GOOD_DOC)
+
+
 def row(issue: int) -> str:
     manifest_gate = (
         "not applicable for own sampling; #62 gate applies to downstream sampling"
@@ -121,7 +183,7 @@ def row(issue: int) -> str:
     )
     dependencies = "#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate"
     if issue == 62:
-        dependencies = "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 integration; #51 remains umbrella context only"
+        dependencies = "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only"
     return (
         f"| #{issue} | docs/plans/issue-{issue}.md | lane:claude | T2 | draft | "
         f"2026-06-29 no status label; no approval marker | false | {METHOD_ISSUES[issue]} | "
@@ -570,7 +632,7 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
     def test_denied_traversal_policy_line_does_not_hide_command_examples(self):
         bad_doc = GOOD_DOC.replace(
             "Denied traversal patterns:",
-            "Denied traversal patterns: `find ACE_SHARE_ROOT -type f`;",
+            f"Denied traversal patterns: `find {ace_root()} -type f`;",
         )
         self.assert_rejects(bad_doc, "unbounded traversal")
 
@@ -658,34 +720,166 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         bad_doc = GOOD_DOC.replace("`_cad-index/cad-readability-index.tsv`, and ", "")
         self.assert_rejects(bad_doc, "manifest source inventory")
 
+    def test_manifest_sources_loaded_from_62_contract(self):
+        validator = load_validator()
+        contract_keys = ["primary-index.md", "secondary-assets.json"]
+        good_doc = doc_with_manifest_sources(contract_keys)
+        with tempfile.TemporaryDirectory() as tmp:
+            contract_path = Path(tmp) / "contract.json"
+            contract_path.write_text(json.dumps(manifest_contract_record(contract_keys)))
+            result = validator.validate_text(
+                good_doc,
+                approval_root=Path(tmp),
+                manifest_contract_path=contract_path,
+            )
+
+        self.assertEqual([], result.errors)
+
+    def test_manifest_contract_rejects_empty_or_duplicate_sources(self):
+        validator = load_validator()
+        for keys in ([], ["INDEX.md", "INDEX.md"]):
+            with self.subTest(keys=keys), tempfile.TemporaryDirectory() as tmp:
+                contract_path = Path(tmp) / "contract.json"
+                contract_path.write_text(json.dumps(manifest_contract_record(keys)))
+                result = validator.validate_text(
+                    GOOD_DOC,
+                    approval_root=Path(tmp),
+                    manifest_contract_path=contract_path,
+                )
+
+            self.assertIn("manifest evidence contract", "\n".join(result.errors))
+
+    def test_manifest_inventory_rejects_contract_doc_drift(self):
+        validator = load_validator()
+        contract_keys = ["primary-index.md", "secondary-assets.json"]
+        with tempfile.TemporaryDirectory() as tmp:
+            contract_path = Path(tmp) / "contract.json"
+            contract_path.write_text(json.dumps(manifest_contract_record(contract_keys)))
+            result = validator.validate_text(
+                GOOD_DOC,
+                approval_root=Path(tmp),
+                manifest_contract_path=contract_path,
+            )
+
+        self.assertIn("manifest source inventory", "\n".join(result.errors))
+
     def test_issue_62_handoff_requires_65_and_70(self):
         bad_doc = GOOD_DOC.replace(
-            "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 integration; #51 remains umbrella context only",
+            "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only",
             "#51 umbrella context only",
         )
         self.assert_rejects(bad_doc, "#62 dependency handoff")
 
+    def test_issue_62_handoff_uses_contract_fields(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            contract_path = Path(tmp) / "contract.json"
+            contract_path.write_text(
+                json.dumps(
+                    manifest_contract_record(
+                        depends_on_schema_issue=165,
+                        downstream_consumer_issue=170,
+                        blocked_operational_issue=167,
+                    )
+                )
+            )
+            result = validator.validate_text(
+                GOOD_DOC,
+                approval_root=Path(tmp),
+                manifest_contract_path=contract_path,
+            )
+
+        self.assertIn("#62 dependency handoff", "\n".join(result.errors))
+
+    def test_issue_62_handoff_requires_blocked_operational_boundary_role(self):
+        old_phrase = (
+            "#65 schema is the canonical registry source; "
+            "#70 consumes the #62 evidence contract for #67 integration; "
+            "#51 remains umbrella context only"
+        )
+        bad_doc = GOOD_DOC.replace(
+            "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only",
+            old_phrase,
+        )
+        self.assert_rejects(bad_doc, "#62 dependency handoff")
+
+    def test_issue_62_handoff_rejects_negated_or_contradictory_prose(self):
+        contradiction = (
+            "#65 schema is the canonical registry source; "
+            "#70 consumes the #62 evidence contract for #67 blocked operational boundary integration; "
+            "#67 is no longer blocked and is released for operational use; "
+            "#51 remains umbrella context only"
+        )
+        bad_doc = GOOD_DOC.replace(
+            "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only",
+            contradiction,
+        )
+        self.assert_rejects(bad_doc, "#62 dependency handoff")
+
+    def test_issue_62_gate_ready_evidence_keys_follow_contract(self):
+        validator = load_validator()
+        contract_keys = ["primary-index.md", "secondary-assets.json"]
+        snapshot_id = "ams_11111111111111111111111111111111"
+        evidence_ref = Path("tests/fixtures/ace-manifest-freshness/contract-key-test-evidence.json")
+        evidence_path = REPO_ROOT / evidence_ref
+        self.addCleanup(lambda: evidence_path.exists() and evidence_path.unlink())
+        evidence_path.write_text(
+            json.dumps(
+                {
+                    "snapshot_ids_by_manifest_source": {
+                        contract_keys[0]: snapshot_id,
+                        contract_keys[1]: "ams_22222222222222222222222222222222",
+                    }
+                }
+            )
+        )
+        status_snapshot = (
+            "2026-07-01 status:plan-approved; "
+            "implemented-validator:scripts/validate_ace_manifest_freshness.py; "
+            f"passing-command: uv run python scripts/validate_ace_manifest_freshness.py --evidence {evidence_ref}; "
+            "exit-code:0; "
+            f"snapshot_id:{snapshot_id}"
+        )
+        ready_62 = row(62).replace(
+            "draft | 2026-06-29 no status label; no approval marker | false",
+            f"plan-approved | {status_snapshot} | true",
+        )
+        good_doc = doc_with_manifest_sources(contract_keys).replace(row(62), ready_62)
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "62.md").write_text(valid_marker(62))
+            contract_path = Path(tmp) / "contract.json"
+            contract_path.write_text(json.dumps(manifest_contract_record(contract_keys)))
+            result = validator.validate_text(
+                good_doc,
+                approval_root=approval_root,
+                manifest_contract_path=contract_path,
+            )
+
+        self.assertEqual([], result.errors)
+
     def test_unbounded_manifest_traversal_is_denied(self):
+        root = ace_root()
         commands = [
-            'find ACE_SHARE_ROOT -type f',
-            'find "$ACE_SHARE_ROOT" -type f',
-            'find ${ACE_SHARE_ROOT} -type f',
-            'jq \'.[]\' "$ACE_SHARE_ROOT/assets.json"',
-            'cat $ACE_SHARE_ROOT/assets.json',
-            'wc -l $ACE_SHARE_ROOT/docs/master-index.jsonl',
-            'wc -c $ACE_SHARE_ROOT/assets.json',
-            'sha256sum $ACE_SHARE_ROOT/assets.json',
-            'Path(ACE_SHARE_ROOT).rglob("*")',
-            'grep -R needle $ACE_SHARE_ROOT',
-            'grep --recursive needle $ACE_SHARE_ROOT',
-            'grep -r needle $ACE_SHARE_ROOT',
-            'grep -nr needle "$ACE_SHARE_ROOT"',
-            'wc $ACE_SHARE_ROOT/assets.json',
-            'ls -R $ACE_SHARE_ROOT',
-            'du -sh "$ACE_SHARE_ROOT"',
-            'rg needle $ACE_SHARE_ROOT',
-            'fd needle $ACE_SHARE_ROOT',
-            'os.walk(ACE_SHARE_ROOT)',
+            f"find {root} -type f",
+            f'find "${root}" -type f',
+            f"find ${{{root}}} -type f",
+            "jq '.[]' " + '"' + ace_path("assets." + "json", shell_prefix="$") + '"',
+            "cat " + ace_path("assets." + "json", shell_prefix="$"),
+            "wc -l " + ace_path("docs/master-index." + "jsonl", shell_prefix="$"),
+            "wc -c " + ace_path("assets." + "json", shell_prefix="$"),
+            "sha256sum " + ace_path("assets." + "json", shell_prefix="$"),
+            "Path(" + root + ")." + 'rglob("*")',
+            f"grep -R needle ${root}",
+            f"grep --recursive needle ${root}",
+            f"grep -r needle ${root}",
+            f'grep -nr needle "${root}"',
+            "wc " + ace_path("assets." + "json", shell_prefix="$"),
+            f"ls " + "-R " + f"${root}",
+            f'du -sh "${root}"',
+            f"rg needle ${root}",
+            f"fd needle ${root}",
+            "os." + "walk(" + root + ")",
         ]
         for command in commands:
             with self.subTest(command=command):
@@ -973,7 +1167,7 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "comment.md"
-            path.write_text("Example to reject: `find ACE_SHARE_ROOT -type f`.\n")
+            path.write_text(f"Example to reject: `find {ace_root()} -type f`.\n")
             result = validator.validate_public_artifact_paths([path])
 
         self.assertIn("unbounded traversal", "\n".join(result))
@@ -983,11 +1177,11 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "comment.md"
             path.write_text(
-                "source_id: vendor_doc_001\n"
-                "source_sha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
-                "private_lookup_key: lookup_001\n"
-                "private_lookup_map: {lookup_001: vendor_doc_001}\n"
-                "public_source_token: pst_0123456789abcdef0123456789abcdef\n"
+                f"{source_field('source', 'id')}: vendor_doc_001\n"
+                f"{source_field('source', 'sha256')}: {digest_value()}\n"
+                f"{source_field('private', 'lookup_key')}: lookup_001\n"
+                f"{source_field('private', 'lookup_map')}: {{lookup_001: vendor_doc_001}}\n"
+                f"{source_field('public', 'source_token')}: {public_token_value()}\n"
             )
             result = validator.validate_public_artifact_paths([path])
 
@@ -1000,9 +1194,9 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
             path.write_text(
                 "| field | value |\n"
                 "|---|---|\n"
-                "| source_id | PRIVATE-123 |\n"
-                "| private_lookup_key | lookup-abc |\n"
-                "| share_relative_path_private_only | reports/private.docx |\n"
+                f"| {source_field('source', 'id')} | PRIVATE-123 |\n"
+                f"| {source_field('private', 'lookup_key')} | lookup-abc |\n"
+                f"| {source_field('share', 'relative_path_private_only')} | reports/private.docx |\n"
             )
             result = validator.validate_public_artifact_paths([path])
 
@@ -1013,8 +1207,8 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "comment.md"
             path.write_text(
-                "source hash: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\n"
-                "| source_sha256 | 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef |\n"
+                f"{'source ' + 'hash'}: {digest_value()}\n"
+                f"| {source_field('source', 'sha256')} | {digest_value()} |\n"
             )
             result = validator.validate_public_artifact_paths([path])
 
@@ -1025,23 +1219,51 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "evidence.md"
             path.write_text(
-                "EXISTS ACE_SHARE_ROOT/INDEX.md type=file details=withheld_public\n"
-                "EXISTS ACE_SHARE_ROOT/assets.json type=file details=withheld_public\n"
-                "EXISTS ACE_SHARE_ROOT/docs/master-index.jsonl type=file details=withheld_public\n"
-                "EXISTS ACE_SHARE_ROOT/_cad-index/index-summary.json type=file details=withheld_public\n"
-                "EXISTS ACE_SHARE_ROOT/_cad-index/cad-readability-index.tsv type=file details=withheld_public\n"
-                "EXISTS ACE_SHARE_ROOT/.ace-knowledge/index.db type=file details=withheld_public\n"
-                "EXISTS ACE_SHARE_ROOT/llm-wiki type=directory details=withheld_public\n"
+                metadata_evidence_line("INDEX.md", "file")
+                + metadata_evidence_line("assets.json", "file")
+                + metadata_evidence_line("docs/master-index.jsonl", "file")
+                + metadata_evidence_line("_cad-index/index-summary.json", "file")
+                + metadata_evidence_line("_cad-index/cad-readability-index.tsv", "file")
+                + metadata_evidence_line(".ace-knowledge/index.db", "file")
+                + metadata_evidence_line("llm-wiki", "directory")
             )
             result = validator.validate_public_artifact_paths([path])
 
         self.assertEqual([], result)
 
+    def test_public_artifact_scan_metadata_evidence_rows_follow_contract(self):
+        validator = load_validator()
+        contract_keys = ["primary-index.md", "secondary-assets.json"]
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            contract_path = tmp_path / "contract.json"
+            contract_path.write_text(json.dumps(manifest_contract_record(contract_keys)))
+
+            allowed = tmp_path / "allowed-evidence.md"
+            allowed.write_text(
+                metadata_evidence_line("primary-index.md", "file")
+                + metadata_evidence_line("secondary-assets.json", "file")
+                + metadata_evidence_line("llm-wiki", "directory")
+            )
+            self.assertEqual(
+                [],
+                validator.validate_public_artifact_paths([allowed], manifest_contract_path=contract_path),
+            )
+
+            stale_default = tmp_path / "stale-default-evidence.md"
+            stale_default.write_text(metadata_evidence_line("INDEX.md", "file"))
+            result = validator.validate_public_artifact_paths(
+                [stale_default],
+                manifest_contract_path=contract_path,
+            )
+
+        self.assertIn("unlisted ACE metadata evidence path", "\n".join(result))
+
     def test_public_artifact_scan_rejects_unlisted_metadata_evidence_rows(self):
         validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "evidence.md"
-            path.write_text("EXISTS ACE_SHARE_ROOT/private/internal/report.docx type=file details=withheld_public\n")
+            path.write_text(metadata_evidence_line("private/internal/report.docx", "file"))
             result = validator.validate_public_artifact_paths([path])
 
         self.assertIn("unlisted ACE metadata evidence path", "\n".join(result))
@@ -1075,6 +1297,12 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
     def test_validator_source_is_not_self_blocking_public_artifact(self):
         validator = load_validator()
         result = validator.validate_public_artifact_paths([VALIDATOR_PATH])
+
+        self.assertEqual([], result)
+
+    def test_parent_test_source_self_scan_rejects_residual_denied_literals(self):
+        validator = load_validator()
+        result = validator.validate_public_artifact_paths([Path(__file__)])
 
         self.assertEqual([], result)
 
