@@ -7,7 +7,7 @@
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:codex
-> **Review artifacts:** r11 Claude/Codex MAJOR; Gemini unavailable; patched pending r12
+> **Review artifacts:** r12 Claude MINOR, Codex MAJOR; Gemini unavailable; patched pending r13
 
 ---
 
@@ -32,6 +32,7 @@
 
 - [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) is the approved parent epic. It authorizes coordination and planning only; it does not approve child implementation.
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains the wave-0 umbrella. It delegates implementation-sized slices to [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69).
+- The live [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) issue body still says it is blocked by [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) for wave class and snapshot-gate fields. This plan reconciles that stale wording by consuming [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65), the approved #51-delegated schema slice that now owns those machine-readable fields.
 - [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) provides the schema dependency that [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) needs for planning and implementation.
 - [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) owns public-token fixtures and private-field placeholders. [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) will not implement token grammar, placeholder grammar, lookup maps, or durable token fixtures.
 - [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) owns the reusable public-surface self-scan. [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) will use explicit self-scan path lists for its own public artifacts only.
@@ -157,6 +158,10 @@ N/A - governance/control-plane issue; no runtime failure is alleged.
 | Review artifact - Codex r11 | `scripts/review/results/2026-06-30-plan-67-codex-r11.md` |
 | Review artifact - Gemini r11 | `scripts/review/results/2026-06-30-plan-67-gemini-r11.md` |
 | Disagreement report r11 | `scripts/review/results/2026-06-30-plan-67-disagreement-r11.md` |
+| Review artifact - Claude r12 | `scripts/review/results/2026-06-30-plan-67-claude-r12.md` |
+| Review artifact - Codex r12 | `scripts/review/results/2026-06-30-plan-67-codex-r12.md` |
+| Review artifact - Gemini r12 | `scripts/review/results/2026-06-30-plan-67-gemini-r12.md` |
+| Disagreement report r12 | `scripts/review/results/2026-06-30-plan-67-disagreement-r12.md` |
 | Provider stderr sidecars | not retained unless normalized, scanned, and explicitly listed |
 
 ---
@@ -265,8 +270,8 @@ The discriminator between the recognized blocked state and rejected placeholder 
 
 | Fixture | Required target fields | Snapshot evidence | Expected result |
 |---|---|---|---|
-| `good-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `requires_manifest_snapshot_id=false`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | absent | Passes as metadata-only fixture |
-| `metadata-shape-only-evidence-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `requires_manifest_snapshot_id=false`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | present with `evidence_mode=shape_only_fixture`, `source_issue=62`, and no blocked-state fields | Passes schema parsing only; cannot authorize sampling |
+| `good-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `requires_manifest_snapshot_id=false`, `manifest_source=INDEX.md` as a formal public-key placeholder, `sort_rule` exactly as the Sort Rule Shape with `term_refs=["source_id"]`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | absent | Passes as metadata-only fixture |
+| `metadata-shape-only-evidence-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `requires_manifest_snapshot_id=false`, `manifest_source=INDEX.md` as a formal public-key placeholder, `sort_rule` exactly as the Sort Rule Shape with `term_refs=["source_id"]`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | present with `evidence_mode=shape_only_fixture`, `source_issue=62`, and no blocked-state fields | Passes schema parsing only; cannot authorize sampling |
 | Runtime downstream blocked fixture | all required sampling fields; distinguishing fields are target issue in [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60), `target_wave_class=ingestion_wave`, `request_class=downstream_manifest_backed_sampling`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | present with `evidence_mode=blocked_pending_62_contract`, `blocked_by_issue=62`, `follow_on_issue=70`, and `reason_code=MISSING_62_EVIDENCE_CONTRACT` | Fails closed with the same reason code |
 
 ### Sort Rule Shape
@@ -291,7 +296,7 @@ The classifier will classify only these public artifact contexts as executable:
 | Context | Executable when |
 |---|---|
 | Markdown fenced code | fence info string is exactly one of `sh`, `bash`, `zsh`, `shell`, `python`, `py`, `sql`, `jq`, `jsonpath`, `yaml-workflow`, `workflow-run`, `command`, or `proof`; unlabeled or `text` fences fail closed when they contain both a source-root abstraction and command-like syntax |
-| Markdown list command | the list item begins with `$ `, `> `, `run:`, `command:`, `proof command:`, `allowed command:`, or `rejected command:` and is under a heading whose normalized text is exactly `commands`, `proof`, `validation`, `run`, or `rejected commands` |
+| Markdown list command | the list item begins with `$ `, `> `, `run:`, `command:`, `proof command:`, `allowed command:`, or `rejected command:` and is under a heading whose normalized text is exactly `commands`, `proof`, `validation`, `run`, or `rejected commands`; the same list syntax under any other heading is treated as an unknown runnable context and fails closed when it contains a source-root abstraction plus command-like syntax |
 | Markdown inline code | the inline code span is immediately preceded in the same sentence by exactly `run:`, `command:`, `proof command:`, `allowed command:`, `rejected command:`, or `script invocation:`; inline code under other prose fails closed when it contains both a source-root abstraction and command-like syntax |
 | GitHub workflow YAML | a `run` block or inline run command contains the text |
 | Python source or tests | string literals passed into classifier/validator APIs and subprocess-like call sites are executable examples; policy constant names and docstrings are prose unless explicitly fed to the classifier in a test |
@@ -323,8 +328,9 @@ The contract will define concrete token fragments for each denied class. The imp
 | Raw manifest read | `c` + `at` against every allowed manifest source key | Every allowed manifest source key is covered, including `INDEX.md` |
 | Full-file counting | `w` + `c` against source-root and manifest-source token classes | Full-file counting fails unless the bounded precomputed sidecar exception is explicitly cited by a later approved issue |
 | Full-file digest | `sha` + `256sum` against source-root and manifest-source token classes | Full-file digest fails unless the bounded precomputed sidecar exception is explicitly cited by a later approved issue |
+| Unbounded materialization | `c` + `p`; `rs` + `ync`; `t` + `ar`; `sqlite` + dump fragment; `export` + all-rows fragment | Full-manifest or source-root materialization fails unless a later approved issue supplies a bounded precomputed sidecar/export contract |
 
-The #67 token matrix will not rely on the inherited parent scanner's manifest-path pattern for completeness because that pattern is not the #67 source authority. The #67 validator will pair each allowed manifest source from the coordination ledger with each raw-read/query/count/digest token family in runtime fixtures; a missing pair fails tests before approval.
+The #67 token matrix will not rely on the inherited parent scanner's manifest-path pattern for completeness because that pattern is not the #67 source authority. The #67 validator will pair each allowed manifest source from the coordination ledger with each raw-read/query/count/digest/materialization token family in runtime fixtures; a missing pair fails tests before approval.
 
 ### Source-Root Boundary API
 
@@ -419,7 +425,8 @@ validate denied executable classes:
   broad list/search over source root fails
   unrestricted manifest query fails
   raw manifest read fails
-  every allowed manifest source key, including INDEX.md, is covered by raw-read/query fixtures
+  unbounded materialization fails
+  every allowed manifest source key, including INDEX.md, is covered by raw-read/query/count/digest/materialization fixtures
   every inherited parent denied-token family has a #67 runtime fixture or an explicit #67-only rationale
   full-file hashing/counting of large manifests fails unless a later approved issue
   explicitly supplies a bounded precomputed sidecar contract
@@ -442,8 +449,10 @@ derive the #67 public-scan manifest using bounded rules:
   any retained rN review artifact missing from the derived manifest fails before scanning
 validate CI public-scan wiring:
   workflow runs the #67 validator and unit tests
-  #67 validator forwards each derived manifest path to the parent scanner as an explicit
-  --scan-public-path argument; CI does not hand-maintain a growing rN artifact list
+  #67 validator invokes the parent scanner as a subprocess using
+  uv run python scripts/validate_ace_epic_wave_coordination.py and forwards each
+  derived manifest path as an explicit --scan-public-path argument;
+  CI does not hand-maintain a growing rN artifact list
 validate schema split registry:
   #67 plan_path records this plan path
   #67 status_snapshot records draft/review/approval transitions only when gates advance
@@ -519,9 +528,8 @@ run parent coordination validator and #65 schema validator
 | `test_unknown_runnable_context_fails_closed` | Ambiguous executable-looking text cannot bypass the firewall | Synthetic unknown context | Fails closed |
 | `test_recursive_traversal_class_is_denied` | Recursive source-root traversal is blocked | Runtime-assembled denied fixture | Fails validation |
 | `test_broad_source_root_search_class_is_denied` | Broad list/search over the source root is blocked | Runtime-assembled denied fixture | Fails validation |
-| `test_unrestricted_manifest_query_class_is_denied` | Unbounded manifest query is blocked | Runtime-assembled denied fixture | Fails validation |
-| `test_raw_manifest_read_class_is_denied_for_every_manifest_source` | Raw manifest read examples are blocked for every allowed manifest source key, not only the parent scanner's pattern set | Runtime-assembled matrix of every allowed manifest source key crossed with every raw-read token family | Every pair fails validation, including the `INDEX.md` source key |
-| `test_full_file_hashing_or_counting_class_is_denied` | Full-file hashing/counting of large manifests is blocked | Runtime-assembled denied fixture | Fails unless bounded sidecar contract is explicitly cited |
+| `test_manifest_source_denial_cross_product_covers_every_source_and_operation` | Query, raw-read, count, digest, and materialization denial covers every allowed manifest source key, not only the parent scanner's pattern set | Runtime-assembled matrix of every allowed manifest source key crossed with query/raw-read/count/digest/materialization token families | Every pair fails validation, including the `INDEX.md` source key |
+| `test_unbounded_materialization_class_is_denied` | Full-manifest/source-root materialization is blocked as its own denied class | Runtime-assembled materialization fixtures | Fails unless a later approved bounded sidecar/export contract is explicitly cited |
 | `test_committed_fixtures_are_public_scan_clean` | Safe fixtures do not self-block public scan | Committed fixture directory | Parent public scanner returns no errors |
 | `test_negative_fixtures_are_runtime_only` | Deny examples are not committed as public strings | Test source and fixture files | Denied examples are assembled from fragments or temp files |
 | `test_classifier_source_is_public_scan_clean` | Detection source survives parent scanner without broad exemptions | Classifier, validator, tests, and contract source text | Parent scanner passes; denied command, source-root, and recursive API examples are assembled from fragments at runtime |
@@ -560,7 +568,7 @@ run parent coordination validator and #65 schema validator
 - [ ] The validator passes with `ACE_SHARE_ROOT` unset, and every source-root-capable entrypoint routes through `guard_no_source_root_access(operation_name, env)`, returning `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before touching private source content or metadata when `ACE_SHARE_ROOT` is set to a temp sentinel tree.
 - [ ] Public artifacts do not publish raw private source paths, raw source values, source-like digest assignments, exact private inventory counts, client identifiers, personal identifiers, proprietary snippets, or publication destinations.
 - [ ] Negative fixtures are generated at runtime or written to temp files outside the repo tree; committed fixtures and scanner-triggering API-token examples remain scan-clean.
-- [ ] Denied token coverage is concrete at token-family level: every inherited parent denied family and every #67 manifest-source extension, including `INDEX.md`, has runtime fixture coverage for raw-read/query/count/digest cases.
+- [ ] Denied token coverage is concrete at token-family level: every inherited parent denied family and every #67 manifest-source extension, including `INDEX.md`, has runtime fixture coverage for raw-read/query/count/digest/materialization cases.
 - [ ] The [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) validator derives a bounded public-scan manifest for the complete [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) public path list, including `artifacts/ace-wave0-ledger-schema.json` and retained plan-67 review artifacts, forwards each path to the parent public scanner as an explicit `--scan-public-path` argument, and does not create the generalized scanner owned by [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68).
 - [ ] The #67 row in `artifacts/ace-wave0-ledger-schema.json` records this plan path, gate-accurate `status_snapshot`, and `implementation_ready=false` until the user approval and implementation gates advance.
 - [ ] Provider stderr sidecars are not retained unless normalized, explicitly listed, and scanned.
@@ -629,8 +637,11 @@ Plan review will be considered passable only when the same review round has at l
 | Claude r11 | MAJOR | Found `requires_manifest_snapshot_id` source-of-truth contradiction for the #67 self-check fixture, under-specified `snapshot_evidence` object presence, self-referential acceptance criterion, and positive-path scope narrowness. Patch attempt recorded; re-review required. |
 | Codex r11 | MAJOR | Found exact-key test excluding `snapshot_evidence`, JSON executable-context tests without valid classifier field surface, and denied-token matrix still too broad. Patch attempt recorded; re-review required. |
 | Gemini r11 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
+| Claude r12 | MINOR | Found under-specified `good-request.json` placeholder fields, scope narrowing versus literal downstream AC, stale `#51` blocker wording, and parent-scanner subprocess/import ambiguity. Patch attempt recorded; re-review required. |
+| Codex r12 | MAJOR | Found missing unbounded materialization token/test coverage, incomplete per-source cross-product coverage for query/count/digest, and ambiguous non-command-heading Markdown list semantics. Patch attempt recorded; re-review required. |
+| Gemini r12 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
 
-**Overall result:** Latest retained review was MAJOR in r11; this draft includes the r11 patch and remains pending a fresh no-MAJOR review round before `status:plan-review`.
+**Overall result:** Latest retained review was MAJOR in r12; this draft includes the r12 patch and remains pending a fresh no-MAJOR review round before `status:plan-review`.
 
 ---
 
