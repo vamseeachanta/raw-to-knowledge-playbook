@@ -7,7 +7,7 @@
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:codex
-> **Review artifacts:** r9 Claude MINOR, Codex MAJOR; Gemini unavailable
+> **Review artifacts:** r10 Claude/Codex MAJOR; Gemini unavailable; patched pending r11
 
 ---
 
@@ -87,7 +87,7 @@ MISSING scripts/ace_bounded_sampling_firewall.py
 MISSING scripts/validate_ace_bounded_sampling_firewall.py
 MISSING tests/test_validate_ace_bounded_sampling_firewall.py
 MISSING tests/fixtures/ace-bounded-sampling-firewall/good-request.json
-MISSING tests/fixtures/ace-bounded-sampling-firewall/downstream-shape-only-request.json
+MISSING tests/fixtures/ace-bounded-sampling-firewall/metadata-shape-only-evidence-request.json
 ```
 
 **Reproduction proofs**:
@@ -110,7 +110,7 @@ N/A - governance/control-plane issue; no runtime failure is alleged.
 | Coordination ledger | `docs/plans/ace-share-ingestion-wave-coordination.md` |
 | Schema split registry update | `artifacts/ace-wave0-ledger-schema.json` |
 | Workflow | `.github/workflows/validate.yml` |
-| Safe shape-only downstream fixture | `tests/fixtures/ace-bounded-sampling-firewall/downstream-shape-only-request.json` |
+| Safe metadata shape-only evidence fixture | `tests/fixtures/ace-bounded-sampling-firewall/metadata-shape-only-evidence-request.json` |
 | Schema-bound skill docs | `skills/format-coverage-ledger/SKILL.md`, `skills/public-private-routing/SKILL.md`, `skills/content-triage-and-exclusion/SKILL.md`, `skills/page-shape-contract/SKILL.md`, `skills/adversarial-verify-loop/SKILL.md` |
 | Issue-required supporting skill doc | `skills/source-extraction-coverage/SKILL.md` |
 | Review artifact - Claude r1 | `scripts/review/results/2026-06-30-plan-67-claude-r1.md` |
@@ -149,6 +149,10 @@ N/A - governance/control-plane issue; no runtime failure is alleged.
 | Review artifact - Codex r9 | `scripts/review/results/2026-06-30-plan-67-codex-r9.md` |
 | Review artifact - Gemini r9 | `scripts/review/results/2026-06-30-plan-67-gemini-r9.md` |
 | Disagreement report r9 | `scripts/review/results/2026-06-30-plan-67-disagreement-r9.md` |
+| Review artifact - Claude r10 | `scripts/review/results/2026-06-30-plan-67-claude-r10.md` |
+| Review artifact - Codex r10 | `scripts/review/results/2026-06-30-plan-67-codex-r10.md` |
+| Review artifact - Gemini r10 | `scripts/review/results/2026-06-30-plan-67-gemini-r10.md` |
+| Disagreement report r10 | `scripts/review/results/2026-06-30-plan-67-disagreement-r10.md` |
 | Provider stderr sidecars | not retained unless normalized, scanned, and explicitly listed |
 
 ---
@@ -167,11 +171,11 @@ The implementation will create a closed JSON contract with these top-level field
 |---|---|
 | `contract_id` | exactly `ace-bounded-sampling-firewall` |
 | `contract_version` | semver under `1.0.x` |
-| `owner_issue` | exactly `67` |
-| `depends_on_schema_issue` | exactly `65` |
-| `method_issue_bindings` | exactly [#1](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/1) and [#12](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/12), matching the live [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) issue body |
+| `owner_issue` | JSON integer exactly `67` |
+| `depends_on_schema_issue` | JSON integer exactly `65` |
+| `method_issue_bindings` | JSON integer array exactly `[1, 12]`, matching the live [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) issue body |
 | `allowed_manifest_sources` | exactly the six public metadata keys listed in this plan's Source inventory |
-| `required_sampling_fields` | target issue, manifest source, seed, sort rule, per-bucket row cap, maximum files touched, maximum bytes touched, request class, [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence requirement, output shape, route target, logical target store, and either a #65 target wave class for operational requests or a #67 fixture scope for metadata-only fixtures |
+| `required_sampling_fields` | exact top-level JSON keys `target_issue`, `manifest_source`, `seed_id`, `sort_rule`, `per_bucket_row_cap`, `max_files_touched`, `max_bytes_touched`, `request_class`, `requires_manifest_snapshot_id`, `output_shape`, `route_target`, `logical_target_store`, and exactly one of `target_wave_class` or `fixture_scope`; `snapshot_evidence` is required only when the evidence-mode table below says so |
 | `maximum_caps` | per-bucket row cap no greater than `200`, maximum files touched no greater than `25`, maximum bytes touched no greater than `1048576`, matching the coordination ledger bounded-read contract |
 | `request_classes` | `control_plane_proof`, `downstream_manifest_backed_sampling`, and `metadata_only_fixture`; request class must match the closed mapping table below |
 | `target_issue_gate` | target issues whose [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) `requires_manifest_snapshot_id=true` must use `downstream_manifest_backed_sampling`; exempt classes are invalid for those issues |
@@ -185,6 +189,7 @@ The implementation will create a closed JSON contract with these top-level field
 | `request_outcomes` | only [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) `metadata_only_fixture` requests pass; control-plane proof and downstream rows are recognized to produce explicit fail-closed outcomes, not accepted sampling authorization |
 | `manifest_source_read_denial_tokens` | every allowed manifest source key, including `INDEX.md`, is paired with every #67 raw-read operator token family in runtime deny fixtures; no source key can rely only on the inherited parent scanner pattern |
 | `denied_token_matrix` | concrete runtime-assembled token fragments for source-root traversal, broad source-root discovery, manifest query, raw manifest read, full-file count, full-file digest, recursive Python walk, and recursive path-glob APIs; each token family maps to a denied executable class |
+| `source_root_boundary_api` | module function `guard_no_source_root_access(operation_name, env)` in `scripts/ace_bounded_sampling_firewall.py`; it returns or raises `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before any source-root file, directory, metadata, glob, or scanner access |
 | `executable_context_triggers` | closed enum for markdown fence, markdown list command, markdown inline command, workflow run block, Python string passed to classifier, and JSON request field |
 | `command_verb_classes` | closed enum for traversal, broad search/list, manifest query, raw manifest read, full-file fingerprint/count, and full materialization |
 | `source_root_token_classes` | closed enum for ACE root abstraction, manifest key token, and synthetic fixture token |
@@ -228,23 +233,28 @@ For `downstream_manifest_backed_sampling`, the request will carry a `snapshot_ev
 | Field | Rule |
 |---|---|
 | `evidence_mode` | `shape_only_fixture` for [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) metadata-only fixtures or `blocked_pending_62_contract` for operational downstream requests; `operational_live` is reserved for [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) and invalid in this plan |
-| `source_issue` | exactly `62` |
-| `blocked_by_issue` | exactly `62` when evidence mode is `blocked_pending_62_contract` |
-| `follow_on_issue` | exactly `70` when evidence mode is `blocked_pending_62_contract` |
-| `reason_code` | exactly `MISSING_62_EVIDENCE_CONTRACT` until [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) is planned, approved, and implemented |
-| `shape_only_artifact_ref` | optional repo-relative public-safe fixture reference; ignored for operational authorization |
+| `source_issue` | JSON integer exactly `62` |
+| `blocked_by_issue` | JSON integer exactly `62` when evidence mode is `blocked_pending_62_contract`; forbidden when evidence mode is `shape_only_fixture` |
+| `follow_on_issue` | JSON integer exactly `70` when evidence mode is `blocked_pending_62_contract`; forbidden when evidence mode is `shape_only_fixture` |
+| `reason_code` | exactly `MISSING_62_EVIDENCE_CONTRACT` when evidence mode is `blocked_pending_62_contract`; forbidden when evidence mode is `shape_only_fixture` |
+| `shape_only_artifact_ref` | optional repo-relative public-safe fixture reference for `shape_only_fixture`; forbidden for operational authorization |
 | `recorded_at` | ISO date for the evidence record |
 
 Shape-only fixtures will prove this object shape can be parsed with synthetic public-safe values, but they will not satisfy operational downstream sampling. Operational downstream sampling will fail closed with `MISSING_62_EVIDENCE_CONTRACT` and a pointer to [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70). This plan will not parse checker paths, passing-command evidence, exit codes, snapshot IDs, or snapshot artifact contents from a [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) artifact; [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) will add that behavior after [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) owns a reviewed evidence schema. The validator will still reject placeholder, negated, pending, not-run, missing, forged, or expected-only evidence.
 
 The discriminator between the recognized blocked state and rejected placeholder wording is exact enum matching: `evidence_mode=blocked_pending_62_contract` plus `reason_code=MISSING_62_EVIDENCE_CONTRACT` is recognized only as the expected fail-closed operational result, and the validator returns failure/nonzero rather than authorizing sampling. Free-text `pending`, `not-run`, `expected`, `todo`, or equivalent placeholder wording in any evidence field fails.
 
+| Evidence mode | Required fields | Optional fields | Forbidden fields | Outcome |
+|---|---|---|---|---|
+| `shape_only_fixture` | `evidence_mode`, `source_issue`, `recorded_at` | `shape_only_artifact_ref` | `blocked_by_issue`, `follow_on_issue`, `reason_code` | parser coverage for metadata-only fixtures only; cannot authorize sampling |
+| `blocked_pending_62_contract` | `evidence_mode`, `source_issue`, `blocked_by_issue`, `follow_on_issue`, `reason_code`, `recorded_at` | none | `shape_only_artifact_ref` | fail-closed operational result; never authorization |
+
 ### Fixture Payload Contract
 
 | Fixture | Required target fields | Snapshot evidence | Expected result |
 |---|---|---|---|
 | `good-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | absent | Passes as metadata-only fixture |
-| `downstream-shape-only-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | present with `evidence_mode=shape_only_fixture` and `source_issue=62` | Passes schema parsing only; cannot authorize sampling |
+| `metadata-shape-only-evidence-request.json` | all required sampling fields; distinguishing fields are `target_issue=67`, `request_class=metadata_only_fixture`, `fixture_scope=firewall_validator_self_check`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | present with `evidence_mode=shape_only_fixture`, `source_issue=62`, and no blocked-state fields | Passes schema parsing only; cannot authorize sampling |
 | Runtime downstream blocked fixture | all required sampling fields; distinguishing fields are target issue in [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60), `target_wave_class=ingestion_wave`, `request_class=downstream_manifest_backed_sampling`, `output_shape=metadata_only_request_record`, `route_target=metadata_only`, and `logical_target_store=metadata_ledger_store` | present with `evidence_mode=blocked_pending_62_contract`, `blocked_by_issue=62`, `follow_on_issue=70`, and `reason_code=MISSING_62_EVIDENCE_CONTRACT` | Fails closed with the same reason code |
 
 ### Sort Rule Shape
@@ -304,6 +314,19 @@ The contract will define concrete token fragments for each denied class. The imp
 
 The #67 token matrix will not rely on the inherited parent scanner's manifest-path pattern for completeness because that pattern is not the #67 source authority. The #67 validator will pair each allowed manifest source from the coordination ledger with each raw-read/query/count/digest token family in runtime fixtures; a missing pair fails tests before approval.
 
+### Source-Root Boundary API
+
+The classifier module will expose `guard_no_source_root_access(operation_name, env)`. The validator must route every source-root-capable operation through this helper before any source-root file content, path metadata, directory listing, globbing, or scanner entrypoint is touched. Required call sites:
+
+| Entrypoint | Required guard call |
+|---|---|
+| `validate_sampling_request` | before validating any request that carries a source-root token class or manifest-source operation class |
+| `classify_executable_context` | before classifying any executable text that includes a source-root token class |
+| `validate_manifest_operation` | before raw-read/query/count/digest token families are evaluated against manifest-source tokens |
+| `build_runtime_deny_fixture` | before constructing a fixture that represents a source-root-backed operation |
+
+If `ACE_SHARE_ROOT` is unset, the helper returns allow-for-validation without reading private content. If `ACE_SHARE_ROOT` is set, the helper returns or raises `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before any private filesystem touch. Tests will monkeypatch representative file, stat, glob, iterator, and scanner entrypoints to fail if any bypass occurs.
+
 ---
 
 ## Pseudocode
@@ -313,13 +336,22 @@ load #65 schema contract
 assert #67 split row depends only on #65 and remains implementation_ready=false
 load #67 sampling firewall contract
 validate contract metadata:
-  owner issue, schema dependency, method issue bindings, exact #65 bound skill groups
+  owner issue integer, schema dependency integer, method issue binding integer array,
+  exact #65 bound skill groups
+  exact required sampling JSON key set and JSON scalar types
+  unknown top-level request keys fail unless listed as closed optional evidence fields
 validate allowed manifest source enum:
   exact public metadata key set from coordination ledger
   parent manifest path helper is treated as non-authoritative for #67 source enumeration
   no parent scanner broadening around generic manifest filenames is required for #67
 validate bounded sampling grammar:
-  target issue is present
+  target_issue is present as integer
+  manifest_source is present as string and allowed
+  seed_id is present as fixed reviewable string
+  sort_rule is present as closed object
+  per_bucket_row_cap, max_files_touched, and max_bytes_touched are positive integers
+  request_class, output_shape, route_target, and logical_target_store are present
+  requires_manifest_snapshot_id is present as boolean from #65
   operational requests carry a #65 target wave class
   #67 metadata-only fixtures carry fixture_scope instead of target wave class
   request class is closed
@@ -327,8 +359,7 @@ validate bounded sampling grammar:
   only #67 metadata_only_fixture requests pass
   control_plane_proof rows fail closed as non-sampling proofs
   downstream_manifest_backed_sampling rows fail closed until #70 imports #62 evidence
-  manifest source is present and allowed
-  seed is present, fixed, reviewable, and not random or clock-derived
+  seed_id is fixed, reviewable, and not random or clock-derived
   sort rule has exactly strategy, term_refs, direction, and tie_breaker keys
   sort term_refs use #65 private schema terms as values only
   unknown sort keys, raw private value expressions, and assigned private-key forms fail
@@ -345,6 +376,9 @@ validate downstream sampling gate:
   #65 requires_manifest_snapshot_id is the single source of truth and is tested for sync
   #64, #66, #68, and #69 are explicitly non-targets unless later approved scopes exist
   downstream_manifest_backed_sampling requires a complete snapshot_evidence object
+  snapshot_evidence required/optional/forbidden fields are validated by evidence_mode
+  shape_only_fixture forbids blocked_by_issue, follow_on_issue, and reason_code
+  blocked_pending_62_contract requires blocked_by_issue, follow_on_issue, and reason_code
   operational ingestion-wave requests fail closed with MISSING_62_EVIDENCE_CONTRACT
   operational ingestion-wave requests record blocked_by_issue=62 and follow_on_issue=70
   blocked_pending_62_contract is a failure result, never an authorization result
@@ -374,7 +408,9 @@ validate denied executable classes:
   full-file hashing/counting of large manifests fails unless a later approved issue
   explicitly supplies a bounded precomputed sidecar contract
 validate source-root refusal boundary:
-  any representative source-root-touching operation routes through the refusal helper
+  validate_sampling_request, classify_executable_context, validate_manifest_operation,
+  and build_runtime_deny_fixture route source-root-capable operations through
+  guard_no_source_root_access(operation_name, env)
   ACE_SHARE_ROOT set to a temp sentinel tree returns ACE_SOURCE_ROOT_ACCESS_FORBIDDEN
   no sentinel content, stat metadata, directory iteration, globbing, or scanner entrypoint is touched
 validate public-safety boundaries:
@@ -411,7 +447,7 @@ run parent coordination validator and #65 schema validator
 | Create | `scripts/validate_ace_bounded_sampling_firewall.py` | CLI validator for the [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) contract, fixtures, public-surface path list, [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema compatibility, and parent coordination compatibility |
 | Create | `tests/test_validate_ace_bounded_sampling_firewall.py` | Unit tests for contract loading, bounded grammar, executable-context classification, denied pattern runtime fixtures, [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) gate semantics, public-safety scan, and CI path coverage |
 | Create | `tests/fixtures/ace-bounded-sampling-firewall/good-request.json` | Safe metadata-only happy-path request fixture that contains no private source values and no live source-root reads |
-| Create | `tests/fixtures/ace-bounded-sampling-firewall/downstream-shape-only-request.json` | Safe shape-only [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence fixture that exercises schema parsing but cannot authorize operational sampling |
+| Create | `tests/fixtures/ace-bounded-sampling-firewall/metadata-shape-only-evidence-request.json` | Safe metadata-only shape-only [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence fixture that exercises schema parsing but cannot authorize operational sampling |
 | Modify | `.github/workflows/validate.yml` | Run the [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) validator and unit tests after approved implementation |
 | Modify after review/status changes | `docs/plans/README.md` | The draft row exists; later changes will record review/approval/implementation status only after the gate actually advances |
 | Modify after review/status changes | `docs/plans/ace-share-ingestion-wave-coordination.md` | The draft split row exists; later changes will record review/approval/implementation status only after the gate actually advances |
@@ -428,6 +464,8 @@ run parent coordination validator and #65 schema validator
 |---|---|---|---|
 | `test_contract_file_is_json_and_owned_by_67` | Contract is machine-readable and issue-scoped | Contract JSON | Loads with `contract_id`, version, owner issue, schema dependency, and public-safety notes |
 | `test_contract_imports_65_schema_terms` | [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) consumes, not redefines, [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) terms | Contract plus #65 schema | Route/store/success/private-term references and bound skill groups match #65 exactly |
+| `test_contract_scalar_types_are_closed` | Imported scalar identifiers cannot drift between integer and string forms | Contract JSON plus #65 schema | `owner_issue`, `depends_on_schema_issue`, `method_issue_bindings`, and snapshot issue IDs are JSON integers; stringified issue IDs fail |
+| `test_required_sampling_json_keys_are_exact` | Closed JSON contract is exact at key-name level | Synthetic requests with missing, aliased, or extra top-level keys | Only `target_issue`, `manifest_source`, `seed_id`, `sort_rule`, `per_bucket_row_cap`, `max_files_touched`, `max_bytes_touched`, `request_class`, `requires_manifest_snapshot_id`, `output_shape`, `route_target`, `logical_target_store`, and exactly one of `target_wave_class` or `fixture_scope` are accepted; unknown keys fail |
 | `test_issue_required_skill_groups_are_available_and_scanned` | The plan honors the live [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) issue body without polluting #65 schema-bound groups | Skill doc paths from Artifact Map plus live issue bindings | The issue-required five-skill set and the #65 bound five-skill set reconcile to the scanned six-skill union; `source-extraction-coverage` is not inserted into contract `bound_skill_groups`; method issue bindings are exactly [#1](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/1) and [#12](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/12) |
 | `test_allowed_manifest_sources_are_closed` | Manifest source set cannot drift | Contract manifest source list | Exactly the six public metadata keys are allowed |
 | `test_bounded_sampling_fields_are_required` | Sampling request grammar is complete | Synthetic request missing one field at a time | Missing target issue, operational target wave class or fixture scope, manifest source, seed, sort rule, per-bucket cap, max files, max bytes, request class, or output shape fails |
@@ -438,12 +476,14 @@ run parent coordination validator and #65 schema validator
 | `test_request_class_must_match_target_wave` | Downstream waves cannot self-select an exempt class | Synthetic request for [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60) with exempt request class | Fails with target issue/wave mismatch |
 | `test_downstream_sampling_requires_62_snapshot_evidence` | Manifest-backed ingestion waves cannot sample without [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence | Synthetic downstream request without complete evidence | Fails with [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) gate error |
 | `test_downstream_shape_only_fixture_accepts_complete_62_evidence_shape` | Positive #62 evidence shape is parseable without authorizing sampling | Shape-only [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) fixture with complete public-safe evidence object | Passes schema parsing and remains invalid for operational downstream sampling |
+| `test_snapshot_evidence_fields_are_mode_specific` | Shape-only evidence cannot inherit blocked-state fields and blocked evidence cannot omit them | Shape-only and blocked-pending evidence fixtures with forbidden, missing, and extra fields | `shape_only_fixture` requires only shape fields and forbids blocked fields; `blocked_pending_62_contract` requires blocked fields and fails as authorization |
 | `test_downstream_sampling_fails_with_missing_62_evidence_fixture` | Missing authoritative [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence fails without depending on ambient repo state | Controlled temp fixture with no #62 evidence artifact | Fails with missing-evidence-contract error |
 | `test_downstream_operational_sampling_blocked_until_70` | [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) does not invent the [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence parser | Synthetic downstream request with `operational_live` evidence claims | Fails with `MISSING_62_EVIDENCE_CONTRACT` and [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) reference |
 | `test_blocked_pending_62_contract_is_failure_result_not_authorization` | The exact blocked [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) state cannot become a false positive allow-path | Synthetic downstream request with `evidence_mode=blocked_pending_62_contract`, `blocked_by_issue=62`, `follow_on_issue=70`, and `reason_code=MISSING_62_EVIDENCE_CONTRACT` | Returns failure/nonzero with the same reason code and never reports the request as authorized |
 | `test_placeholder_snapshot_evidence_fails` | Placeholder gate evidence cannot satisfy [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) requirement | Synthetic request using pending/not-run/expected wording | Fails with placeholder evidence error |
 | `test_metadata_only_fixture_does_not_require_live_62` | CI can validate #67 before #62 implementation without inventing a control-plane/metadata hybrid | #67 metadata-only fixture | Passes without `ACE_SHARE_ROOT` and without live [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) execution |
-| `test_validator_refuses_private_reads_when_ace_share_root_is_set` | The firewall has an observable refusal boundary instead of a caller-less helper | Representative source-root-touching operation routed through the source-root boundary/refusal helper with temp `ACE_SHARE_ROOT` plus mocked guards for file open, path read helpers, existence checks, stat calls, directory iteration, globbing, and scanner entrypoints under the sentinel tree | Returns `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before any filesystem metadata or content access under the sentinel tree; the test fails if the representative operation bypasses the helper |
+| `test_validator_refuses_private_reads_when_ace_share_root_is_set` | The firewall has an observable refusal boundary instead of a caller-less helper | Representative source-root-touching operation routed through `guard_no_source_root_access(operation_name, env)` with temp `ACE_SHARE_ROOT` plus mocked guards for file open, path read helpers, existence checks, stat calls, directory iteration, globbing, and scanner entrypoints under the sentinel tree | Returns `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before any filesystem metadata or content access under the sentinel tree; the test fails if the representative operation bypasses the helper |
+| `test_source_root_guard_call_sites_are_enforced` | All source-root-capable validator/classifier entrypoints use the named boundary API | Monkeypatched `validate_sampling_request`, `classify_executable_context`, `validate_manifest_operation`, and `build_runtime_deny_fixture` source-root-capable paths | Each path calls `guard_no_source_root_access(operation_name, env)` before any private filesystem or scanner entrypoint |
 | `test_seed_rule_rejects_unstable_values` | Seed grammar is deterministic | Synthetic requests with random, clock-derived, empty, or user-local seeds | Fails with seed rule error |
 | `test_sort_rule_references_65_private_terms_safely` | Sort grammar does not invent row-key semantics or expose private values | Synthetic sort rule fixtures | Exact keys `strategy`, `term_refs`, `direction`, and `tie_breaker` pass; unknown keys, private-term keys, assigned private values, or raw values fail |
 | `test_manifest_source_authority_matches_coordination` | Six-key source enum comes from the coordination ledger | Contract and coordination ledger | Contract source list matches coordination keys exactly |
@@ -482,7 +522,7 @@ run parent coordination validator and #65 schema validator
 ## Acceptance Criteria
 
 - [ ] A standalone issue plan exists for [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67), the latest same-round adversarial review has at least two usable provider results and no usable provider returns MAJOR, and implementation remains blocked until user approval.
-- [ ] `config/ace-bounded-sampling-firewall-contract.json` defines a closed [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) contract with owner issue, schema dependency, allowed manifest sources, required sampling fields, cap maxima, request classes, denied executable classes, downstream [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence rules, and public-safety notes.
+- [ ] `config/ace-bounded-sampling-firewall-contract.json` defines a closed [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) contract with integer owner/schema/method issue IDs, allowed manifest sources, exact required sampling JSON keys, cap maxima, request classes, denied executable classes, downstream [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence rules, and public-safety notes.
 - [ ] Every operational sampling request records a target issue and target wave class imported from the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) canonical wave registry, but operational rows fail closed in this approval unit; [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) metadata-only fixtures record `fixture_scope=firewall_validator_self_check` instead and cannot authorize operational sampling.
 - [ ] Downstream wave requests whose [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) `requires_manifest_snapshot_id=true` cannot use exempt request classes to bypass [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) snapshot evidence.
 - [ ] Request-class mapping is explicit for `control_plane`, `ingestion_wave`, `storage_lifecycle_gate`, `manifest_freshness_gate`, `public_canary_gate`, and the [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) synthetic fixture scope, including whether each row passes or fails closed.
@@ -498,9 +538,9 @@ run parent coordination validator and #65 schema validator
 - [ ] Denied executable classes cover recursive traversal, broad source-root list/search, unrestricted manifest query, raw manifest read, full-file hashing/counting of large manifests, and unbounded materialization.
 - [ ] Bounded sampling requests require target issue, manifest source, deterministic seed, sort rule, per-bucket row cap, max files touched, max bytes touched, request class, metadata-only output shape, metadata-only route/store pair, and either operational target wave class or metadata-only fixture scope.
 - [ ] Sampling caps are bounded to no more than 200 rows per bucket, 25 files touched, and 1048576 bytes touched, matching the coordination-ledger bounded-read contract, unless a later approved issue changes that contract.
-- [ ] Manifest-backed downstream waves fail closed with `MISSING_62_EVIDENCE_CONTRACT`, `blocked_by_issue=62`, and `follow_on_issue=70` until [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) defines an evidence schema and [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) imports it; shape-only fixtures and request self-attestation cannot satisfy this gate.
+- [ ] Manifest-backed downstream waves fail closed with `MISSING_62_EVIDENCE_CONTRACT`, `blocked_by_issue=62`, and `follow_on_issue=70` until [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) defines an evidence schema and [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) imports it; shape-only fixtures forbid blocked-state fields, and request self-attestation cannot satisfy this gate.
 - [ ] [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) does not implement [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) freshness, [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) token generation, [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) reusable public-surface scanning, [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) legal/security scanning, [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) durable storage, or [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) publication certification.
-- [ ] The validator passes with `ACE_SHARE_ROOT` unset, and a representative source-root-touching operation routes through the named source-root boundary helper, returning `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before touching private source content or metadata when `ACE_SHARE_ROOT` is set to a temp sentinel tree.
+- [ ] The validator passes with `ACE_SHARE_ROOT` unset, and every source-root-capable entrypoint routes through `guard_no_source_root_access(operation_name, env)`, returning `ACE_SOURCE_ROOT_ACCESS_FORBIDDEN` before touching private source content or metadata when `ACE_SHARE_ROOT` is set to a temp sentinel tree.
 - [ ] Public artifacts do not publish raw private source paths, raw source values, source-like digest assignments, exact private inventory counts, client identifiers, personal identifiers, proprietary snippets, or publication destinations.
 - [ ] Negative fixtures are generated at runtime or written to temp files outside the repo tree; committed fixtures and scanner-triggering API-token examples remain scan-clean.
 - [ ] Denied token coverage is concrete at token-family level: every inherited parent denied family and every #67 manifest-source extension, including `INDEX.md`, has runtime fixture coverage for raw-read/query/count/digest cases.
@@ -512,7 +552,7 @@ run parent coordination validator and #65 schema validator
 - [ ] `uv run python -m unittest tests.test_validate_ace_bounded_sampling_firewall` passes after implementation.
 - [ ] `uv run python scripts/validate_ace_wave0_schema_contract.py` still passes after implementation.
 - [ ] `uv run python scripts/validate_ace_epic_wave_coordination.py` still passes after implementation.
-- [ ] `uv run skills/validate_skill.py` still passes after implementation.
+- [ ] `uv run skills/validate_skill.py` still passes after implementation in the CI-compatible form, and `uv run python skills/validate_skill.py` is also verified in closeout.
 - [ ] If implementation reveals a reusable method gap, schema-bound or issue-required skill docs are updated or a follow-on issue is filed before closeout.
 - [ ] If `scripts/legal/legal-sanity-scan.sh` is still unavailable at closeout, full closeout remains blocked; the issue comment records `NO_LEGAL_SCAN_SCRIPT` and points to [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69).
 
@@ -566,8 +606,11 @@ Plan review will be considered passable only when the same review round has at l
 | Claude r9 | MINOR | Found stale overall review summary wording, under-listed fixture fields, residual source-root helper invocation ambiguity, skill/method-binding prose mismatch, and Gemini-recovery gate ambiguity. Patch attempt recorded; re-review required. |
 | Codex r9 | MAJOR | Found request-class pass/fail contradiction, missing per-source raw-read denial coverage for `INDEX.md`, and category-only denied-token grammar. Patch attempt recorded; re-review required. |
 | Gemini r9 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
+| Claude r10 | MAJOR | Found mode-specific snapshot-evidence field contradiction on the shape-only fixture, misleading fixture name, unresolved split decision, skill-validation command inconsistency, scalar type ambiguity, and stale self-reported verdict. Patch attempt recorded; re-review required. |
+| Codex r10 | MAJOR | Found prose-only required sampling field names, unnamed source-root boundary API/call sites, and draft gate state still blocking advancement. Patch attempt recorded; re-review required. |
+| Gemini r10 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
 
-**Overall result:** MAJOR - Codex r9 blockers remain patched for the next review cycle; draft only; not ready for `status:plan-review`.
+**Overall result:** Latest retained review was MAJOR in r10; this draft includes the r10 patch and remains pending a fresh no-MAJOR review round before `status:plan-review`.
 
 ---
 
@@ -577,7 +620,7 @@ Plan review will be considered passable only when the same review round has at l
 - **Risk:** The classifier could be too narrow and allow runnable unbounded sampling examples. The plan will mitigate this with runtime-generated negative fixtures for markdown, workflow, Python, and JSON request contexts.
 - **Risk:** [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) could accidentally reimplement [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62), [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68), or [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69). The plan will keep those responsibilities as evidence requirements or explicit non-goals.
 - **Risk:** Committed negative fixtures could self-block public scans. The plan will require runtime construction or temp-file fixtures outside the repo tree.
-- **Open:** Formal provider review may require another split if the executable-context classifier and sampling grammar are still too much for one approval unit.
+- **Decision:** Do not split [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) before approval. The executable-context classifier, sampling grammar, and fail-closed evidence gate stay in one approval unit because the accept/deny semantics are cross-coupled; implementation may organize them as separate functions/modules, but a later split will require a follow-on issue only if code-stage review finds the approved unit too large to verify.
 
 ---
 
