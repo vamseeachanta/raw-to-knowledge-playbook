@@ -1,6 +1,6 @@
 # Plan for #69: ACE Wave 0 Repo-Local Legal and Security Scan Gate
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-07-01
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69
@@ -15,8 +15,8 @@
 
 ### Existing repo code/docs
 
-- `docs/plans/README.md` will remain the portfolio gate surface. This planning update records [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) as `plan-review` and not implementation-ready.
-- `docs/plans/ace-share-ingestion-wave-coordination.md` will remain the parseable ACE coordination ledger. This planning update records [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) as `plan-review`, pending user approval of the dependency correction.
+- `docs/plans/README.md` will remain the portfolio gate surface. This approval update records [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) as `plan-approved` and implementation-ready.
+- `docs/plans/ace-share-ingestion-wave-coordination.md` will remain the parseable ACE coordination ledger. This approval update records [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) as `plan-approved`, with the dependency correction accepted by user approval.
 - `artifacts/ace-wave0-ledger-schema.json` and `scripts/validate_ace_wave0_schema_contract.py` still encode the old [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) dependency on [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68). Implementation will propose a dependency correction because the legal/security hard gate now blocks completed work, while [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) remains a broader public-surface scanner plan.
 - `scripts/validate_ace_epic_wave_coordination.py` already contains the only repo-local public-artifact scan patterns: generic private-root shapes, local home/runtime paths, emails, client/customer/project identifier assignment shapes, confidentiality markers, personal identifier shapes, private source field assignments, source-like digest assignments, and unbounded traversal commands.
 - `.github/workflows/validate.yml` runs repo-local validators and unit tests without live GitHub authentication. The legal/security scan will join this stock CI surface.
@@ -35,7 +35,7 @@
 ### Decision checkpoint
 
 - The live [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) issue body currently says it is blocked by the public-surface scanner slice defining deny-list self-scan without a blanket exemption. This plan will be approval-ready only if the user approves the following dependency correction: [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) will replace that blocker with a narrower field-scoped config self-scan contract backed by the implemented [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) schema, while [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) remains the future owner of the broader public-surface scanner.
-- If the user does not approve that correction, this plan must remain `draft`/blocked and [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) must wait for [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) instead of moving to implementation.
+- The user has approved that correction, so [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) may proceed as the narrower [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-schema-backed gate while [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) remains the future broader public-surface scanner owner.
 
 ### Source inventory
 
@@ -416,7 +416,7 @@ implementation integration:
 | Codex | MINOR | r4 found only stale review metadata and required this final update before applying `status:plan-review`. |
 | Gemini | UNAVAILABLE | r4 CLI attempt failed with `IneligibleTierError`; earlier r1/r2 MAJOR findings were addressed in the current plan text. |
 
-**Overall result:** no-MAJOR active-provider quorum. The plan is ready for `status:plan-review`; implementation remains blocked until user approval applies `status:plan-approved` and creates the required local approval marker. User approval must explicitly accept the dependency correction that lets [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) proceed as a narrower [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-schema-backed gate instead of waiting for [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68).
+**Overall result:** no-MAJOR active-provider quorum. The plan is `status:plan-approved`; implementation may proceed. User approval explicitly accepted the dependency correction that lets [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) proceed as a narrower [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-schema-backed gate instead of waiting for [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68).
 
 ---
 

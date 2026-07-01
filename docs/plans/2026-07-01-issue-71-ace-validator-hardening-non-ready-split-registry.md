@@ -1,6 +1,6 @@
 # Plan for #71: ACE Validator Hardening for Non-Ready Wave 0 Split Registry Rows
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-07-01
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71
@@ -169,7 +169,7 @@ After approval and implementation, #71 will harden the repo-local ACE validators
 The implementation will update `_validate_split_registry()` so every #65-#69 row is validated before the approval-marker branch:
 
 - Issue membership will remain exactly #65-#69.
-- Dependencies will be exact per the target dependency map in this plan. #69 will move from the stale `[68]` dependency to `[65]` to match the reviewed #69 dependency-correction plan and the current README/coordination surfaces; this will not mark #69 implementation-ready or approve #69. User approval of #71 will also approve this limited #69 dependency correction for the schema/validator contract. If the user rejects that correction, #71 must remain unapproved and the target map, TDD row, and acceptance criterion will be reverted to keep #69 blocked behind #68.
+- Dependencies will be exact per the target dependency map in this plan. #69 will move from the stale `[68]` dependency to `[65]` to match the reviewed #69 dependency-correction plan and the current README/coordination surfaces. User approval of #71 approves this limited #69 dependency correction for the schema/validator contract. Because #69 is now also user-approved, the committed schema will record #69 as implementation-ready with `status:plan-approved`; synthetic no-marker tests will still prove the validator can represent the prior non-ready state without requiring approval markers.
 - Each row will use a uniformly prefixed canonical status snapshot vocabulary: `status:plan-approved`, `status:plan-review`, `status:blocked-draft`, `status:draft`, and `status:plan-required`. Implementation will normalize existing non-ready rows to the prefixed vocabulary and will not accept both prefixed and unprefixed forms indefinitely.
 - The validator will maintain an issue-specific expected plan path map for #65-#69. If the expected plan file exists on disk, the schema row's `plan_path` must equal that expected path. An empty `plan_path` will be rejected for #68 and #69 because their expected plan files already exist.
 - If the expected plan file does not exist on disk, the row must carry `plan_path=""`, `status_snapshot="status:plan-required"`, and `implementation_ready=false`.
@@ -187,7 +187,7 @@ Target schema row normalization after implementation:
 | #66 | `docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md` | `status:plan-review` | false | `[65]` |
 | #67 | `docs/plans/2026-06-30-issue-67-ace-wave-0-bounded-sampling-firewall.md` | `status:plan-review` | false | `[65]` |
 | #68 | `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md` | `status:blocked-draft` | false | `[65, 66]` |
-| #69 | `docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md` | `status:plan-review` | false | `[65]` |
+| #69 | `docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md` | `status:plan-approved` | true | `[65]` |
 
 ### Parent manifest-source contract
 
@@ -289,8 +289,8 @@ test_negative_scanner_pattern():
 | `test_non_ready_split_registry_rejects_invalid_status_snapshot` | Non-ready rows still use a closed status vocabulary | #67 row with invalid snapshot text | Error naming invalid status snapshot |
 | `test_non_ready_split_registry_rejects_status_drift_from_readme` | Schema snapshots must match repo-local plan index state | Schema row status differs from README row | Error naming status drift |
 | `test_non_ready_split_registry_rejects_status_drift_from_coordination` | Schema snapshots must match the coordination split registry where parseable | Schema row differs from coordination row | Error naming coordination drift |
-| `test_split_registry_normalizes_current_68_69_rows` | Current #68/#69 schema drift is corrected | Committed schema rows for #68/#69 | #68 has expected plan path and blocked-draft snapshot; #69 has expected plan path and plan-review snapshot |
-| `test_split_registry_records_69_dependency_correction` | #69 dependency correction is represented without approving #69 | #69 schema row and validator dependency map | #69 depends on #65, remains `implementation_ready=false`, and records `status:plan-review` |
+| `test_split_registry_normalizes_current_68_69_rows` | Current #68/#69 schema drift is corrected | Committed schema rows for #68/#69 | #68 has expected plan path and blocked-draft snapshot; #69 has expected plan path, approved snapshot, and implementation-ready state |
+| `test_split_registry_records_69_dependency_correction` | #69 dependency correction is represented with current approval state | #69 schema row and validator dependency map | #69 depends on #65, records `status:plan-approved`, and remains independent of #68 |
 | `test_split_registry_allows_65_implemented_note_with_approval_marker` | The #65 coordination implementation-progress note is compatible with approved status | Current #65 schema row, local marker, and coordination split row | No false drift error for #65 |
 | `test_split_registry_allows_68_readme_draft_coarsening_when_blocked_draft_source_exists` | README `draft` coarsening does not override stronger blocked-draft evidence | Current #68 README row, coordination row, and plan body | #68 normalizes to `status:blocked-draft` without README drift |
 | `test_non_ready_split_registry_allows_no_approval_marker` | Non-ready rows do not require approval markers | #66 non-ready row with valid plan/status and empty approval root | No marker-specific error |
@@ -318,7 +318,7 @@ test_negative_scanner_pattern():
 - [ ] `scripts/validate_ace_wave0_schema_contract.py` rejects a non-ready split row with an invalid or stale status snapshot relative to repo-local tracked status surfaces.
 - [ ] Tests cover the #66/#67 swapped-row regression.
 - [ ] The committed #68 and #69 schema rows are normalized to the expected plan paths and prefixed status snapshots listed in this plan.
-- [ ] The #69 row depends on #65 per the reviewed #69 dependency correction while remaining not implementation-ready.
+- [ ] The #69 row depends on #65 per the reviewed #69 dependency correction and reflects its current user-approved implementation-ready state.
 - [ ] #65's coordination `implemented:` progress note and #68's README `draft` coarsening are positively tested as compatible with the stronger local status evidence.
 - [ ] Non-ready rows do not require approval markers.
 - [ ] Ready rows still require `status:plan-approved` and a valid local approval marker.
@@ -343,7 +343,7 @@ test_negative_scanner_pattern():
 | Codex r3 | MINOR | Requested complete r2/r3 artifact metadata in the plan header and artifact map. |
 | Gemini r3 | UNAVAILABLE | Gemini remained unavailable due unsupported client/tier status. |
 
-**Overall result:** The active-provider r3 review returned no MAJOR findings after this plan revision resolved the remaining MINORs. #71 is ready for `status:plan-review`; implementation remains blocked until explicit user approval.
+**Overall result:** The active-provider r3 review returned no MAJOR findings after this plan revision resolved the remaining MINORs. #71 is `status:plan-approved`; implementation may proceed under TDD.
 
 ---
 
@@ -354,7 +354,7 @@ test_negative_scanner_pattern():
 - **Risk:** Accepting both prefixed and unprefixed status labels would preserve ambiguity. Mitigation: choose one canonical schema vocabulary and normalize existing rows in the same implementation.
 - **Risk:** Contract-backed manifest-source validation can self-deadlock if it hardcodes both sides. Mitigation: load `config/ace-manifest-evidence-contract.json` once and compare docs/evidence against that loaded list.
 - **Risk:** Scanner tests can self-block if denied examples are committed literally. Mitigation: fragment-build hostile strings at runtime and add a self-scan test for the parent test file.
-- **Risk:** #71's target schema map includes the #69 dependency correction that #69 itself marked as pending user approval. Mitigation: treat explicit user approval of #71 as approval of that limited #69 dependency correction; if the user does not approve that correction, keep #71 unapproved and revert the #69 target dependency to its prior blocked shape before any implementation.
+- **Risk:** #71's target schema map includes the #69 dependency correction that #69 itself marked as pending user approval. Mitigation: explicit user approval now covers both #69 and #71, so implementation will encode the approved #69 dependency correction and current approved status; if that approval is later rescinded, revert the #69 target dependency and approval snapshot before further implementation.
 - **Open:** Whether `.github/workflows/validate.yml` already has sufficient parent validator coverage after test changes or needs an explicit new invocation will be determined during TDD implementation.
 
 ---
