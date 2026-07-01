@@ -3,7 +3,7 @@
     {
       "name": "data_workbook_requires_normalized_output",
       "prompt": "Use the XLSX canary skill on a flat data workbook with no formulas.",
-      "expected": "The agent classifies the workbook as data, records source_id/url/sha256 evidence, generates parser/schema code, and emits normalized output proof without treating layout metadata as extracted facts."
+      "expected": "The agent classifies the workbook as data, records public_fixture_id/url/sha256 evidence, generates parser/schema code, and emits normalized output proof without treating layout metadata as extracted facts."
     },
     {
       "name": "formula_workbook_requires_code_or_evaluator_proof",

@@ -46,6 +46,9 @@ metadata:
 ## Verification
 - Pre-commit hook + CI deny-list scan must pass (L3); a hit blocks the commit/merge.
 - The grep is run by the gate, not self-reported by the producing agent.
+- For this repo, run `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`
+  before publishing or closing public-surface work; use `--diff-only` for local
+  staged/unstaged closeout checks.
 
 ## Cleanup
 - n/a (gate).

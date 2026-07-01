@@ -58,6 +58,13 @@ ALLOWED_SPLIT_STATUS_SNAPSHOTS = {
     "status:draft",
     "status:plan-required",
 }
+EXPECTED_ISSUE_69_SKILL_GROUPS = [
+    "public-private-routing",
+    "content-triage-and-exclusion",
+    "verify-batch",
+    "independent-oracle-validation",
+    "adversarial-verify-loop",
+]
 PRIVATE_SOURCE_TERMS = {
     "source_" + "id",
     "source_" + "sha256",
@@ -269,6 +276,8 @@ def _validate_split_registry(schema: dict, approval_root: Path, errors: list[str
         row = rows.get(issue, {})
         if row.get("depends_on") != expected_dependencies:
             errors.append(f"#{issue} split dependencies must be {expected_dependencies}")
+        if issue == 69 and row.get("issue_skill_groups") != EXPECTED_ISSUE_69_SKILL_GROUPS:
+            errors.append("#69 split row must record the issue-local legal/security skill group")
         if row.get("status_snapshot") not in ALLOWED_SPLIT_STATUS_SNAPSHOTS:
             errors.append(f"#{issue} split status_snapshot must use the canonical status vocabulary")
         expected_plan_path = EXPECTED_SPLIT_PLAN_PATHS[issue]

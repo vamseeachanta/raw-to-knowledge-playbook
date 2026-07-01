@@ -46,7 +46,7 @@ metadata:
 2. **Apply exclusions FIRST (fail-closed).** Before value-ranking, route any file
    matching the exclusion policy to an `EXCLUDED` bucket with a reason:
    - **PII** → exclude (W-9, payment/bank/wire threads, personal identifiers).
-   - **Third-party-confidential** → exclude (explicit "do not distribute"
+   - **Third-party-confidential** -> exclude (explicit redistribution-forbidden
      markers, another party's proprietary deliverable/deck). When in doubt that
      *we have the right to ingest it*, exclude — confidentiality is fail-closed.
    An excluded file is recorded (path + reason) but never extracted or copied.
@@ -66,6 +66,9 @@ metadata:
 - No two `keep` rows are content-duplicate versions of the same artifact.
 - Extension/path was never the sole basis for a keep/drop decision (spot-check a
   sample of misfiled files).
+- Public-surface manifests, reports, and review artifacts pass
+  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; local
+  closeout uses `--diff-only` before commit.
 
 ## Cleanup
 - The manifest persists; the raw archive is untouched (read-only). No excluded or

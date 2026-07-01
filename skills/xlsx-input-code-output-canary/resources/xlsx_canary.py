@@ -25,7 +25,7 @@ except Exception:  # pragma: no cover - dependency import is surfaced in reports
 CATEGORY_VALUES = {"simple", "complex"}
 CLASS_VALUES = {"data", "calculation", "mixed", "guarded", "unsupported"}
 REQUIRED_FIELDS = {
-    "source_id",
+    "public_fixture_id",
     "category",
     "workbook",
     "url",
@@ -34,6 +34,18 @@ REQUIRED_FIELDS = {
     "sha256",
     "purpose",
     "expected_flags",
+}
+EXPECTED_FIXTURE_IDS = {
+    "S1-base-xlsx",
+    "S2-any-sheets-xlsx",
+    "S3-with-table-xlsx",
+    "S4-merge-cells-xlsx",
+    "S5-date-1904-xlsx",
+    "C1-cross-sheet-xlsx",
+    "C2-defined-names-xlsx",
+    "C3-structured-table-refs-xlsx",
+    "C4-charts-xlsx",
+    "C5-protected-workbook-xlsx",
 }
 SHA_RE = re.compile(r"^[a-f0-9]{64}$")
 
@@ -78,27 +90,31 @@ def validate_manifest(path: Path) -> dict[str, Any]:
         if missing:
             errors.append(f"workbooks[{i}] missing fields: {missing}")
             continue
-        sid = item["source_id"]
-        if sid in seen:
-            errors.append(f"duplicate source_id: {sid}")
-        seen.add(sid)
+        fixture_id = item["public_fixture_id"]
+        if fixture_id in seen:
+            errors.append(f"duplicate public fixture id: {fixture_id}")
+        seen.add(fixture_id)
+        if fixture_id not in EXPECTED_FIXTURE_IDS:
+            errors.append(f"workbooks[{i}] public_fixture_id must be a known public canary fixture id")
         if item["category"] not in CATEGORY_VALUES:
-            errors.append(f"{sid}: category must be one of {sorted(CATEGORY_VALUES)}")
+            errors.append(f"{fixture_id}: category must be one of {sorted(CATEGORY_VALUES)}")
         else:
             counts[item["category"]] += 1
         if not str(item["url"]).startswith("https://"):
-            errors.append(f"{sid}: url must be https")
+            errors.append(f"{fixture_id}: url must be https")
         if not SHA_RE.match(str(item["sha256"])):
-            errors.append(f"{sid}: sha256 must be 64 lowercase hex chars")
+            errors.append(f"{fixture_id}: sha256 must be 64 lowercase hex chars")
         if not isinstance(item["bytes"], int) or item["bytes"] <= 0:
-            errors.append(f"{sid}: bytes must be a positive integer")
+            errors.append(f"{fixture_id}: bytes must be a positive integer")
         if not item["license"]:
-            errors.append(f"{sid}: license must be recorded")
+            errors.append(f"{fixture_id}: license must be recorded")
         if not isinstance(item["expected_flags"], list) or not item["expected_flags"]:
-            errors.append(f"{sid}: expected_flags must be a non-empty list")
+            errors.append(f"{fixture_id}: expected_flags must be a non-empty list")
     if counts != {"simple": 5, "complex": 5}:
         errors.append(f"manifest must have 5 simple and 5 complex entries, got {counts}")
-    return {"ok": not errors, "errors": errors, "counts": counts, "source_ids": sorted(seen)}
+    if seen != EXPECTED_FIXTURE_IDS:
+        errors.append("manifest public_fixture_id set must match the known public canary fixture ids")
+    return {"ok": not errors, "errors": errors, "counts": counts, "public_fixture_ids": sorted(seen)}
 
 
 def default_cache_dir() -> Path:
@@ -121,13 +137,13 @@ def fetch_manifest(manifest: Path, cache_dir: Path, allow_repo_cache: bool) -> d
     cache_dir.mkdir(parents=True, exist_ok=True)
     results = []
     for item in load_json(manifest)["workbooks"]:
-        target = cache_dir / f"{item['source_id']}-{item['workbook']}"
+        target = cache_dir / f"{item['public_fixture_id']}-{item['workbook']}"
         with urllib.request.urlopen(item["url"], timeout=30) as response:
             payload = response.read()
         target.write_bytes(payload)
         actual_sha = sha256_file(target)
         result = {
-            "source_id": item["source_id"],
+            "public_fixture_id": item["public_fixture_id"],
             "path": str(target),
             "bytes": len(payload),
             "sha256": actual_sha,
@@ -135,7 +151,7 @@ def fetch_manifest(manifest: Path, cache_dir: Path, allow_repo_cache: bool) -> d
         }
         if result["ok"]:
             try:
-                evidence = inventory_workbook(target, item["source_id"])
+                evidence = inventory_workbook(target, item["public_fixture_id"])
                 flags = observed_flags(evidence)
                 missing = sorted(set(item["expected_flags"]) - flags)
                 result.update({
@@ -190,7 +206,7 @@ def inventory_sheet(ws: Any, value_ws: Any) -> dict[str, Any]:
     }
 
 
-def inventory_workbook(path: Path, source_id: str | None = None) -> dict[str, Any]:
+def inventory_workbook(path: Path, public_fixture_id: str | None = None) -> dict[str, Any]:
     formula_wb = load_workbook(path, data_only=False, read_only=False, keep_links=True)
     value_wb = load_workbook(path, data_only=True, read_only=True, keep_links=True)
     sheets = []
@@ -200,7 +216,7 @@ def inventory_workbook(path: Path, source_id: str | None = None) -> dict[str, An
     if CalamineWorkbook is not None:
         calamine_names = CalamineWorkbook.from_path(path).sheet_names
     return {
-        "source_id": source_id,
+        "public_fixture_id": public_fixture_id,
         "workbook": path.name,
         "sha256": sha256_file(path),
         "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
@@ -377,7 +393,8 @@ def main() -> int:
     f.add_argument("--allow-repo-cache", action="store_true")
     i = sub.add_parser("inventory")
     i.add_argument("--workbook", type=Path, required=True)
-    i.add_argument("--source-id")
+    i.add_argument("--public-fixture-id")
+    i.add_argument("--source-id", dest="public_fixture_id")
     c = sub.add_parser("classify")
     c.add_argument("--inventory", type=Path, required=True)
     sub.add_parser("self-test")
@@ -387,7 +404,7 @@ def main() -> int:
     elif args.command == "fetch":
         result = fetch_manifest(args.manifest, args.cache_dir, args.allow_repo_cache)
     elif args.command == "inventory":
-        result = inventory_workbook(args.workbook, args.source_id)
+        result = inventory_workbook(args.workbook, args.public_fixture_id)
     elif args.command == "classify":
         result = classify_inventory(load_json(args.inventory))
     else:

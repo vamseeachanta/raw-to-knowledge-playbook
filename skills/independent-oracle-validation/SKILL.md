@@ -89,6 +89,9 @@ metadata:
   attribution.
 - The comparator has its own PASS-terminated adversarial review record.
 - Oracle conversions never wrote inside the repo tree.
+- Published oracle reports and review evidence pass
+  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; use
+  `--diff-only` before committing local report changes.
 
 ## Cleanup
 - Oracle conversion outputs and probe scripts stay in temp/session dirs;

@@ -62,7 +62,7 @@ files.
    ```bash
    uv run skills/xlsx-input-code-output-canary/resources/xlsx_canary.py inventory \
      --workbook ~/.cache/raw-to-knowledge-playbook/xlsx-canary/S1-base-xlsx-base.xlsx \
-     --source-id S1-base-xlsx
+     --public-fixture-id S1-base-xlsx
    ```
    Inventory records sheet names, formula cells and cached values, named ranges,
    tables, merged ranges, charts, protection flags, parser versions, and sha256.

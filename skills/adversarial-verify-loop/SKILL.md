@@ -89,6 +89,9 @@ metadata:
 - ACE wave closeout records each method gap as `doc-update`,
   `skill-eval-update`, or `follow-on-issue`; no reusable gap remains only in
   session notes.
+- Review artifacts and publication-facing summaries pass
+  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; use
+  `--diff-only` before committing reviewer outputs.
 
 ## Cleanup
 - Review transcripts/reproducers live outside the repo (temp/session dirs);

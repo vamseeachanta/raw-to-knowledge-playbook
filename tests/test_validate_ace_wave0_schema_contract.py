@@ -356,6 +356,27 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         self.assertEqual([65], rows[69]["depends_on"])
         self.assertNotIn(68, rows[69]["depends_on"])
 
+    def test_split_registry_records_69_issue_skill_group(self):
+        validator = load_validator()
+        schema = load_schema()
+        rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
+
+        self.assertEqual(
+            [
+                "public-private-routing",
+                "content-triage-and-exclusion",
+                "verify-batch",
+                "independent-oracle-validation",
+                "adversarial-verify-loop",
+            ],
+            rows[69]["issue_skill_groups"],
+        )
+
+        mutated = copy.deepcopy(schema)
+        mutated_rows = {row["issue"]: row for row in mutated["wave0_split_registry"]}
+        mutated_rows[69]["issue_skill_groups"] = ["public-private-routing"]
+        self.assertIn("#69 split row", "\n".join(validator.validate_schema(mutated)))
+
     def test_non_ready_split_registry_allows_no_approval_marker(self):
         validator = load_validator()
         schema = load_schema()

@@ -18,6 +18,9 @@ jobs:
       - name: Validate SKILL.md files (warn-only on-ramp; DENY rules block)
         run: uv run skills/validate_skill.py
 
+      - name: Legal/security sanity scan
+        run: bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces
+
       - name: Validate ACE epic wave coordination
         run: |
           uv run python scripts/validate_ace_epic_wave_coordination.py \
@@ -75,6 +78,7 @@ jobs:
 
       - name: Validator unit tests
         run: |
+          uv run python -m unittest tests.test_legal_sanity_scan
           uv run python -m unittest tests.test_validate_ace_epic_wave_coordination
           uv run python -m unittest tests.test_validate_ace_wave0_schema_contract
           uv run python -m unittest tests.test_validate_ace_manifest_freshness

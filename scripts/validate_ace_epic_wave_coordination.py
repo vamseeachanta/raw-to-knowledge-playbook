@@ -950,6 +950,8 @@ def validate_public_artifact_paths(
                         break
                 for pattern in PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS:
                     if re.search(pattern, line):
+                        if _allowed_legal_scanner_policy_line(path, line):
+                            continue
                         errors.append(f"private source field assignment is not allowed at {path}:{line_number}: {line.strip()}")
                         break
                 for pattern in SOURCE_LIKE_RAW_DIGEST_PATTERNS:
@@ -973,6 +975,24 @@ def _allowed_internal_traversal_line(path: Path, line: str) -> bool:
 def _allowed_denied_traversal_policy_prose(line: str) -> bool:
     return not re.search(MANIFEST_PATH_PATTERN, line) and any(
         term in line for term in DENIED_TRAVERSAL_POLICY_PROSE_TERMS
+    )
+
+
+def _allowed_legal_scanner_policy_line(path: Path, line: str) -> bool:
+    policy_terms = (
+        "source_" + "id",
+        "source_" + "sha256",
+        "private_" + "lookup_key",
+        "private_" + "lookup_map",
+        "share_" + "relative_path_private_only",
+        "source_hash",
+        "provenance_pointer",
+        "public_" + "source_token",
+    )
+    return (
+        path.name == ".legal-deny-list.yaml"
+        and "raw-source-provenance-assignment" not in line
+        and "|".join(policy_terms) in line
     )
 
 

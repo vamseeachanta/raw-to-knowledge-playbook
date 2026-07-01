@@ -321,6 +321,13 @@
       "implementation_ready": true,
       "depends_on": [
         65
+      ],
+      "issue_skill_groups": [
+        "public-private-routing",
+        "content-triage-and-exclusion",
+        "verify-batch",
+        "independent-oracle-validation",
+        "adversarial-verify-loop"
       ]
     }
   ],

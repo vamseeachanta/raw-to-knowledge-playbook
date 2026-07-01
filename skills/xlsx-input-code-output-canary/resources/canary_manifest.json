@@ -3,7 +3,7 @@
   "description": "Ten online workbook candidates for the XLS/XLSX input-to-code-to-output canary. Raw workbook bytes are never committed; fetch verifies bytes and sha256 into a local cache only.",
   "workbooks": [
     {
-      "source_id": "S1-base-xlsx",
+      "public_fixture_id": "S1-base-xlsx",
       "category": "simple",
       "workbook": "base.xlsx",
       "url": "https://raw.githubusercontent.com/dimastbk/python-calamine/master/tests/data/base.xlsx",
@@ -14,7 +14,7 @@
       "expected_flags": ["data_only"]
     },
     {
-      "source_id": "S2-any-sheets-xlsx",
+      "public_fixture_id": "S2-any-sheets-xlsx",
       "category": "simple",
       "workbook": "any_sheets.xlsx",
       "url": "https://raw.githubusercontent.com/dimastbk/python-calamine/master/tests/data/any_sheets.xlsx",
@@ -25,7 +25,7 @@
       "expected_flags": ["multiple_sheets"]
     },
     {
-      "source_id": "S3-with-table-xlsx",
+      "public_fixture_id": "S3-with-table-xlsx",
       "category": "simple",
       "workbook": "WithTable.xlsx",
       "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/WithTable.xlsx",
@@ -36,7 +36,7 @@
       "expected_flags": ["table"]
     },
     {
-      "source_id": "S4-merge-cells-xlsx",
+      "public_fixture_id": "S4-merge-cells-xlsx",
       "category": "simple",
       "workbook": "merge_cells.xlsx",
       "url": "https://raw.githubusercontent.com/tafia/calamine/master/tests/merge_cells.xlsx",
@@ -47,7 +47,7 @@
       "expected_flags": ["merged_cells"]
     },
     {
-      "source_id": "S5-date-1904-xlsx",
+      "public_fixture_id": "S5-date-1904-xlsx",
       "category": "simple",
       "workbook": "date_1904.xlsx",
       "url": "https://raw.githubusercontent.com/tafia/calamine/master/tests/date_1904.xlsx",
@@ -58,7 +58,7 @@
       "expected_flags": ["date_1904"]
     },
     {
-      "source_id": "C1-cross-sheet-xlsx",
+      "public_fixture_id": "C1-cross-sheet-xlsx",
       "category": "complex",
       "workbook": "cross_sheet.xlsx",
       "url": "https://raw.githubusercontent.com/bradbase/xlcalculator/master/tests/resources/cross_sheet.xlsx",
@@ -69,7 +69,7 @@
       "expected_flags": ["formula", "cross_sheet_formula"]
     },
     {
-      "source_id": "C2-defined-names-xlsx",
+      "public_fixture_id": "C2-defined-names-xlsx",
       "category": "complex",
       "workbook": "defined_names.xlsx",
       "url": "https://raw.githubusercontent.com/bradbase/xlcalculator/master/tests/resources/defined_names.xlsx",
@@ -80,7 +80,7 @@
       "expected_flags": ["defined_names"]
     },
     {
-      "source_id": "C3-structured-table-refs-xlsx",
+      "public_fixture_id": "C3-structured-table-refs-xlsx",
       "category": "complex",
       "workbook": "evaluate_formula_with_structured_table_references.xlsx",
       "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/evaluate_formula_with_structured_table_references.xlsx",
@@ -91,7 +91,7 @@
       "expected_flags": ["formula", "table"]
     },
     {
-      "source_id": "C4-charts-xlsx",
+      "public_fixture_id": "C4-charts-xlsx",
       "category": "complex",
       "workbook": "WithThreeCharts.xlsx",
       "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/WithThreeCharts.xlsx",
@@ -102,7 +102,7 @@
       "expected_flags": ["charts", "formula"]
     },
     {
-      "source_id": "C5-protected-workbook-xlsx",
+      "public_fixture_id": "C5-protected-workbook-xlsx",
       "category": "complex",
       "workbook": "workbookProtection-workbook_password-2013.xlsx",
       "url": "https://raw.githubusercontent.com/apache/poi/trunk/test-data/spreadsheet/workbookProtection-workbook_password-2013.xlsx",

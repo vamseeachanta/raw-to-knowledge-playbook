@@ -65,10 +65,10 @@ url=https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71
 
 ```text
 $ git worktree list --porcelain
-worktree /mnt/local-analysis/raw-to-knowledge-playbook
+worktree <repo-root>
 branch refs/heads/docs/ace-ingestion-wave-plans
 
-worktree /mnt/local-analysis/wt-r2k-pages
+worktree <sibling-worktree>
 branch refs/heads/feat/github-pages
 ```
 
