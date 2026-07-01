@@ -279,7 +279,7 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             fake_readme = Path(tmp) / "README.md"
             fake_readme.write_text(readme_path.read_text().replace(
-                "| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | ace-public-token-fixtures-private-field-placeholders | `docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md` | 2026-06-30 | plan-review |",
+                "| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | ace-public-token-fixtures-private-field-placeholders | `docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md` | 2026-06-30 | plan-approved |",
                 "| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | ace-public-token-fixtures-private-field-placeholders | `docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md` | 2026-06-30 | draft |",
             ))
             original_repo_path = validator._repo_path
@@ -377,13 +377,15 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         mutated_rows[69]["issue_skill_groups"] = ["public-private-routing"]
         self.assertIn("#69 split row", "\n".join(validator.validate_schema(mutated)))
 
-    def test_non_ready_split_registry_allows_no_approval_marker(self):
+    def test_approved_split_registry_rows_use_approval_marker_semantics(self):
         validator = load_validator()
         schema = load_schema()
         rows = {row["issue"]: row for row in schema["wave0_split_registry"]}
 
-        self.assertFalse(rows[66]["implementation_ready"])
-        self.assertEqual("status:plan-review", rows[66]["status_snapshot"])
+        self.assertTrue(rows[66]["implementation_ready"])
+        self.assertEqual("status:plan-approved", rows[66]["status_snapshot"])
+        self.assertTrue(rows[67]["implementation_ready"])
+        self.assertEqual("status:plan-approved", rows[67]["status_snapshot"])
         self.assertNotIn("#66 implementation_ready", "\n".join(validator.validate_schema(schema)))
 
     def test_split_registry_allows_65_implemented_note_with_approval_marker(self):
