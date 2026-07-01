@@ -37,10 +37,49 @@ jobs:
             --scan-public-path tests/test_validate_ace_wave0_schema_contract.py \
             --scan-public-path .planning/plan-approved/65.md
 
+      - name: Validate ACE manifest freshness contract
+        run: |
+          uv run python scripts/validate_ace_manifest_freshness.py \
+            --evidence tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path docs/plans/2026-06-29-issue-62-ace-manifest-freshness-and-drift-sentinel.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/62.md \
+            --scan-public-path config/ace-manifest-evidence-contract.json \
+            --scan-public-path scripts/validate_ace_manifest_freshness.py \
+            --scan-public-path scripts/ace_manifest_freshness_contract.py \
+            --scan-public-path scripts/ace_manifest_freshness_emit.py \
+            --scan-public-path scripts/ace_manifest_freshness_operational.py \
+            --scan-public-path tests/test_validate_ace_manifest_freshness.py \
+            --scan-public-path tests/test_validate_ace_manifest_freshness_runtime.py \
+            --scan-public-path tests/test_validate_ace_manifest_freshness_security.py \
+            --scan-public-path tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json \
+            --scan-public-path docs/case-studies/ace-manifest-freshness-drift-sentinel.md \
+            --scan-public-path .github/workflows/validate.yml \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-claude-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-codex-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-gemini-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-disagreement-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-claude-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-codex-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-gemini-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-disagreement-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-claude-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-codex-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-gemini-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-disagreement-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-62-contract-runtime-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-62-security-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-62-governance-r1.md
+
       - name: Validator unit tests
         run: |
           uv run python -m unittest tests.test_validate_ace_epic_wave_coordination
           uv run python -m unittest tests.test_validate_ace_wave0_schema_contract
+          uv run python -m unittest tests.test_validate_ace_manifest_freshness
+          uv run python -m unittest tests.test_validate_ace_manifest_freshness_runtime
+          uv run python -m unittest tests.test_validate_ace_manifest_freshness_security
 
       - name: Runnable example — verify the happy path promotes
         working-directory: examples/minimal-ingest

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
@@ -118,11 +119,14 @@ def row(issue: int) -> str:
         if issue in {51, 61, 62, 63}
         else "yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling"
     )
+    dependencies = "#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate"
+    if issue == 62:
+        dependencies = "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 integration; #51 remains umbrella context only"
     return (
         f"| #{issue} | docs/plans/issue-{issue}.md | lane:claude | T2 | draft | "
         f"2026-06-29 no status label; no approval marker | false | {METHOD_ISSUES[issue]} | "
         f"{EXECUTABLE_BINDINGS[issue]} | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | "
-        f"#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate | {metric_cell(issue)} | {manifest_gate} | "
+        f"{dependencies} | {metric_cell(issue)} | {manifest_gate} | "
         "yes; #63 status:plan-approved+approval marker+implemented canary+recorded passing-command before publication | "
         "closed-set: doc-update, skill-eval-update, follow-on-issue | false |"
     )
@@ -144,7 +148,7 @@ GOOD_DOC = "\n".join(
         "",
         "## Source Inventory and Bounded Read Contract",
         "- Root abstraction: `ACE_SHARE_ROOT`.",
-        "- Named manifest sources: `INDEX.md`, `assets.json`, `docs/master-index.jsonl`, `_cad-index/index-summary.json`, `.ace-knowledge/index.db`.",
+        "- Named manifest sources: `INDEX.md`, `assets.json`, `docs/master-index.jsonl`, `_cad-index/index-summary.json`, `_cad-index/cad-readability-index.tsv`, and `.ace-knowledge/index.db`.",
         "- Seed/sort rule: stable sort by `source_id`, then seeded sample `ace-epic-50-2026-06-29`.",
         "- Row caps: 200 rows per bucket; maximum files touched: 25; maximum bytes touched: 1048576.",
         "- Denied traversal patterns: recursive share walk; full-manifest materialization; full-file hashing/counting of large manifests; unrestricted `jq`; `os.walk`; `ls -R`; `find`; `du`; `rg`; `fd`.",
@@ -650,6 +654,17 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         bad_doc = GOOD_DOC.replace("maximum files touched: 25; maximum bytes touched: 1048576", "limits TBD")
         self.assert_rejects(bad_doc, "bounded read contract")
 
+    def test_manifest_sources_exact_set_in_inventory(self):
+        bad_doc = GOOD_DOC.replace("`_cad-index/cad-readability-index.tsv`, and ", "")
+        self.assert_rejects(bad_doc, "manifest source inventory")
+
+    def test_issue_62_handoff_requires_65_and_70(self):
+        bad_doc = GOOD_DOC.replace(
+            "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 integration; #51 remains umbrella context only",
+            "#51 umbrella context only",
+        )
+        self.assert_rejects(bad_doc, "#62 dependency handoff")
+
     def test_unbounded_manifest_traversal_is_denied(self):
         commands = [
             'find ACE_SHARE_ROOT -type f',
@@ -728,6 +743,95 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
             result = validator.validate_text(bad_doc, approval_root=approval_root)
 
         self.assertIn("#63 gate readiness", "\n".join(result.errors))
+
+    def test_issue_62_gate_ready_requires_snapshot_id(self):
+        validator = load_validator()
+        with tempfile.TemporaryDirectory() as tmp:
+            executable = Path(tmp) / "validate_ace_manifest_freshness.py"
+            executable.write_text("# test executable\n")
+            validator.EXPECTED_EXECUTABLE_BINDINGS[62] = {str(executable)}
+            status_snapshot = (
+                "2026-07-01 status:plan-approved; "
+                f"implemented-validator:{executable}; "
+                f"passing-command: uv run python {executable}; "
+                "exit-code:0"
+            )
+            ready_62 = (
+                row(62)
+                .replace("scripts/validate_ace_manifest_freshness.py", str(executable))
+                .replace(
+                    "draft | 2026-06-29 no status label; no approval marker | false",
+                    f"plan-approved | {status_snapshot} | true",
+                )
+            )
+            doc = GOOD_DOC.replace(row(62), ready_62)
+            approval_root = Path(tmp)
+            (approval_root / "62.md").write_text(valid_marker(62))
+            result = validator.validate_text(doc, approval_root=approval_root)
+
+        self.assertIn("#62 gate readiness requires snapshot_id", "\n".join(result.errors))
+
+    def test_issue_62_gate_ready_snapshot_id_must_match_evidence(self):
+        validator = load_validator()
+        status_snapshot = (
+            "2026-07-01 status:plan-approved; "
+            "implemented-validator:scripts/validate_ace_manifest_freshness.py; "
+            "passing-command: uv run python scripts/validate_ace_manifest_freshness.py "
+            "--evidence tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json; "
+            "exit-code:0; "
+            "snapshot_id:ams_deadbeefdeadbeefdeadbeefdeadbeef"
+        )
+        ready_62 = row(62).replace(
+            "draft | 2026-06-29 no status label; no approval marker | false",
+            f"plan-approved | {status_snapshot} | true",
+        )
+        doc = GOOD_DOC.replace(row(62), ready_62)
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "62.md").write_text(valid_marker(62))
+            result = validator.validate_text(doc, approval_root=approval_root)
+
+        self.assertIn("#62 gate readiness snapshot_id must match validated evidence", "\n".join(result.errors))
+
+    def test_issue_62_gate_ready_rejects_forged_evidence_outside_allowed_roots(self):
+        validator = load_validator()
+        forged_ref = Path("tests/fixtures/forged-ace62-evidence.json")
+        forged = REPO_ROOT / forged_ref
+        if forged.exists():
+            forged.unlink()
+        self.addCleanup(lambda: forged.exists() and forged.unlink())
+        forged.write_text(
+            json.dumps(
+                {
+                    "snapshot_ids_by_manifest_source": {
+                        "INDEX.md": "ams_deadbeefdeadbeefdeadbeefdeadbeef",
+                        "assets.json": "ams_00000000000000000000000000000002",
+                        "docs/master-index.jsonl": "ams_00000000000000000000000000000003",
+                        "_cad-index/index-summary.json": "ams_00000000000000000000000000000004",
+                        "_cad-index/cad-readability-index.tsv": "ams_00000000000000000000000000000005",
+                        ".ace-knowledge/index.db": "ams_00000000000000000000000000000006",
+                    }
+                }
+            )
+        )
+        status_snapshot = (
+            "2026-07-01 status:plan-approved; "
+            "implemented-validator:scripts/validate_ace_manifest_freshness.py; "
+            f"passing-command: uv run python scripts/validate_ace_manifest_freshness.py --evidence {forged_ref}; "
+            "exit-code:0; "
+            "snapshot_id:ams_deadbeefdeadbeefdeadbeefdeadbeef"
+        )
+        ready_62 = row(62).replace(
+            "draft | 2026-06-29 no status label; no approval marker | false",
+            f"plan-approved | {status_snapshot} | true",
+        )
+        doc = GOOD_DOC.replace(row(62), ready_62)
+        with tempfile.TemporaryDirectory() as tmp:
+            approval_root = Path(tmp)
+            (approval_root / "62.md").write_text(valid_marker(62))
+            result = validator.validate_text(doc, approval_root=approval_root)
+
+        self.assertIn("#62 gate readiness requires allowed evidence artifact", "\n".join(result.errors))
 
     def test_gate_ready_rejects_placeholder_passing_command_evidence(self):
         validator = load_validator()

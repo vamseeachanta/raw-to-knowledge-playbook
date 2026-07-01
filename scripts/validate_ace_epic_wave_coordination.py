@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
+import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -63,6 +65,7 @@ VALID_COMPLEXITIES = {"T2", "T3"}
 VALID_PLAN_STATUSES = {"draft", "plan-review", "plan-approved", "completed"}
 REVIEW_VERDICTS = {"APPROVE", "MINOR", "MAJOR"}
 REVIEW_HISTORY_VERDICTS = REVIEW_VERDICTS | {"UNAVAILABLE"}
+SNAPSHOT_ID_RE = re.compile(r"^ams_[0-9a-f]{32}$")
 EXPECTED_CHILD_LEDGER_HEADERS = [
     "issue",
     "plan",
@@ -135,6 +138,18 @@ FIXED_METADATA_EVIDENCE_PATHS = {
     ".ace-knowledge/index.db": "file",
     "llm-wiki": "directory",
 }
+EXPECTED_MANIFEST_SOURCES = [
+    "INDEX.md",
+    "assets.json",
+    "docs/master-index.jsonl",
+    "_cad-index/index-summary.json",
+    "_cad-index/cad-readability-index.tsv",
+    ".ace-knowledge/index.db",
+]
+ISSUE_62_EVIDENCE_ROOTS = [
+    Path("artifacts/ace-manifest-freshness"),
+    Path("tests/fixtures/ace-manifest-freshness"),
+]
 FIXED_METADATA_EVIDENCE_PATTERN = re.compile(
     r"^EXISTS ACE_SHARE_ROOT" + r"/(?P<path>[^`\s|]+) type=(?P<kind>file|directory) details=withheld_public$"
 )
@@ -494,6 +509,7 @@ def _validate_global_contract(text: str, errors: list[str]) -> None:
     ]
     if not _has_all(text, bounded_terms):
         errors.append("bounded read contract must declare ACE_SHARE_ROOT, named manifests, seed/sort, row caps, file/byte caps, and denied traversal patterns")
+    _validate_manifest_inventory(text, errors)
 
     if not _has_all(text, ["Branch publication rule", "dedicated planning branch", "stacked-branch note"]):
         errors.append("branch publication rule must require a dedicated planning branch or explicit stacked-branch note")
@@ -551,6 +567,10 @@ def _gate_readiness_errors(row: dict[str, str], issue: int) -> list[str]:
         errors.append(f"#{issue} gate readiness requires passing-command: to invoke an expected executable binding")
     if exit_code != "0":
         errors.append(f"#{issue} gate readiness requires exact exit-code:0 evidence")
+    if issue == 62 and not SNAPSHOT_ID_RE.fullmatch(evidence.get("snapshot_id", "")):
+        errors.append(f"#{issue} gate readiness requires snapshot_id: opaque ams_ plus 32 lowercase hex characters")
+    if issue == 62:
+        _validate_issue_62_snapshot_evidence(evidence, errors)
     if any(_has_placeholder_evidence(value) for value in [implemented, command, exit_code]):
         errors.append(f"#{issue} gate readiness rejects placeholder, negated, pending, or expected evidence")
     return errors
@@ -564,6 +584,60 @@ def _parse_status_snapshot_evidence(snapshot: str) -> dict[str, str]:
         key, value = part.split(":", 1)
         evidence[key.strip().lower()] = value.strip()
     return evidence
+
+
+def _validate_issue_62_snapshot_evidence(evidence: dict[str, str], errors: list[str]) -> None:
+    snapshot_id = evidence.get("snapshot_id", "")
+    if not SNAPSHOT_ID_RE.fullmatch(snapshot_id):
+        return
+    evidence_path = _issue_62_evidence_path(evidence.get("passing-command", ""))
+    if evidence_path is None:
+        errors.append("#62 gate readiness requires allowed evidence artifact")
+        return
+    try:
+        record = json.loads(evidence_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        errors.append("#62 gate readiness requires readable validated evidence JSON")
+        return
+    snapshots = record.get("snapshot_ids_by_manifest_source")
+    if not isinstance(snapshots, dict) or sorted(snapshots) != sorted(EXPECTED_MANIFEST_SOURCES):
+        errors.append("#62 gate readiness requires evidence with exact six manifest snapshot IDs")
+        return
+    if snapshot_id not in snapshots.values():
+        errors.append("#62 gate readiness snapshot_id must match validated evidence")
+
+
+def _issue_62_evidence_path(command: str) -> Path | None:
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return None
+    if "--evidence" not in tokens:
+        return None
+    index = tokens.index("--evidence") + 1
+    if index >= len(tokens):
+        return None
+    path = Path(tokens[index])
+    if path.is_absolute() or ".." in path.parts or path.suffix != ".json":
+        return None
+    if not any(path == root or root in path.parents for root in ISSUE_62_EVIDENCE_ROOTS):
+        return None
+    try:
+        resolved = path.resolve(strict=True)
+    except FileNotFoundError:
+        return None
+    allowed_roots = [root.resolve() for root in ISSUE_62_EVIDENCE_ROOTS if root.exists()]
+    if not any(_is_relative_to(resolved, root) for root in allowed_roots):
+        return None
+    return path
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
 
 
 def _has_placeholder_evidence(value: str) -> bool:
@@ -616,6 +690,8 @@ def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, e
         errors.extend(_gate_readiness_errors(row, issue))
 
     dependencies = row.get("dependencies", "")
+    if issue == 62:
+        _validate_issue_62_dependency_handoff(dependencies, errors)
     if issue in DOWNSTREAM_WAVES and "#51" not in dependencies:
         errors.append(f"#{issue} dependencies must include #51 wave-0 control-plane gate")
     if issue in PUBLICATION_GATE_ISSUES and "#61" not in dependencies:
@@ -658,6 +734,27 @@ def _validate_row(issue: int, row: dict[str, str], approval_root: Path | None, e
     exposure = row.get("publication exposure", "").strip().lower()
     if exposure not in {"true", "false"}:
         errors.append(f"#{issue} publication exposure must be true or false")
+
+
+def _validate_manifest_inventory(text: str, errors: list[str]) -> None:
+    match = re.search(r"(?m)^-\s+Named manifest sources:\s*(.+)$", text)
+    if not match:
+        errors.append("manifest source inventory must name the six #62 manifest sources")
+        return
+    sources = re.findall(r"`([^`]+)`", match.group(1))
+    if sources != EXPECTED_MANIFEST_SOURCES:
+        errors.append("manifest source inventory must match the exact six #62 manifest sources")
+
+
+def _validate_issue_62_dependency_handoff(dependencies: str, errors: list[str]) -> None:
+    required = [
+        "#65 schema is the canonical registry source",
+        "#70 consumes the #62 evidence contract",
+        "#67 integration",
+        "#51 remains umbrella context only",
+    ]
+    if not all(term in dependencies for term in required):
+        errors.append("#62 dependency handoff must preserve #65 schema source, #70 consumer, #67 integration, and #51 umbrella-only boundary")
 
 
 def _validate_structural_wave_gate_row(issue: int, row: dict[str, str], errors: list[str]) -> None:

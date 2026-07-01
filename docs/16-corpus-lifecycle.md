@@ -82,6 +82,15 @@ the *verification*, not just the embedding.** Re-embedding is cheap and automati
 a stale `verified` flag on changed content is a fidelity lie. **Always include the
 verification node in the invalidation closure — fail closed on trust.**
 
+For ACE-style multi-manifest corpora, the invalidation proof must include the
+manifest snapshot state as well as document-level change evidence. Issue #62
+defines a public-safe manifest freshness contract: downstream waves cite opaque
+snapshot identifiers and status enums, while exact source statistics and raw
+digest material remain outside committed artifacts. A downstream wave may not
+treat manifest-backed sampling as fresh until the #62 validator has recorded a
+passing evidence artifact and any drift verdicts have been resolved under the
+closed authorization rules.
+
 ## 4. Cost of freshness — bound the blast radius
 
 The blast radius of an edit is set by **chunking stability**. With
