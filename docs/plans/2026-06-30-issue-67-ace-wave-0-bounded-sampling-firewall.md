@@ -1,13 +1,13 @@
 # Plan for #67: ACE Wave 0 Bounded Sampling Firewall
 
-> **Status:** draft
+> **Status:** plan-review
 > **Complexity:** T3
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:codex
-> **Review artifacts:** r12 Claude MINOR, Codex MAJOR; Gemini unavailable; patched pending r13
+> **Review artifacts:** r13 Claude/Codex MINOR; Gemini unavailable
 
 ---
 
@@ -162,6 +162,10 @@ N/A - governance/control-plane issue; no runtime failure is alleged.
 | Review artifact - Codex r12 | `scripts/review/results/2026-06-30-plan-67-codex-r12.md` |
 | Review artifact - Gemini r12 | `scripts/review/results/2026-06-30-plan-67-gemini-r12.md` |
 | Disagreement report r12 | `scripts/review/results/2026-06-30-plan-67-disagreement-r12.md` |
+| Review artifact - Claude r13 | `scripts/review/results/2026-06-30-plan-67-claude-r13.md` |
+| Review artifact - Codex r13 | `scripts/review/results/2026-06-30-plan-67-codex-r13.md` |
+| Review artifact - Gemini r13 | `scripts/review/results/2026-06-30-plan-67-gemini-r13.md` |
+| Disagreement report r13 | `scripts/review/results/2026-06-30-plan-67-disagreement-r13.md` |
 | Provider stderr sidecars | not retained unless normalized, scanned, and explicitly listed |
 
 ---
@@ -640,8 +644,11 @@ Plan review will be considered passable only when the same review round has at l
 | Claude r12 | MINOR | Found under-specified `good-request.json` placeholder fields, scope narrowing versus literal downstream AC, stale `#51` blocker wording, and parent-scanner subprocess/import ambiguity. Patch attempt recorded; re-review required. |
 | Codex r12 | MAJOR | Found missing unbounded materialization token/test coverage, incomplete per-source cross-product coverage for query/count/digest, and ambiguous non-command-heading Markdown list semantics. Patch attempt recorded; re-review required. |
 | Gemini r12 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
+| Claude r13 | MINOR | Found parent-scanner subprocess coupling, `guard_no_source_root_access` return-vs-raise ambiguity, and scanner-safe review-artifact listing API under-specification; no blockers. |
+| Codex r13 | MINOR | Found missing `bound_skill_groups` contract-shape row, under-listed evidence fields in fixture rows, split-registry readiness wording ambiguity, and stale shape-only fixture test name; no blockers. |
+| Gemini r13 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
 
-**Overall result:** Latest retained review was MAJOR in r12; this draft includes the r12 patch and remains pending a fresh no-MAJOR review round before `status:plan-review`.
+**Overall result:** r13 satisfied the review gate with two usable no-MAJOR provider results (Claude MINOR, Codex MINOR) and Gemini documented as unavailable. The plan is ready for `status:plan-review`; implementation remains blocked until user approval and a local approval marker.
 
 ---
 
