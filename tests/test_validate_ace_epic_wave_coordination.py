@@ -804,35 +804,55 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         self.assert_rejects(bad_doc, "#62 dependency handoff")
 
     def test_issue_62_handoff_rejects_negated_or_contradictory_prose(self):
-        contradiction = (
-            "#65 schema is the canonical registry source; "
-            "#70 consumes the #62 evidence contract for #67 blocked operational boundary integration; "
-            "#67 is no longer blocked and is released for operational use; "
-            "#51 remains umbrella context only"
-        )
-        bad_doc = GOOD_DOC.replace(
-            "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only",
-            contradiction,
-        )
-        self.assert_rejects(bad_doc, "#62 dependency handoff")
+        for contradiction in [
+            (
+                "#65 schema is the canonical registry source; "
+                "#70 consumes the #62 evidence contract for #67 blocked operational boundary integration; "
+                "#67 is no longer blocked and is released for operational use; "
+                "#51 remains umbrella context only"
+            ),
+            (
+                "#65 schema is the canonical registry source; "
+                "#70 consumes the #62 evidence contract for #67 not blocked operational boundary integration; "
+                "#51 remains umbrella context only"
+            ),
+            (
+                "#65 schema is the canonical registry source; "
+                "#70 consumes the #62 evidence contract but does not require #67 blocked operational boundary integration; "
+                "#51 remains umbrella context only"
+            ),
+        ]:
+            with self.subTest(contradiction=contradiction):
+                bad_doc = GOOD_DOC.replace(
+                    "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only",
+                    contradiction,
+                )
+                self.assert_rejects(bad_doc, "#62 dependency handoff")
 
     def test_issue_62_gate_ready_evidence_keys_follow_contract(self):
         validator = load_validator()
         contract_keys = ["primary-index.md", "secondary-assets.json"]
         snapshot_id = "ams_11111111111111111111111111111111"
-        evidence_ref = Path("tests/fixtures/ace-manifest-freshness/contract-key-test-evidence.json")
-        evidence_path = REPO_ROOT / evidence_ref
-        self.addCleanup(lambda: evidence_path.exists() and evidence_path.unlink())
-        evidence_path.write_text(
-            json.dumps(
+        evidence_dir = REPO_ROOT / "tests" / "fixtures" / "ace-manifest-freshness"
+        with tempfile.NamedTemporaryFile(
+            "w",
+            dir=evidence_dir,
+            prefix=".tmp-contract-key-test-",
+            suffix=".json",
+            delete=False,
+        ) as handle:
+            evidence_path = Path(handle.name)
+            json.dump(
                 {
                     "snapshot_ids_by_manifest_source": {
                         contract_keys[0]: snapshot_id,
                         contract_keys[1]: "ams_22222222222222222222222222222222",
                     }
-                }
+                },
+                handle,
             )
-        )
+        self.addCleanup(lambda: evidence_path.exists() and evidence_path.unlink())
+        evidence_ref = evidence_path.relative_to(REPO_ROOT)
         status_snapshot = (
             "2026-07-01 status:plan-approved; "
             "implemented-validator:scripts/validate_ace_manifest_freshness.py; "
@@ -989,13 +1009,16 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
 
     def test_issue_62_gate_ready_rejects_forged_evidence_outside_allowed_roots(self):
         validator = load_validator()
-        forged_ref = Path("tests/fixtures/forged-ace62-evidence.json")
-        forged = REPO_ROOT / forged_ref
-        if forged.exists():
-            forged.unlink()
-        self.addCleanup(lambda: forged.exists() and forged.unlink())
-        forged.write_text(
-            json.dumps(
+        forged_dir = REPO_ROOT / "tests" / "fixtures"
+        with tempfile.NamedTemporaryFile(
+            "w",
+            dir=forged_dir,
+            prefix=".tmp-forged-ace62-",
+            suffix=".json",
+            delete=False,
+        ) as handle:
+            forged = Path(handle.name)
+            json.dump(
                 {
                     "snapshot_ids_by_manifest_source": {
                         "INDEX.md": "ams_deadbeefdeadbeefdeadbeefdeadbeef",
@@ -1005,9 +1028,11 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
                         "_cad-index/cad-readability-index.tsv": "ams_00000000000000000000000000000005",
                         ".ace-knowledge/index.db": "ams_00000000000000000000000000000006",
                     }
-                }
+                },
+                handle,
             )
-        )
+        self.addCleanup(lambda: forged.exists() and forged.unlink())
+        forged_ref = forged.relative_to(REPO_ROOT)
         status_snapshot = (
             "2026-07-01 status:plan-approved; "
             "implemented-validator:scripts/validate_ace_manifest_freshness.py; "

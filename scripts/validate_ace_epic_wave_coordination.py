@@ -819,17 +819,8 @@ def _validate_issue_62_dependency_handoff(
         errors.append("#62 dependency handoff must preserve #65 schema source, #70 consumer, #67 integration, and #51 umbrella-only boundary")
         return
     blocked_issue = f"#{contract.blocked_operational_issue}"
-    contradiction_terms = [
-        "no longer blocked",
-        "unblocked",
-        "released",
-        "complete",
-        "completed",
-        "operational use",
-    ]
     for clause in re.split(r"[.;|]", dependencies):
-        lowered = clause.lower()
-        if blocked_issue in clause and any(term in lowered for term in contradiction_terms):
+        if blocked_issue in clause and _contradicts_blocked_operational_boundary(clause):
             errors.append("#62 dependency handoff must not contradict the blocked operational issue boundary")
             return
     if not any(
@@ -838,6 +829,32 @@ def _validate_issue_62_dependency_handoff(
     ):
         errors.append("#62 dependency handoff must assert the blocked operational issue boundary")
         return
+
+
+def _contradicts_blocked_operational_boundary(clause: str) -> bool:
+    lowered = clause.lower()
+    negated_blocked_patterns = [
+        r"\bno\s+longer\s+blocked\b",
+        r"\bunblocked\b",
+        r"\bnot\s+(?:a\s+)?blocked\b",
+        r"\bdoes\s+not\s+require\b[^.;|]*\bblocked\b",
+        r"\bwithout\b[^.;|]*\bblocked\b",
+    ]
+    if any(re.search(pattern, lowered) for pattern in negated_blocked_patterns):
+        return True
+    release_patterns = [
+        r"\breleased\b",
+        r"\bcomplete(?:d)?\b",
+        r"\boperational\s+use\b",
+    ]
+    for pattern in release_patterns:
+        match = re.search(pattern, lowered)
+        if match is None:
+            continue
+        prefix = lowered[max(0, match.start() - 24) : match.start()]
+        if not re.search(r"\b(?:not|never|no|without)\b", prefix):
+            return True
+    return False
 
 
 def _validate_structural_wave_gate_row(issue: int, row: dict[str, str], errors: list[str]) -> None:
