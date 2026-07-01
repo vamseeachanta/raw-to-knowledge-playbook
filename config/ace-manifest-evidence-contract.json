@@ -1,0 +1,155 @@
+{
+  "contract_id": "ace-manifest-evidence-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 62,
+  "depends_on_schema_issue": 65,
+  "downstream_consumer_issue": 70,
+  "blocked_operational_issue": 67,
+  "source_root_env_var": "ACE_SHARE_ROOT",
+  "manifest_source_keys": [
+    "INDEX.md",
+    "assets.json",
+    "docs/master-index.jsonl",
+    "_cad-index/index-summary.json",
+    "_cad-index/cad-readability-index.tsv",
+    ".ace-knowledge/index.db"
+  ],
+  "manifest_source_roles": {
+    "INDEX.md": "root_inventory_index",
+    "assets.json": "asset_manifest",
+    "docs/master-index.jsonl": "master_record_index",
+    "_cad-index/index-summary.json": "cad_summary_index",
+    "_cad-index/cad-readability-index.tsv": "cad_readability_index",
+    ".ace-knowledge/index.db": "knowledge_store_index"
+  },
+  "public_snapshot_id_grammar": {
+    "prefix": "ams_",
+    "suffix": "32 lowercase hexadecimal characters"
+  },
+  "snapshot_id_generation": [
+    "random_bytes",
+    "private_sidecar_keyed_digest"
+  ],
+  "public_evidence_fields": [
+    "snapshot_id",
+    "manifest_source_key",
+    "source_root_env_var",
+    "captured_at_utc",
+    "schema_marker_status",
+    "generated_timestamp_status",
+    "content_fingerprint_status",
+    "row_count_status",
+    "drift_severity",
+    "evidence_mode",
+    "validator_version"
+  ],
+  "operational_evidence_fields": [
+    "record_schema_version",
+    "record_id",
+    "source_issue",
+    "evidence_artifact_ref",
+    "validator_ref",
+    "validator_env",
+    "validator_command",
+    "validator_exit_status",
+    "recorded_at_utc",
+    "reviewed_commit",
+    "authorization_status",
+    "snapshot_ids_by_manifest_source",
+    "source_status_by_manifest_source",
+    "drift_verdicts_by_manifest_source_pair",
+    "reconciliation_refs"
+  ],
+  "private_sidecar_fields": [
+    "exact_file_stats",
+    "raw_digest_values",
+    "exact_private_row_counts",
+    "private_lookup_material"
+  ],
+  "bounded_caps": {
+    "max_header_bytes": 4096,
+    "max_under_cap_bytes": 65536,
+    "max_under_cap_rows": 1000
+  },
+  "status_enums": {
+    "content_fingerprint_status": [
+      "available_sidecar",
+      "available_under_cap",
+      "unavailable",
+      "not_present"
+    ],
+    "row_count_status": [
+      "available_sidecar",
+      "available_under_cap",
+      "unavailable",
+      "not_present"
+    ],
+    "drift_severity": [
+      "compatible",
+      "warning",
+      "blocker",
+      "unavailable"
+    ],
+    "evidence_mode": [
+      "public_safe_summary",
+      "private_sidecar_validated",
+      "missing_manifest",
+      "blocked_unavailable"
+    ],
+    "authorization_status": [
+      "sampling_allowed",
+      "blocked_requires_reconciliation",
+      "blocked_unavailable"
+    ]
+  },
+  "drift_eligible_pairs": [
+    {
+      "pair_id": "inventory_to_assets_presence",
+      "left_source": "INDEX.md",
+      "right_source": "assets.json"
+    },
+    {
+      "pair_id": "assets_to_master_records",
+      "left_source": "assets.json",
+      "right_source": "docs/master-index.jsonl"
+    },
+    {
+      "pair_id": "master_records_to_cad_summary",
+      "left_source": "docs/master-index.jsonl",
+      "right_source": "_cad-index/index-summary.json"
+    },
+    {
+      "pair_id": "cad_summary_to_cad_readability",
+      "left_source": "_cad-index/index-summary.json",
+      "right_source": "_cad-index/cad-readability-index.tsv"
+    },
+    {
+      "pair_id": "master_records_to_knowledge_store",
+      "left_source": "docs/master-index.jsonl",
+      "right_source": ".ace-knowledge/index.db"
+    }
+  ],
+  "legal_pair_verdict_matrix": {
+    "compatible": [
+      "public_safe_summary",
+      "private_sidecar_validated"
+    ],
+    "warning": [
+      "public_safe_summary",
+      "private_sidecar_validated"
+    ],
+    "blocker": [
+      "public_safe_summary",
+      "private_sidecar_validated"
+    ],
+    "unavailable": [
+      "missing_manifest",
+      "blocked_unavailable"
+    ]
+  },
+  "public_safety_notes": [
+    "Public evidence uses opaque manifest snapshot identifiers and status fields only.",
+    "Exact source statistics, raw digests, private row counts, lookup material, and host paths stay outside committed artifacts.",
+    "Operational sampling remains blocked for issue 67 until issue 70 imports this contract through a reviewed plan."
+  ]
+}
