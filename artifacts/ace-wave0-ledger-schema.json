@@ -282,7 +282,7 @@
       "issue": 66,
       "scope": "public_token_fixtures_private_field_placeholders",
       "lane": "lane:codex",
-      "plan_path": "docs/plans/2026-06-30-issue-67-ace-wave-0-bounded-sampling-firewall.md",
+      "plan_path": "docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md",
       "status_snapshot": "plan-review",
       "implementation_ready": false,
       "depends_on": [
@@ -293,8 +293,8 @@
       "issue": 67,
       "scope": "bounded_sampling_firewall",
       "lane": "lane:codex",
-      "plan_path": "",
-      "status_snapshot": "plan-required",
+      "plan_path": "docs/plans/2026-06-30-issue-67-ace-wave-0-bounded-sampling-firewall.md",
+      "status_snapshot": "plan-review",
       "implementation_ready": false,
       "depends_on": [
         65

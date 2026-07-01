@@ -1,13 +1,13 @@
 # Plan for #66: ACE Wave 0 Public-Token Fixtures and Private-Field Placeholders
 
-> **Status:** draft
+> **Status:** plan-review
 > **Complexity:** T2
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:codex
-> **Review artifacts:** see Artifact Map below for r1-r4 artifacts
+> **Review artifacts:** see Artifact Map below for r1-r6 artifacts
 
 ---
 
@@ -19,7 +19,7 @@
 - `scripts/validate_ace_wave0_schema_contract.py` will remain the #65 schema validator. #66 will add a separate fixture validator rather than weakening #65's schema-local public scan.
 - `scripts/validate_ace_epic_wave_coordination.py` will remain the parent coordination validator and current public-surface fallback scanner until #68 generalizes that scanner.
 - `.github/workflows/validate.yml` will be extended with a repo-local #66 validator and unit test. CI will not require live GitHub or private source roots.
-- `docs/plans/README.md` and `docs/plans/ace-share-ingestion-wave-coordination.md` will record #66 as a draft plan with implementation readiness false.
+- `docs/plans/README.md` and `docs/plans/ace-share-ingestion-wave-coordination.md` record #66 as plan-review with implementation readiness false after r6 review.
 
 ### Related issues
 
@@ -50,7 +50,7 @@
 
 ### Evidence
 
-**Issue status** (verified 2026-06-30):
+**Issue status** (verified 2026-07-01 before GitHub label transition):
 
 ```text
 #66 OPEN ACE wave 0 split: public-token fixtures and private-field placeholders labels=strengthening,lane:codex,priority:high
@@ -109,6 +109,14 @@ N/A - planning/governance issue; no runtime failure is alleged.
 | Review artifact - Codex r4 | `scripts/review/results/2026-06-30-plan-66-codex-r4.md` |
 | Review artifact - Gemini r4 | `scripts/review/results/2026-06-30-plan-66-gemini-r4.md` |
 | Disagreement report r4 | `scripts/review/results/2026-06-30-plan-66-disagreement-r4.md` |
+| Review artifact - Claude r5 | `scripts/review/results/2026-06-30-plan-66-claude-r5.md` |
+| Review artifact - Codex r5 | `scripts/review/results/2026-06-30-plan-66-codex-r5.md` |
+| Review artifact - Gemini r5 | `scripts/review/results/2026-06-30-plan-66-gemini-r5.md` |
+| Disagreement report r5 | `scripts/review/results/2026-06-30-plan-66-disagreement-r5.md` |
+| Review artifact - Claude r6 | `scripts/review/results/2026-06-30-plan-66-claude-r6.md` |
+| Review artifact - Codex r6 | `scripts/review/results/2026-06-30-plan-66-codex-r6.md` |
+| Review artifact - Gemini r6 | `scripts/review/results/2026-06-30-plan-66-gemini-r6.md` |
+| Disagreement report r6 | `scripts/review/results/2026-06-30-plan-66-disagreement-r6.md` |
 
 ---
 
@@ -378,6 +386,12 @@ verify()
 
 ---
 
+## Plan Review Gate Rule
+
+Plan review will be considered passable only when the same review round has at least two usable provider results and no usable provider returns MAJOR. A provider that fails before returning findings may be recorded as `UNAVAILABLE` with the exact reason and does not count toward the usable-provider total. With Gemini currently returning ineligible-tier failures, the effective gate is both Claude and Codex returning no-MAJOR in the same round. If Gemini becomes usable again, its result is no longer advisory: any usable Gemini MAJOR blocks advancement under the same "no usable MAJOR" rule, while a Gemini no-MAJOR can satisfy the usable-provider floor alongside any other no-MAJOR provider. If fewer than two providers are usable, or if any usable provider returns MAJOR, [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) remains `draft` and must not move to `status:plan-review`.
+
+---
+
 ## Adversarial Review Summary
 
 | Provider | Verdict | Key findings |
@@ -394,8 +408,14 @@ verify()
 | Claude r4 | MAJOR | Required enumerated placeholder grammar, closed fixture set enum, out-of-repo temp fixture guidance, and fixture count/row-id clarification. Current draft patches these findings; future review required. |
 | Codex r4 | MAJOR | Required closed placeholder grammar, closed non-#65 rejection predicates, and distinction between provider verdict artifacts and disagreement reports. Current draft patches these findings; future review required. |
 | Gemini r4 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
+| Claude r5 | APPROVE | Found no unresolved r4 blockers; requested r5 summary bookkeeping and sharper active-provider gate wording. Current draft patches these findings; re-review required because Codex r5 returned MAJOR. |
+| Codex r5 | MAJOR | Required same-round active-provider no-MAJOR evidence and corrected #65 split registry rows for [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66)/[#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67). Current draft patches these findings; re-review required. |
+| Gemini r5 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
+| Claude r6 | APPROVE | Confirmed r5 blockers resolved; noted the #65 non-ready split-row validator gap as a non-blocking follow-on candidate. |
+| Codex r6 | MINOR | Confirmed r5 blockers resolved; found only stale header wording, patched in this status-transition update. |
+| Gemini r6 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
 
-**Overall result:** MAJOR - draft only; not ready for `status:plan-review` until a fresh active-provider re-review returns no unresolved MAJOR findings. Gemini remains unavailable and must be recorded as unavailable unless restored before re-review.
+**Overall result:** r6 satisfied the review gate with two usable no-MAJOR provider results in the same round (Claude APPROVE, Codex MINOR) and Gemini documented as unavailable. The plan is ready for `status:plan-review`; implementation remains blocked until user approval and a local approval marker.
 
 ---
 
@@ -408,8 +428,8 @@ verify()
 - **Risk:** #66 could drift into durable token persistence or publication certification. The contract will keep those boundaries assigned to #61 and #63.
 - **Risk:** #66 fixture grammar could drift from #63 public-output policy. #66 will reconcile with `config/ace-public-output-contract.json` when it exists and remain explicitly provisional before then.
 - **Risk:** Source-safe validator constants are easy to regress. The plan requires fragmented string construction and self-scan tests for new source files.
-- **Risk:** The plan has returned MAJOR from both active providers through r4. Further cycling should happen only after a human/operator reviews whether this slice is now too broad or still appropriately scoped.
-- **Risk:** Gemini may remain unavailable. Any transition to `status:plan-review` will need fresh no-MAJOR active-provider evidence plus explicit disclosure of the Gemini unavailable artifact.
+- **Risk:** Gemini may remain unavailable. The status transition records its r6 unavailable artifact and relies on the explicit same-round two-active-provider review gate.
+- **Risk:** #65's current schema validator does not validate plan paths or status snapshots for split rows with `implementation_ready=false`; r6 found this non-blocking for #66 after the rows were corrected, and validator hardening is tracked in [#71](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71).
 
 ---
 
