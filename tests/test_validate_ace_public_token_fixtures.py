@@ -5,6 +5,7 @@ import json
 import sys
 import tempfile
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -90,6 +91,48 @@ class AcePublicTokenFixtureTests(unittest.TestCase):
         self.assertEqual(EXPECTED_SOURCE_DIGEST_TERMS, contract["source_like_raw_digest_terms"])
         self.assertNotIn("route_targets", contract)
         self.assertNotIn("logical_target_stores", contract)
+
+    def test_fixture_contract_reconciles_with_63_when_present(self):
+        library = load_fixture_library()
+        schema = load_json(SCHEMA_PATH)
+        contract = load_json(CONTRACT_PATH)
+        public_output_contract = {
+            "public_token_field_name": "public_source_token",
+            "public_token_grammar": {"prefix": "pst_", "hex_characters": 32},
+            "public_safe_source_reference_fields": ["public_source_token"],
+            "private_only_provenance_fields": EXPECTED_PRIVATE_TERMS,
+            "source_like_raw_digest_terms": EXPECTED_SOURCE_DIGEST_TERMS,
+        }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output_path = Path(tmp) / "ace-public-output-contract.json"
+            output_path.write_text(json.dumps(public_output_contract))
+            original_repo_path = library.repo_path
+
+            def mapped_repo_path(path: Path) -> Path:
+                if Path(path).as_posix() == "config/ace-public-output-contract.json":
+                    return output_path
+                return original_repo_path(path)
+
+            library.repo_path = mapped_repo_path
+            try:
+                still_provisional = library.validate_contract(contract, schema)
+
+                reconciled = deepcopy(contract)
+                reconciled["provisional_fixture_contract"] = False
+                self.assertEqual([], library.validate_contract(reconciled, schema))
+
+                drifted = deepcopy(reconciled)
+                public_output_contract["public_token_grammar"]["hex_characters"] = 64
+                public_output_contract["private_only_provenance_fields"] = ["other_private_field"]
+                public_output_contract["source_like_raw_digest_terms"] = []
+                output_path.write_text(json.dumps(public_output_contract))
+                drift_errors = library.validate_contract(drifted, schema)
+            finally:
+                library.repo_path = original_repo_path
+
+        self.assertIn("must not remain provisional", "\n".join(still_provisional))
+        self.assertIn("#63 public output contract", "\n".join(drift_errors))
 
     def test_good_fixture_uses_generation_request_marker(self):
         fixture = load_json(FIXTURE_PATH)
@@ -238,6 +281,7 @@ class AcePublicTokenFixtureTests(unittest.TestCase):
             "scripts/ace_public_token_fixtures.py",
             "scripts/validate_ace_public_token_fixtures.py",
             "tests/test_validate_ace_public_token_fixtures.py",
+            "tests/test_validate_ace_wave0_schema_contract.py",
             "tests/fixtures/ace-public-token-fixtures/good-request.json",
             ".github/workflows/validate.yml",
             ".planning/plan-approved/66.md",

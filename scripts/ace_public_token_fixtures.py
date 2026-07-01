@@ -132,6 +132,7 @@ def public_scan_paths() -> list[Path]:
         Path("scripts/ace_public_token_fixtures.py"),
         Path("scripts/validate_ace_public_token_fixtures.py"),
         Path("tests/test_validate_ace_public_token_fixtures.py"),
+        Path("tests/test_validate_ace_wave0_schema_contract.py"),
         WORKFLOW_PATH,
         APPROVAL_MARKER_PATH,
     ]
@@ -161,8 +162,6 @@ def _validate_contract_metadata(contract: dict, errors: list[str]) -> None:
             errors.append(f"fixture contract must set {key} to {value!r}")
     if not SEMVER_RE.fullmatch(str(contract.get("contract_version", ""))):
         errors.append("fixture contract_version must use 1.0.x semver")
-    if contract.get("provisional_fixture_contract") is not True:
-        errors.append("fixture contract must remain provisional until #63 config exists")
 
 
 def _validate_schema_imports(contract: dict, schema: dict, errors: list[str]) -> None:
@@ -207,12 +206,54 @@ def _validate_private_term_placement(contract: dict, errors: list[str]) -> None:
 def _validate_optional_public_output_contract(contract: dict, errors: list[str]) -> None:
     path = repo_path(Path("config/ace-public-output-contract.json"))
     if not path.exists():
+        if contract.get("provisional_fixture_contract") is not True:
+            errors.append("fixture contract must remain provisional until #63 config exists")
         return
-    output_contract = json.loads(path.read_text())
+    if contract.get("provisional_fixture_contract") is not False:
+        errors.append("fixture contract must not remain provisional when #63 config exists")
+    try:
+        output_contract = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        errors.append(f"#63 public output contract JSON is invalid: {exc}")
+        return
+    _validate_public_output_token_policy(contract, output_contract, errors)
+    _validate_public_output_field_policy(contract, output_contract, errors)
+
+
+def _validate_public_output_token_policy(contract: dict, output_contract: dict, errors: list[str]) -> None:
     if output_contract.get("public_token_field_name") != contract.get("public_token_field_name"):
         errors.append("#66 fixture field must match #63 public output contract")
-    if output_contract.get("public_token_grammar", {}).get("prefix") != TOKEN_PREFIX:
-        errors.append("#66 fixture token prefix must match #63 public output contract")
+    grammar = output_contract.get("public_token_grammar", {})
+    if grammar.get("prefix") != TOKEN_PREFIX or grammar.get("hex_characters") != TOKEN_HEX_CHARS:
+        errors.append("#63 public output contract token grammar must match #66 fixture grammar")
+
+
+def _validate_public_output_field_policy(contract: dict, output_contract: dict, errors: list[str]) -> None:
+    public_refs = _first_present_list(
+        output_contract,
+        ["public_safe_source_reference_fields", "public_source_reference_fields"],
+    )
+    private_terms = _first_present_list(
+        output_contract,
+        ["private_only_provenance_fields", "private_only_fields", "banned_public_fields"],
+    )
+    digest_terms = _first_present_list(
+        output_contract,
+        ["source_like_raw_digest_terms", "source_hash_private_terms"],
+    )
+    if public_refs != [contract["public_token_field_name"]]:
+        errors.append("#63 public output contract public source references must match #66 fixture field")
+    if private_terms != contract["private_source_terms"]:
+        errors.append("#63 public output contract private provenance fields must match #66 private terms")
+    if digest_terms != contract["source_like_raw_digest_terms"]:
+        errors.append("#63 public output contract source-like digest fields must match #66 digest terms")
+
+
+def _first_present_list(record: dict, names: list[str]):
+    for name in names:
+        if name in record:
+            return record[name]
+    return None
 
 
 def _validate_fixture_top_level(fixture: dict, errors: list[str]) -> None:
@@ -313,7 +354,13 @@ def _plan_review_artifacts() -> list[Path]:
     review_root = REPO_ROOT / "scripts" / "review" / "results"
     if not review_root.exists():
         return []
-    return [path.relative_to(REPO_ROOT) for path in sorted(review_root.glob("*plan-66*.md"))]
+    patterns = ["*plan-66*.md", "*implementation-66*.md"]
+    artifacts = {
+        path.relative_to(REPO_ROOT)
+        for pattern in patterns
+        for path in review_root.glob(pattern)
+    }
+    return sorted(artifacts)
 
 
 def _load_parent_validator():

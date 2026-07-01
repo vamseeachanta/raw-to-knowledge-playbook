@@ -88,6 +88,7 @@ jobs:
             --scan-public-path scripts/ace_public_token_fixtures.py \
             --scan-public-path scripts/validate_ace_public_token_fixtures.py \
             --scan-public-path tests/test_validate_ace_public_token_fixtures.py \
+            --scan-public-path tests/test_validate_ace_wave0_schema_contract.py \
             --scan-public-path tests/fixtures/ace-public-token-fixtures/good-request.json \
             --scan-public-path .github/workflows/validate.yml
 
