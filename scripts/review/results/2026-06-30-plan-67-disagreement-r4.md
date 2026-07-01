@@ -1,0 +1,36 @@
+# Disagreement report — plan #67 (2026-06-30)
+
+## Verdicts
+
+| Provider | Verdict |
+|---|---|
+| claude | MAJOR |
+| codex | MAJOR |
+| gemini | UNAVAILABLE (gemini CLI failed, rc=1: Warning: Basic terminal detected (TERM=dumb). Visual rendering will be limited. For the best experience, use a terminal emulator with truecolor support. Warning: 256-color support not detected. Using a terminal with at least 256-color support is recommended for a better visual experience. Error authenticating: IneligibleTierError: This client is no longer supported for Gemini Code Assist for indiv) |
+
+## Findings unique to each provider
+
+A finding is 'unique to X' if its text appears in X's artifact but not
+verbatim in any other provider's artifact.
+
+### claude
+
+- **MAJOR — bound-skill-group set drifts from the #65 schema the plan claims to consume.** Plan RIS line 28 and Artifact Map line 110 bind `{content-triage-and-exclusion, source-extraction-coverage, format-coverage-ledger, public-private-routing, adversarial-verify-loop}`. The authoritative `bound_skill_groups` in `artifacts/ace-wave0-ledger-schema.json` (lines 160–166) is `{format-coverage-ledger, public-private-routing, content-triage-and-exclusion, page-shape-contract, adversarial-verify-loop}`. The plan **adds `source-extraction-coverage` and drops `page-shape-contract`.** This contradicts the plan's own claim that #67 "will consume the #65 schema contract for … vocabulary; it will not redefine those enums" (line 19), and pseudocode line 245 validates "bound skill groups" as contract metadata. The #67 contract will either fail `test_contract_imports_65_schema_terms` (line 328) or silently redefine an enum it claims to inherit. Both skills exist on disk, so this is a vocabulary-drift bug, not a missing-path bug.
+- **MAJOR — the #62 interface is guessed and hardcoded into a closed security contract.** Snapshot Evidence Shape (lines 184–189) fixes `approval_marker_path` = `.planning/plan-approved/62.md`, `validator_path` = exactly `scripts/validate_ace_manifest_freshness.py`, and requires a `snapshot_artifact_ref` "that exists." But #62's issue ("ACE cross-wave: manifest freshness and drift sentinel") names no such filename — it says "a **validator or canary**" — and no such file or marker exists at HEAD. The plan concedes #62 "will own" this (line 39). Baking an unconfirmed sibling-issue filename into a closed contract means that when #62 ships under any other name (or as a canary), the operational downstream gate can *never* be satisfied without an unlisted edit to the #67 contract. Failure is fail-closed (availability, not leak), but no cross-issue sync mechanism is cited to keep the two in step.
+- **MAJOR — `test_downstream_sampling_fails_when_62_live_artifacts_are_absent` is environment-coupled and will invert when #62 lands.** The test (line 336) asserts failure against "Current repo state without [#62] approval marker, validator, passing evidence, or snapshot artifact." Its green depends on #62 remaining unimplemented; the day #62 adds its approval marker + validator, the gate stops failing-on-absence and this assertion flips to a **false regression** in the #67 suite. A unit test should not assert on the live state of an unrelated sibling issue's artifacts; the negative case should be driven by a controlled fixture/temp fake, not repo reality.
+- **MINOR — `maximum_caps` values (200 rows / 25 files / 1048576 bytes) have no cited authority.** Lines 145 and 383 present these as "portfolio limits" ("unless a later approved issue changes the portfolio contract"), but `docs/plans/README.md:23` only requires caps be *named* (manifest source, seed/sort, per-bucket cap, files/bytes) — it specifies no numeric values. The specific thresholds are invented by this plan; the plan should cite their source or mark them provisional.
+- **MINOR — `status_snapshot` = `status:plan-approved` on #62 is the wrong semantic gate.** Line 184 requires the #62 evidence to record `status:plan-approved`, but a freshness *validator* being merely plan-approved ≠ implemented/runnable. The meaningful protection is the live validator-path + passing-command + snapshot-artifact existence (line 192); requiring `plan-approved` adds a sub-gate that is satisfiable while no real freshness check exists, muddying intent.
+- **MINOR — evidence inventory (lines 83–88) is incomplete.** Files to Change line 312 will create `tests/fixtures/ace-bounded-sampling-firewall/downstream-shape-only-request.json`, but the "File existence (verified)" block lists only `good-request.json` as MISSING. The verified-MISSING inventory omits the second committed fixture, so the evidence section understates what will be created.
+- **MINOR — request-class mapping omits #64/#66/#68/#69 as targets with no justification.** The mapping table (lines 164–171) enumerates #51, #52–#60, #61, #62, #63, and the #67 fixture scope. Sibling issues #64, #66, #68, #69 are neither listed nor explained; they silently fail closed (line 173). The plan should state why these cannot be sampling-request targets rather than leaving it implicit.
+- **Checks run that found nothing wrong** (silence-is-failure): the six manifest keys match the coordination ledger exactly; `private_source_field_terms` exists in #65 so `sort_rule.term_refs` is grounded; the plan doc and retained review artifacts pass the parent public scanner empirically; the CI invocation pattern (`uv run python …`) matches the acceptance criteria; `skills/validate_skill.py` exists; the #65 `wave0_split_registry` has a real #67 row for the planned status update.
+
+### codex
+
+- Plan §Snapshot Evidence Shape only requires `approval_marker_path` as `.planning/plan-approved/62.md` and later says the operational gate checks for an approval marker path/existence, but it never requires validating the marker contents against the repo’s approval-marker contract. `docs/plans/README.md` lines 7-9 require marker fields and forbid CI from depending on live interactive GitHub auth; `scripts/validate_ace_epic_wave_coordination.py` lines 432-460 already implement field/path/review-artifact validation. The #67 test list at lines 334-337 covers missing #62 evidence and placeholder wording, but not a malformed `.planning/plan-approved/62.md`. A dummy marker file could satisfy the plan as written.
+- The operational #62 gate still has a self-attestation gap. Plan lines 181-190 put `passing_command`, `exit_code`, `snapshot_id`, and `snapshot_artifact_ref` inside the request’s own `snapshot_evidence` object; line 192 says live repo state will be checked, but the plan does not name an authoritative #62 evidence artifact whose contents must match those fields. The tests at lines 334-337 only cover absent live artifacts and placeholder wording, not a forged request that supplies `exit_code=0`, a plausible command, and any existing artifact reference.
+- Artifact inventory is still incomplete for the downstream shape fixture. The Artifact Map lines 103-105 lists the unit test file, fixture directory, and `good-request.json`, but `tests/fixtures/ace-bounded-sampling-firewall/downstream-shape-only-request.json` appears only later in Files to Change at line 312. That weakens the plan’s own artifact-map traceability for the fixture added to resolve the r3 “missing downstream shape fixture” finding.
+
+### gemini
+
+- (none)
+
