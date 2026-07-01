@@ -1,6 +1,6 @@
 # Plan for #66: ACE Wave 0 Public-Token Fixtures and Private-Field Placeholders
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T2
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66
@@ -19,7 +19,7 @@
 - `scripts/validate_ace_wave0_schema_contract.py` will remain the #65 schema validator. #66 will add a separate fixture validator rather than weakening #65's schema-local public scan.
 - `scripts/validate_ace_epic_wave_coordination.py` will remain the parent coordination validator and current public-surface fallback scanner until #68 generalizes that scanner.
 - `.github/workflows/validate.yml` will be extended with a repo-local #66 validator and unit test. CI will not require live GitHub or private source roots.
-- `docs/plans/README.md` and `docs/plans/ace-share-ingestion-wave-coordination.md` record #66 as plan-review with implementation readiness false after r6 review.
+- `docs/plans/README.md` and `docs/plans/ace-share-ingestion-wave-coordination.md` record #66 as plan-approved with implementation readiness true after user approval.
 
 ### Related issues
 
@@ -415,7 +415,7 @@ Plan review will be considered passable only when the same review round has at l
 | Codex r6 | MINOR | Confirmed r5 blockers resolved; found only stale header wording, patched in this status-transition update. |
 | Gemini r6 | UNAVAILABLE | Installed Gemini CLI returned an unsupported-tier authentication error; no review signal. |
 
-**Overall result:** r6 satisfied the review gate with two usable no-MAJOR provider results in the same round (Claude APPROVE, Codex MINOR) and Gemini documented as unavailable. The plan is ready for `status:plan-review`; implementation remains blocked until user approval and a local approval marker.
+**Overall result:** r6 satisfied the review gate with two usable no-MAJOR provider results in the same round (Claude APPROVE, Codex MINOR) and Gemini documented as unavailable. The user approved this plan on 2026-07-01, and `.planning/plan-approved/66.md` records the approval marker.
 
 ---
 

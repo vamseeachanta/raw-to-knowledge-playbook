@@ -1,6 +1,6 @@
 # Plan for #67: ACE Wave 0 Bounded Sampling Firewall
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67
@@ -648,7 +648,7 @@ Plan review will be considered passable only when the same review round has at l
 | Codex r13 | MINOR | Found missing `bound_skill_groups` contract-shape row, under-listed evidence fields in fixture rows, split-registry readiness wording ambiguity, and stale shape-only fixture test name; no blockers. |
 | Gemini r13 | UNAVAILABLE | Installed client returned unsupported/ineligible-tier authentication error; no usable review signal. |
 
-**Overall result:** r13 satisfied the review gate with two usable no-MAJOR provider results (Claude MINOR, Codex MINOR) and Gemini documented as unavailable. The plan is ready for `status:plan-review`; implementation remains blocked until user approval and a local approval marker.
+**Overall result:** r13 satisfied the review gate with two usable no-MAJOR provider results (Claude MINOR, Codex MINOR) and Gemini documented as unavailable. The user approved this plan on 2026-07-01, and `.planning/plan-approved/67.md` records the approval marker.
 
 ---
 

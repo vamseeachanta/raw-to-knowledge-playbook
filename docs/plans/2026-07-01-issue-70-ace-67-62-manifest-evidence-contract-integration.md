@@ -1,6 +1,6 @@
 # Plan for #70: ACE #67/#62 Manifest Evidence Contract Integration
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-07-01
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70
@@ -27,8 +27,8 @@
 ### Related issues
 
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) is `status:plan-approved` and has implemented the manifest freshness evidence contract. It remains blocked from closeout because the repo-local legal/security scan script from [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) is not available yet.
-- [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) is `status:plan-review`, has no `.planning/plan-approved/67.md` marker, and has not implemented the bounded sampling firewall artifacts. #70 implementation must not start until #67 is approved and its artifacts exist.
-- [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) is `status:plan-review` and will own the repo-local legal/security scan gate needed for final closeout.
+- [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) is `status:plan-approved` with `.planning/plan-approved/67.md` present, but it has not implemented the bounded sampling firewall artifacts yet. #70 implementation must not start until #67 artifacts exist.
+- [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) is `status:plan-approved` and owns the repo-local legal/security scan gate needed for final closeout.
 - [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) remains the approved parent epic. It authorizes coordination and planning only, not child implementation.
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains the wave-0 umbrella. #70 will be a follow-on integration issue, not a new wave-0 split row in the #65 schema registry.
 
@@ -285,7 +285,7 @@ validate_sampling_request(request):
 | Claude r2 | MINOR | Requested clarification of raw-byte artifact digest, one authorization-time parse, provisional #69 scan artifact path, and explicit parent scanner `--scan-public-path` mechanics. |
 | Codex r2 | APPROVE | No findings after r1 patch. |
 
-**Overall result:** no usable MAJOR after r2. The plan is ready for `status:plan-review`; implementation remains blocked until user approval, #67 approval/implementation, and the #62 operational evidence preconditions are satisfied.
+**Overall result:** no usable MAJOR after r2. The user approved this plan on 2026-07-01, and `.planning/plan-approved/70.md` records the approval marker. Implementation remains sequenced after #67 implementation and the #62 operational evidence preconditions.
 
 ---
 
