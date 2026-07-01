@@ -1,6 +1,6 @@
 # Plan for #62: ACE Cross-Wave Manifest Freshness and Drift Sentinel
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T2
 > **Date:** 2026-06-29
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62
