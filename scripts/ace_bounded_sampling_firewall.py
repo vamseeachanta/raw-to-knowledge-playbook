@@ -2,11 +2,11 @@
 from __future__ import annotations
 import importlib.util
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = Path("config/ace-bounded-sampling-firewall-contract.json")
 SCHEMA_PATH = Path("artifacts/ace-wave0-ledger-schema.json")
@@ -22,7 +22,7 @@ MISSING_EVIDENCE = "MISSING_62_EVIDENCE_CONTRACT"
 PLACEHOLDER_TERMS = ("pending", "not-run", "expected", "todo", "tbd", "missing", "forged")
 SORT_KEYS = {"strategy", "term_refs", "direction", "tie_breaker"}
 DENIED_OPERATION_TOKENS = {
-    "recursive_traversal": ["find", "os" + ".walk", "rglob"],
+    "recursive_traversal": ["find", "os" + ".walk", "rglob", "glob"],
     "broad_source_root_search": ["rg", "fd", "grep", "ls " + "-R"],
     "manifest_query": ["jq", "select", "query"],
     "raw_manifest_read": ["cat", "read_text", "open"],
@@ -38,8 +38,7 @@ class FirewallResult:
     errors: list[str] = field(default_factory=list)
     blocked_by_issue: int | None = None
     follow_on_issue: int | None = None
-class SourceRootAccessForbidden(RuntimeError):
-    pass
+class SourceRootAccessForbidden(RuntimeError): pass
 def repo_path(path: Path) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
 def load_contract(path: Path = CONTRACT_PATH) -> dict:
@@ -159,6 +158,9 @@ def validate_manifest_operation(
         return FirewallResult(False, False, "UNKNOWN_MANIFEST_SOURCE", ["manifest source is not allowed"])
     if operation_name in contract["denied_token_matrix"]["manifest_operations"]:
         return FirewallResult(False, False, "DENIED_MANIFEST_OPERATION", ["unbounded manifest operation denied"])
+    if operation_name == "bounded_sample_selection":
+        gate = contract["downstream_evidence_gate"]
+        return FirewallResult(False, False, MISSING_EVIDENCE, [MISSING_EVIDENCE], gate["blocked_by_issue"], gate["follow_on_issue"])
     allowed = {"bounded_metadata_probe", "bounded_sample_selection", "snapshot_evidence_check"}
     return FirewallResult(operation_name in allowed, False, "" if operation_name in allowed else "UNKNOWN_MANIFEST_OPERATION")
 def build_runtime_deny_fixture(
@@ -167,7 +169,6 @@ def build_runtime_deny_fixture(
     contract: dict | None = None,
     env: dict[str, str] | None = None,
 ) -> str:
-    contract = contract or load_contract()
     guarded = _guard_result("build_runtime_deny_fixture", env)
     if guarded:
         return guarded.reason_code
@@ -183,7 +184,7 @@ def build_runtime_deny_fixture(
     }.get(operation_name, operation_name)
     return "```sh\n" + command + " ${" + source_root + "}/" + manifest_source + "\n```"
 def guard_no_source_root_access(operation_name: str, env: dict[str, str] | None = None) -> None:
-    active_env = env if env is not None else {}
+    active_env = env if env is not None else os.environ
     if active_env.get("ACE_SHARE_ROOT"):
         raise SourceRootAccessForbidden(f"{SOURCE_ROOT_ERROR}: {operation_name}")
 def review_artifact_paths(root: Path | None = None) -> list[Path]:

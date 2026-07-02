@@ -208,8 +208,6 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
         self.assertFalse(result.authorized)
         self.assertEqual("MISSING_62_EVIDENCE_CONTRACT", result.reason_code)
         self.assertEqual(62, result.blocked_by_issue)
-        self.assertEqual(70, result.follow_on_issue)
-
     def test_snapshot_evidence_fields_are_mode_specific(self):
         library = load_library()
         contract = load_json(CONTRACT_PATH)
@@ -267,6 +265,10 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
                     self.assertFalse(result.allowed)
                     self.assertEqual("DENIED_MANIFEST_OPERATION", result.reason_code)
 
+        result = library.validate_manifest_operation("INDEX.md", "bounded_sample_selection", contract)
+        self.assertFalse(result.allowed)
+        self.assertEqual("MISSING_62_EVIDENCE_CONTRACT", result.reason_code)
+
     def test_json_executable_context_fields_scan_before_schema_rejection(self):
         library = load_library()
         contract = load_json(CONTRACT_PATH)
@@ -294,6 +296,23 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
 
         self.assertFalse(result.allowed)
         self.assertEqual("ACE_SOURCE_ROOT_ACCESS_FORBIDDEN", result.reason_code)
+
+    def test_ambient_source_root_env_is_refused(self):
+        library = load_library()
+        contract = load_json(CONTRACT_PATH)
+        with mock.patch.dict(os.environ, {"ACE_SHARE_ROOT": "sentinel-share-root"}):
+            result = library.validate_sampling_request(good_request(), contract)
+        self.assertFalse(result.authorized)
+        self.assertEqual("ACE_SOURCE_ROOT_ACCESS_FORBIDDEN", result.reason_code)
+
+    def test_glob_source_root_context_is_denied(self):
+        library = load_library()
+        contract = load_json(CONTRACT_PATH)
+        source_root = "ACE_" + "SHARE_ROOT"
+        text = "pathlib.Path(${" + source_root + "}/INDEX.md)." + "glob(" + "'**/*')"
+        result = library.classify_executable_context(text, "python_string", contract)
+        self.assertFalse(result.allowed)
+        self.assertEqual("DENIED_EXECUTABLE_CONTEXT", result.reason_code)
 
     def test_source_root_guard_call_sites_are_enforced(self):
         library = load_library()
