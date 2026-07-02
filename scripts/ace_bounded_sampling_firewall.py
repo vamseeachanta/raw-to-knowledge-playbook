@@ -22,13 +22,13 @@ MISSING_EVIDENCE = "MISSING_62_EVIDENCE_CONTRACT"
 PLACEHOLDER_TERMS = ("pending", "not-run", "expected", "todo", "tbd", "missing", "forged")
 SORT_KEYS = {"strategy", "term_refs", "direction", "tie_breaker"}
 DENIED_OPERATION_TOKENS = {
-    "recursive_traversal": ["find", "os" + ".walk", "rglob", "glob"],
+    "recursive_traversal": ["find", "du", "os" + ".walk", "rglob", "glob"],
     "broad_source_root_search": ["rg", "fd", "grep", "ls " + "-R"],
     "manifest_query": ["jq", "select", "query"],
     "raw_manifest_read": ["cat", "read_text", "open"],
     "full_file_count": ["wc", "count"],
     "full_file_digest": ["sha256sum", "digest"],
-    "materialization": ["materialize", "copy", "export"],
+    "materialization": ["materialize", "copy", "export", "cp", "rsync", "tar", "sqlite", ".dump"],
 }
 @dataclass
 class FirewallResult:
@@ -161,7 +161,7 @@ def validate_manifest_operation(
     if operation_name == "bounded_sample_selection":
         gate = contract["downstream_evidence_gate"]
         return FirewallResult(False, False, MISSING_EVIDENCE, [MISSING_EVIDENCE], gate["blocked_by_issue"], gate["follow_on_issue"])
-    allowed = {"bounded_metadata_probe", "bounded_sample_selection", "snapshot_evidence_check"}
+    allowed = {"bounded_metadata_probe", "snapshot_evidence_check"}
     return FirewallResult(operation_name in allowed, False, "" if operation_name in allowed else "UNKNOWN_MANIFEST_OPERATION")
 def build_runtime_deny_fixture(
     operation_name: str,
