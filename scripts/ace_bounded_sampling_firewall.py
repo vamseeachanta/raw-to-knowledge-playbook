@@ -83,6 +83,12 @@ def validate_contract(contract: dict, schema: dict, manifest_contract: dict) -> 
         errors.append("allowed manifest sources must import #62 manifest source keys")
     if contract.get("output_shape_route_store", {}).get("logical_target_store") != schema["route_store_matrix"]["metadata_only"]:
         errors.append("metadata-only route/store must import #65 schema matrix")
+    rows = _canonical_rows(schema)
+    downstream = sorted(issue for issue, row in rows.items() if row.get("requires_manifest_snapshot_id"))
+    if downstream != list(range(52, 61)) or contract.get("downstream_issue_range") != [52, 60]:
+        errors.append("downstream target gate must import #65 canonical registry")
+    if {str(issue): rows[issue]["wave_class"] for issue in [51, 61, 62, 63]} != contract.get("control_plane_issue_classes"):
+        errors.append("control-plane issue classes must import #65 canonical registry")
     for forbidden in ["route_store_matrix", "private_source_field_terms", "source_like_raw_digest_terms"]:
         if forbidden in contract:
             errors.append(f"contract must not redefine #65 {forbidden}")
@@ -121,10 +127,11 @@ def validate_sampling_request(request: dict, contract: dict | None = None, env: 
         return FirewallResult(False, False, "NON_TARGET_SAMPLING_ISSUE", ["target issue is not a #67 sampling target"])
     if issue == 67:
         return _validate_metadata_fixture(request, contract)
-    if 52 <= issue <= 60:
-        return _validate_downstream_request(request, contract)
-    if str(issue) in contract["control_plane_issue_classes"]:
-        return _validate_control_plane_request(request, contract)
+    row = _canonical_rows().get(issue)
+    if row and row.get("requires_manifest_snapshot_id"):
+        return _validate_downstream_request(request, contract, row)
+    if row:
+        return _validate_control_plane_request(request, contract, row)
     return FirewallResult(False, False, "UNKNOWN_SAMPLING_TARGET", [f"unknown target issue: {issue}"])
 def classify_executable_context(
     text: str,
@@ -222,20 +229,9 @@ def validate_public_surfaces(paths: list[Path] | None = None) -> list[str]:
     scan_paths = paths or public_scan_paths()
     return parent.validate_public_artifact_paths([repo_path(path) for path in scan_paths])
 def _base_request_keys() -> set[str]:
-    return {
-        "target_issue",
-        "manifest_source",
-        "seed_id",
-        "sort_rule",
-        "per_bucket_row_cap",
-        "max_files_touched",
-        "max_bytes_touched",
-        "request_class",
-        "requires_manifest_snapshot_id",
-        "output_shape",
-        "route_target",
-        "logical_target_store",
-    }
+    return {"target_issue", "manifest_source", "seed_id", "sort_rule", "per_bucket_row_cap", "max_files_touched", "max_bytes_touched", "request_class", "requires_manifest_snapshot_id", "output_shape", "route_target", "logical_target_store"}
+def _canonical_rows(schema: dict | None = None) -> dict[int, dict]:
+    return {row["issue"]: row for row in (schema or load_schema())["canonical_wave_registry"]}
 def _guard_result(operation_name: str, env: dict[str, str] | None) -> FirewallResult | None:
     try:
         guard_no_source_root_access(operation_name, env)
@@ -321,23 +317,22 @@ def _validate_metadata_fixture(request: dict, contract: dict) -> FirewallResult:
     if evidence is not None:
         _validate_shape_only_evidence(evidence, errors)
     return FirewallResult(not errors, not errors, "AUTHORIZED_METADATA_ONLY_FIXTURE" if not errors else "INVALID_METADATA_FIXTURE", errors)
-def _validate_downstream_request(request: dict, contract: dict) -> FirewallResult:
+def _validate_downstream_request(request: dict, contract: dict, row: dict) -> FirewallResult:
     errors: list[str] = []
     if request.get("request_class") != "downstream_manifest_backed_sampling":
         errors.append("ingestion waves must use downstream_manifest_backed_sampling")
-    if request.get("target_wave_class") != "ingestion_wave":
-        errors.append("ingestion waves must import target_wave_class=ingestion_wave")
-    if request.get("requires_manifest_snapshot_id") is not True:
-        errors.append("ingestion waves must import requires_manifest_snapshot_id=true from #65")
+    if request.get("target_wave_class") != row["wave_class"]:
+        errors.append("ingestion waves must import target_wave_class from #65")
+    if request.get("requires_manifest_snapshot_id") is not row["requires_manifest_snapshot_id"]:
+        errors.append("ingestion waves must import requires_manifest_snapshot_id from #65")
     _validate_blocked_evidence(request.get("snapshot_evidence"), errors)
     gate = contract["downstream_evidence_gate"]
     return FirewallResult(False, False, MISSING_EVIDENCE, errors or [MISSING_EVIDENCE], gate["blocked_by_issue"], gate["follow_on_issue"])
-def _validate_control_plane_request(request: dict, contract: dict) -> FirewallResult:
+def _validate_control_plane_request(request: dict, contract: dict, row: dict) -> FirewallResult:
     errors: list[str] = []
-    expected_class = contract["control_plane_issue_classes"][str(request["target_issue"])]
     if request.get("request_class") != "control_plane_proof":
         errors.append("control-plane targets must use control_plane_proof")
-    if request.get("target_wave_class") != expected_class:
+    if request.get("target_wave_class") != row["wave_class"]:
         errors.append("control-plane target_wave_class does not match #65 registry")
     if "snapshot_evidence" in request:
         errors.append("control-plane proof forbids snapshot_evidence")
