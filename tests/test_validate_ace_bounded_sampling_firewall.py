@@ -311,6 +311,7 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
         self.assertEqual([], validator.validate_public_surfaces())
     def test_review_artifacts_are_included_and_sidecars_block(self):
         library = load_library()
+        validator = load_validator()
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "2026-07-01-implementation-67-review-r1.md").write_text("## Verdict\nMINOR\n")
@@ -319,6 +320,12 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
             errors = library.validate_review_sidecars(root)
         self.assertIn("2026-07-01-implementation-67-review-r1.md", paths)
         self.assertIn("sidecar", "\n".join(errors))
+        original = validator.validate_review_sidecars
+        validator.validate_review_sidecars = lambda: ["review sidecar"]
+        try:
+            self.assertEqual(1, validator.main([]))
+        finally:
+            validator.validate_review_sidecars = original
     def test_ci_invokes_67_validator_unit_tests_and_parent_scan(self):
         workflow = WORKFLOW_PATH.read_text()
         self.assertIn("uv run python scripts/validate_ace_bounded_sampling_firewall.py", workflow)

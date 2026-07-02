@@ -19,6 +19,7 @@ from ace_bounded_sampling_firewall import (  # noqa: E402
     validate_contract_file,
     validate_public_surfaces,
     validate_request_file,
+    validate_review_sidecars,
 )
 
 
@@ -33,6 +34,7 @@ def main(argv: list[str] | None = None) -> int:
     for fixture_path in fixture_paths:
         errors.extend(validate_request_file(Path(fixture_path)))
     errors.extend(validate_public_surfaces(public_scan_paths()))
+    errors.extend(validate_review_sidecars())
 
     if errors:
         for error in errors:
