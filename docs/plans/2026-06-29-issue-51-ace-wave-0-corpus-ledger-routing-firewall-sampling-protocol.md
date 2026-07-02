@@ -47,26 +47,26 @@ EXISTS ACE_SHARE_ROOT/llm-wiki type=directory details=withheld_public
 ### Gaps identified
 
 - The r26 version of this plan bundled too much implementation scope into one review target.
-- The active split will move implementation slices into [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69).
-- Each split issue will need its own plan, adversarial review, and user approval before implementation.
-- [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) still needs a fresh no-MAJOR plan review after the split rewrite.
+- The split implementation work has moved into [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69).
+- [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) still needs a fresh no-MAJOR umbrella-plan review after the split closeouts.
 - Gemini review remains unavailable in current noninteractive runs until auth is restored or the user explicitly authorizes a one-round degraded quorum after seeing that evidence.
+- Pre-existing untracked [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) r1-r15 review artifacts were local residue, not public-history evidence. They were quarantined outside the repo before this r27 closeout so `scripts/legal/legal-sanity-scan.sh --diff-only` can pass and sweep commits cannot accidentally publish them.
 
 ### Evidence
 
-**Issue status** (verified 2026-06-30):
+**Issue status** (verified 2026-07-02):
 
 ```text
 #51 OPEN ACE wave 0: corpus ledger, routing firewall, and sampling protocol labels=strengthening,lane:claude,priority:high
 ```
 
-**Split issues created from #51 r26 scope** (verified 2026-06-30):
+**Split issue closeout evidence consumed by this umbrella plan** (verified 2026-07-02):
 
-- [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) ACE wave 0 split: ledger schema and route-store matrix
-- [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) ACE wave 0 split: public-token fixtures and private-field placeholders
-- [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) ACE wave 0 split: bounded sampling firewall
-- [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) ACE wave 0 split: public-surface self-scan for control-plane artifacts
-- [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) ACE wave 0 split: repo-local legal and security scan gate
+- [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) closed with ledger schema and route-store matrix artifacts.
+- [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) closed with public-token fixture and private-field placeholder artifacts.
+- [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) closed with bounded sampling firewall artifacts.
+- [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) closed with public-surface self-scan artifacts.
+- [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) closed with repo-local legal/security scan artifacts.
 
 **Reproduction proofs**:
 N/A - governance/planning issue; no runtime failure is alleged.
@@ -81,8 +81,9 @@ N/A - governance/planning issue; no runtime failure is alleged.
 | Plan index | `docs/plans/README.md` |
 | ACE coordination ledger | `docs/plans/ace-share-ingestion-wave-coordination.md` |
 | Historical #51 review artifacts | `scripts/review/results/2026-06-29-plan-51-*-r16.md` through r25, plus `scripts/review/results/2026-06-30-plan-51-*-r26.md` |
-| Split issue bodies | GitHub issues [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) |
-| Future split plans | `docs/plans/YYYY-MM-DD-issue-65-*.md` through `docs/plans/YYYY-MM-DD-issue-69-*.md` |
+| Local-only quarantined review residue | Pre-existing untracked [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) r1-r15 artifacts moved outside the repo; not cited as plan-review evidence and not eligible for public commit |
+| Split issue plans and closeouts | GitHub issues [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69), their plan files, implementation artifacts, and implementation-review artifacts |
+| Future #51 review artifacts | `scripts/review/results/2026-07-02-plan-51-*-r27.md` |
 
 ---
 
@@ -90,29 +91,29 @@ N/A - governance/planning issue; no runtime failure is alleged.
 
 [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will deliver a wave-0 umbrella contract and dependency map. It will not implement the script modules, fixtures, legal scanner, public-surface scanner, sampling firewall, or durable stores directly.
 
-The implementation work will be reviewed issue-by-issue:
+The implementation work has been separated from this umbrella and will remain owned issue-by-issue:
 
 | Issue | Owner scope | Lane | Status |
 |---|---|---|---|
-| [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) | Ledger schema, closed route enum, route-to-logical-store matrix, verification state, and structural registry validation | lane:claude | draft issue; plan required |
-| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | Fixture-only public-token contract and private-field placeholder grammar | lane:codex | draft issue; plan required |
-| [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) | Bounded sampling firewall and executable-context checks | lane:codex | draft issue; plan required |
-| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | Generic #51 public-surface self-scan for control-plane artifacts, review artifacts, sidecars, and issue/comment snapshots | lane:claude | draft issue; plan required |
-| [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) | Repo-local legal/security scan wrapper and self-scan-safe deny-list config | lane:claude | draft issue; plan required |
+| [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) | Ledger schema, closed route enum, route-to-logical-store matrix, verification state, and structural registry validation | lane:claude | closed; implementation evidence recorded on issue |
+| [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) | Fixture-only public-token contract and private-field placeholder grammar | lane:codex | closed; implementation evidence recorded on issue |
+| [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) | Bounded sampling firewall and executable-context checks | lane:codex | closed; implementation evidence recorded on issue |
+| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | Generic #51 public-surface self-scan for control-plane artifacts, review artifacts, sidecars, and issue/comment snapshots | lane:claude | closed; implementation evidence recorded on issue |
+| [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) | Repo-local legal/security scan wrapper and self-scan-safe deny-list config | lane:claude | closed; implementation evidence recorded on issue |
 
 ### Scope Decision
 
-The split branch will be taken. [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will remain the umbrella dependency and review surface; [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) will carry implementation-sized plans.
+The split branch will remain authoritative. [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will remain the umbrella dependency and review surface; [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) will carry their own implementation evidence.
 
 This plan will not request implementation approval for any child slice. A future user approval on [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) will authorize only the umbrella coordination artifact unless the approval explicitly names a split child issue and its reviewed plan.
 
 ### Dependency Rules
 
-- [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) should be planned first because it defines the schema fields and route/store vocabulary consumed by the other split issues.
-- [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) should follow [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) because placeholder fields and token grammar depend on the ledger schema.
-- [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) should follow [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) because manifest snapshot fields and wave classes are part of the schema.
-- [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) should follow [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) and [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) because it will scan public-safe placeholder and token contexts.
-- [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) should follow or pair with [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) because deny-list config self-safety must not become a blanket exemption.
+- [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) will define the schema fields and route/store vocabulary consumed by the other split issues.
+- [#66](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/66) will own placeholder fields and token grammar that depend on the ledger schema.
+- [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) will own bounded sampling controls that depend on the schema and manifest evidence contract.
+- [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) will own the public-surface self-scan over control-plane artifacts.
+- [#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) will own the repo-local legal/security scan gate.
 - [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61), [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62), and [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) remain cross-wave gates and do not become implementation children of [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51).
 
 ---
@@ -121,18 +122,13 @@ This plan will not request implementation approval for any child slice. A future
 
 ```text
 read #51, #50, #61, #62, #63, and split issues #65-#69
-verify no split issue carries status:plan-review or status:plan-approved before review
+verify split issues #65-#69 have issue-local closeout comments and remain separate from #51 approval
 record split registry in this plan, README, and coordination artifact
 keep #51 implementation-ready=false until user approval exists for a reviewed #51 umbrella plan
-for each split issue:
-  require a standalone issue plan
-  require adversarial plan review
-  require user approval before implementation
-  require TDD and code/artifact review before closeout
-when drafting split plans:
+for downstream wave plans:
+  consume #65 route/schema vocabulary, #66 token contract, #67 sampling firewall, #68 public-surface scan, #69 legal scan, and #62 manifest evidence
   keep public surfaces under ACE_SHARE_ROOT abstraction
   avoid private corpus content, raw host paths, exact private inventory counts, and client identifiers
-  use the issue-owned playbook method and skill bindings
 do not create #51 implementation scripts or tests from this umbrella plan
 ```
 
@@ -142,10 +138,12 @@ do not create #51 implementation scripts or tests from this umbrella plan
 
 | Action | Path or issue | Reason |
 |---|---|---|
-| Modify | `docs/plans/2026-06-29-issue-51-ace-wave-0-corpus-ledger-routing-firewall-sampling-protocol.md` | Replace bundled r26 implementation scope with a split-issue umbrella plan |
-| Modify | `docs/plans/README.md` | Record that [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) split scope into [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) |
-| Modify | `docs/plans/ace-share-ingestion-wave-coordination.md` | Add a wave-0 split registry without marking the split issues implementation-ready |
-| Comment | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) | Record the split and the next planning sequence |
+| Modify | `docs/plans/2026-06-29-issue-51-ace-wave-0-corpus-ledger-routing-firewall-sampling-protocol.md` | Refresh the umbrella plan after split issue closeouts |
+| Modify | `docs/plans/README.md` | Record that [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains draft while [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) carry closed implementation evidence |
+| Modify | `docs/plans/ace-share-ingestion-wave-coordination.md` | Refresh the wave-0 split registry without marking [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) implementation-ready |
+| Edit | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) issue body | Reconcile the live issue text so it points to the umbrella/split-closeout state instead of re-advertising one bundled implementation |
+| Local cleanup | Untracked [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) r1-r15 review artifacts | Preserve unsafe local residue outside the repo and keep `scripts/legal/legal-sanity-scan.sh --diff-only` green |
+| Comment | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) | Record r27 review evidence and next gate |
 | Comment | [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) | Record parent-level coordination status without editing the parent issue body |
 
 No implementation files will be created by this [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) umbrella revision.
@@ -157,21 +155,22 @@ No implementation files will be created by this [#51](https://github.com/vamseea
 | Test name | What it verifies | Expected input | Expected output |
 |---|---|---|---|
 | `test_parent_coordination_validator_still_passes` | The existing ACE coordination validator remains green after adding the split registry | `docs/plans/ace-share-ingestion-wave-coordination.md` | Validator passes with canonical #51-#63 registry intact |
-| `test_plan_index_records_split_without_approval` | The plan index records split state without implying readiness | `docs/plans/README.md` | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains draft and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) remain plan-required |
-| `test_split_issues_have_no_status_gate_labels` | Split issues are not accidentally advanced | Live issue snapshots for [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) | No `status:plan-review` or `status:plan-approved` labels |
-| `test_public_scan_accepts_split_artifacts` | Split docs and issue/comment bodies remain public-safe | Plans, README, coordination doc, and fetched issue/comment bodies | No raw host paths, private corpus values, personal identifiers, or unsafe source-provenance values |
+| `test_plan_index_records_split_closeouts_without_umbrella_approval` | The plan index records split closeout state without implying [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) readiness | `docs/plans/README.md` | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains draft and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) remain separate closed implementation units |
+| `test_split_issue_closeouts_are_separate_from_51_status` | Split issue closeouts do not grant [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) approval | Live issue snapshots for [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) | [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) has no `status:*` label; split issues have independent closeout evidence |
+| `test_public_scan_accepts_split_artifacts` | Split docs and issue/comment bodies remain public-safe under the implemented #68 and #69 gates | Plans, README, coordination doc, review artifacts, fetched issue/comment bodies, and diff-only untracked candidates | `scripts/validate_ace_public_surface_scan.py`, `scripts/legal/legal-sanity-scan.sh`, and `scripts/legal/legal-sanity-scan.sh --diff-only` pass without raw host paths, private corpus values, personal identifiers, unsafe source-provenance values, or untracked public-surface candidates |
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) exist and carry only planning-safe labels (`strengthening`, one `lane:*`, and priority), not `status:plan-review` or `status:plan-approved`.
+- [ ] [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) remain separate implementation units with their own plan, approval, implementation, review, and closeout evidence.
 - [ ] [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) no longer claims that one broad implementation will create token, sampling, public-scan, legal-scan, and validator modules in a single approval unit.
 - [ ] `docs/plans/README.md` and `docs/plans/ace-share-ingestion-wave-coordination.md` record the split registry while preserving the canonical #51-#63 child wave ledger for the approved parent epic.
-- [ ] Every split issue body requires a standalone plan, adversarial review, user approval, and TDD implementation before closeout.
-- [ ] No split issue is implementation-ready until its own GitHub issue has `status:plan-approved` and a matching local approval marker.
+- [ ] Split issue closeouts do not make [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) implementation-ready.
 - [ ] Public surfaces use the `ACE_SHARE_ROOT` abstraction and do not publish private source content, raw host paths, exact private inventory counts, client identifiers, or personal identifiers.
-- [ ] Verification commands pass before commit/comment: parent coordination validator, unit tests for that validator, skill validation, public fallback scan, and `git diff --check`.
+- [ ] Verification commands pass before commit/comment: parent coordination validator, relevant unit tests, `scripts/validate_ace_public_surface_scan.py` over edited public artifacts, `scripts/legal/legal-sanity-scan.sh` over edited public artifacts, and `git diff --check`.
+- [ ] `scripts/legal/legal-sanity-scan.sh --diff-only` passes before commit/comment so local untracked review residue cannot be swept into a public commit.
+- [ ] The live [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) issue body is reconciled to the umbrella/split-closeout state and no longer presents [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) work as a future bundled implementation.
 - [ ] No `status:plan-review` transition is attempted for [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) until a fresh adversarial review of the split rewrite returns no active-provider MAJORs and Gemini is restored or a user-authorized degraded quorum is explicitly recorded.
 
 ---
@@ -183,6 +182,8 @@ These checks must be satisfied before [#51](https://github.com/vamseeachanta/raw
 - Live issue snapshots for [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) will be fetched and scanned.
 - `docs/plans/README.md` and `docs/plans/ace-share-ingestion-wave-coordination.md` will match the split scope.
 - Fresh review artifacts will be created for the split rewrite and will cite the same reviewed commit, tree, and plan blob identity.
+- The implemented #68 public-surface scanner and #69 legal/security scanner will both pass over the edited public artifacts and r27 review artifacts.
+- The #69 `--diff-only` legal scan will pass after quarantining pre-existing untracked [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) r1-r15 review residue outside the repo.
 - Gemini availability will be restored, or the user will explicitly authorize one degraded-quorum round after the auth failure is disclosed.
 - Implementation will remain stopped after `status:plan-review`; user approval will still be required.
 
@@ -195,18 +196,18 @@ These checks must be satisfied before [#51](https://github.com/vamseeachanta/raw
 | Claude r26 | MAJOR | Required explicit split-vs-bundled scope decision, machine-parseable self-scan anchors, Gemini restoration or waiver, fresh no-MAJOR evidence, and less compound acceptance criteria. |
 | Codex r26 | MAJOR | Required tracked review artifact normalization, fallback scanner hardening for local path leaks, fresh no-MAJOR evidence, and explicit split-vs-bundled scope decision. |
 | Gemini r26 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
-| r27 split rewrite | PENDING | Fresh review will be required before plan-review. |
+| r27 split-closeout refresh | PENDING | Fresh review will be required before plan-review. |
 
-**Overall result:** This plan remains draft-only. The r27 rewrite will take the split path and will keep [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) as an umbrella coordination plan. No implementation or approval label will be applied by this plan revision.
+**Overall result:** This plan remains draft-only. The r27 refresh will keep [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) as an umbrella coordination plan. No implementation or approval label will be applied by this plan revision.
 
 ---
 
 ## Risks and Open Questions
 
-- **Risk:** The split registry can drift from issue bodies; closeout must refetch live issue metadata before any status transition.
+- **Risk:** The split registry can drift from issue bodies; pre-label review must refetch live issue metadata before any status transition.
 - **Risk:** Review fatigue from r1-r26 can hide fresh defects; r27 review must treat the rewritten plan as a new artifact, not a patched version to rubber-stamp.
 - **Risk:** Gemini remains unavailable; the plan cannot enter `status:plan-review` unless Gemini is restored or the user explicitly authorizes a degraded-quorum round.
-- **Open:** The next concrete planning target should be [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65), because the other split issues depend on its schema vocabulary.
+- **Open:** The next concrete planning target after [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) review should be the cross-wave lifecycle gate [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61), because durable downstream outputs depend on it.
 
 ---
 
