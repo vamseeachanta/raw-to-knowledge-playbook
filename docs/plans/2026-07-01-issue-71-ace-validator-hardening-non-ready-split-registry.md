@@ -1,6 +1,6 @@
 # Plan for #71: ACE Validator Hardening for Non-Ready Wave 0 Split Registry Rows
 
-> **Status:** plan-approved
+> **Status:** completed
 > **Complexity:** T3
 > **Date:** 2026-07-01
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71
