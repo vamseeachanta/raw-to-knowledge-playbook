@@ -1,6 +1,6 @@
 {
   "contract_id": "ace-bounded-sampling-firewall",
-  "contract_version": "1.0.0",
+  "contract_version": "1.0.1",
   "owner_issue": 67,
   "depends_on_schema_issue": 65,
   "schema_path": "artifacts/ace-wave0-ledger-schema.json",
@@ -68,11 +68,20 @@
   },
   "snapshot_evidence_modes": [
     "shape_only_fixture",
-    "blocked_pending_62_contract"
+    "trusted_62_pointer"
   ],
+  "manifest_evidence_trust_registry_path": "artifacts/ace-manifest-freshness/trusted-evidence-registry.json",
+  "manifest_evidence_trust_script_path": "scripts/ace_manifest_evidence_trust.py",
   "request_outcome_reasons": {
     "control_plane": "CONTROL_PLANE_PROOF_NOT_SAMPLING_REQUEST",
     "downstream_blocked": "MISSING_62_EVIDENCE_CONTRACT",
+    "missing_pointer": "MISSING_62_EVIDENCE_POINTER",
+    "self_attested_pointer": "SELF_ATTESTED_62_EVIDENCE",
+    "fixture_pointer": "FIXTURE_62_EVIDENCE_NOT_OPERATIONAL",
+    "invalid_pointer": "INVALID_62_EVIDENCE_POINTER",
+    "untrusted_pointer": "UNTRUSTED_62_EVIDENCE",
+    "non_authorizing_pointer": "62_EVIDENCE_NOT_AUTHORIZING",
+    "authorized_pointer": "AUTHORIZED_62_EVIDENCE",
     "non_target": "NON_TARGET_SAMPLING_ISSUE"
   },
   "downstream_evidence_gate": {
@@ -159,6 +168,6 @@
   "public_safety_notes": [
     "This contract stores public metadata-only grammar and denial classes.",
     "It does not authorize operational sampling, read ACE_SHARE_ROOT, or publish private source values.",
-    "Operational downstream sampling fails closed until issue 70 imports reviewed issue 62 evidence."
+    "Operational downstream sampling fails closed unless issue 70's trusted registry contains reviewed issue 62 evidence."
   ]
 }

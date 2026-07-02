@@ -8,6 +8,10 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+from ace_manifest_evidence_trust import issue_70_public_scan_paths, validate_trusted_62_evidence_pointer  # noqa: E402
 CONTRACT_PATH = Path("config/ace-bounded-sampling-firewall-contract.json")
 SCHEMA_PATH = Path("artifacts/ace-wave0-ledger-schema.json")
 MANIFEST_CONTRACT_PATH = Path("config/ace-manifest-evidence-contract.json")
@@ -223,6 +227,7 @@ def public_scan_paths() -> list[Path]:
         APPROVAL_MARKER_PATH,
     ]
     paths.extend(review_artifact_paths())
+    paths.extend(issue_70_public_scan_paths())
     return paths
 def validate_public_surfaces(paths: list[Path] | None = None) -> list[str]:
     parent = _load_parent_validator()
@@ -325,9 +330,12 @@ def _validate_downstream_request(request: dict, contract: dict, row: dict) -> Fi
         errors.append("ingestion waves must import target_wave_class from #65")
     if request.get("requires_manifest_snapshot_id") is not row["requires_manifest_snapshot_id"]:
         errors.append("ingestion waves must import requires_manifest_snapshot_id from #65")
-    _validate_blocked_evidence(request.get("snapshot_evidence"), errors)
-    gate = contract["downstream_evidence_gate"]
-    return FirewallResult(False, False, MISSING_EVIDENCE, errors or [MISSING_EVIDENCE], gate["blocked_by_issue"], gate["follow_on_issue"])
+    if errors:
+        return FirewallResult(False, False, "INVALID_SAMPLING_REQUEST", errors, 62, 70)
+    if "snapshot_evidence" not in request:
+        return FirewallResult(False, False, "MISSING_62_EVIDENCE_POINTER", ["MISSING_62_EVIDENCE_POINTER"], 62, 70)
+    trusted = validate_trusted_62_evidence_pointer(request["snapshot_evidence"])
+    return FirewallResult(trusted.authorized, trusted.authorized, trusted.reason_code, trusted.errors, None if trusted.authorized else 62, None if trusted.authorized else 70)
 def _validate_control_plane_request(request: dict, contract: dict, row: dict) -> FirewallResult:
     errors: list[str] = []
     if request.get("request_class") != "control_plane_proof":
@@ -349,22 +357,6 @@ def _validate_shape_only_evidence(evidence: object, errors: list[str]) -> None:
         errors.append(f"shape-only evidence missing field(s): {', '.join(sorted(missing))}")
     if extra := set(evidence) - required - optional:
         errors.append(f"shape-only evidence forbids field(s): {', '.join(sorted(extra))}")
-def _validate_blocked_evidence(evidence: object, errors: list[str]) -> None:
-    required = {"evidence_mode", "source_issue", "blocked_by_issue", "follow_on_issue", "reason_code", "recorded_at"}
-    if not isinstance(evidence, dict):
-        errors.append("downstream sampling requires blocked_pending_62_contract snapshot_evidence")
-        return
-    if evidence.get("evidence_mode") != "blocked_pending_62_contract":
-        errors.append("operational evidence parser is owned by #70; #67 fails closed")
-        return
-    expected = {"source_issue": 62, "blocked_by_issue": 62, "follow_on_issue": 70, "reason_code": MISSING_EVIDENCE}
-    for key, value in expected.items():
-        if evidence.get(key) != value:
-            errors.append(f"blocked evidence must set {key} to {value!r}")
-    if missing := required - set(evidence):
-        errors.append(f"blocked evidence missing field(s): {', '.join(sorted(missing))}")
-    if extra := set(evidence) - required:
-        errors.append(f"blocked evidence forbids field(s): {', '.join(sorted(extra))}")
 def _validate_snapshot_placeholders(evidence: object, errors: list[str]) -> None:
     if not isinstance(evidence, dict):
         return

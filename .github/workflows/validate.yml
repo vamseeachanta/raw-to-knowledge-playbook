@@ -102,12 +102,26 @@ jobs:
             --scan-public-path .planning/plan-approved/67.md \
             --scan-public-path artifacts/ace-wave0-ledger-schema.json \
             --scan-public-path config/ace-bounded-sampling-firewall-contract.json \
+            --scan-public-path artifacts/ace-manifest-freshness/trusted-evidence-registry.json \
             --scan-public-path scripts/ace_bounded_sampling_firewall.py \
+            --scan-public-path scripts/ace_manifest_evidence_trust.py \
             --scan-public-path scripts/validate_ace_bounded_sampling_firewall.py \
             --scan-public-path tests/test_validate_ace_bounded_sampling_firewall.py \
+            --scan-public-path tests/test_validate_ace_manifest_evidence_integration.py \
             --scan-public-path tests/fixtures/ace-bounded-sampling-firewall/good-request.json \
             --scan-public-path tests/fixtures/ace-bounded-sampling-firewall/metadata-shape-only-evidence-request.json \
-            --scan-public-path .github/workflows/validate.yml
+            --scan-public-path .github/workflows/validate.yml \
+            --scan-public-path docs/plans/2026-07-01-issue-70-ace-67-62-manifest-evidence-contract-integration.md \
+            --scan-public-path .planning/plan-approved/70.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-claude-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-claude-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-codex-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-codex-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-gemini-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-gemini-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-70-security-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-70-ci-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-70-semantics-r1.md
 
       - name: Validator unit tests
         run: |
@@ -119,6 +133,7 @@ jobs:
           uv run python -m unittest tests.test_validate_ace_manifest_freshness_security
           uv run python -m unittest tests.test_validate_ace_public_token_fixtures
           uv run python -m unittest tests.test_validate_ace_bounded_sampling_firewall
+          uv run python -m unittest tests.test_validate_ace_manifest_evidence_integration
 
       - name: Runnable example — verify the happy path promotes
         working-directory: examples/minimal-ingest

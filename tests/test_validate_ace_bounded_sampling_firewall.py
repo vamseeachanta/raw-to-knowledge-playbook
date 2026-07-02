@@ -50,14 +50,6 @@ def downstream_request() -> dict:
     request["target_wave_class"] = "ingestion_wave"
     request["requires_manifest_snapshot_id"] = True
     request.pop("fixture_scope", None)
-    request["snapshot_evidence"] = {
-        "evidence_mode": "blocked_pending_62_contract",
-        "source_issue": 62,
-        "blocked_by_issue": 62,
-        "follow_on_issue": 70,
-        "reason_code": "MISSING_62_EVIDENCE_CONTRACT",
-        "recorded_at": "2026-07-01",
-    }
     return request
 class AceBoundedSamplingFirewallTests(unittest.TestCase):
     def test_contract_file_is_json_and_owned_by_67(self):
@@ -171,7 +163,7 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
         contract = load_json(CONTRACT_PATH)
         result = library.validate_sampling_request(downstream_request(), contract)
         self.assertFalse(result.authorized)
-        self.assertEqual("MISSING_62_EVIDENCE_CONTRACT", result.reason_code)
+        self.assertEqual("MISSING_62_EVIDENCE_POINTER", result.reason_code)
         self.assertEqual(62, result.blocked_by_issue)
     def test_snapshot_evidence_fields_are_mode_specific(self):
         library = load_library()
@@ -181,20 +173,26 @@ class AceBoundedSamplingFirewallTests(unittest.TestCase):
         bad_shape = copy.deepcopy(shape_fixture)
         bad_shape["snapshot_evidence"]["blocked_by_issue"] = 62
         self.assertFalse(library.validate_sampling_request(bad_shape, contract).authorized)
-        bad_blocked = downstream_request()
-        bad_blocked["snapshot_evidence"].pop("follow_on_issue")
-        self.assertFalse(library.validate_sampling_request(bad_blocked, contract).authorized)
+        bad_pointer = downstream_request()
+        bad_pointer["snapshot_evidence"] = {"source_issue": 62, "record_id": "ace62-compatible-fixture"}
+        result = library.validate_sampling_request(bad_pointer, contract)
+        self.assertFalse(result.authorized)
+        self.assertEqual("SELF_ATTESTED_62_EVIDENCE", result.reason_code)
         live_claim = downstream_request()
         live_claim["snapshot_evidence"] = {"evidence_mode": "operational_live", "source_issue": 62}
         result = library.validate_sampling_request(live_claim, contract)
         self.assertFalse(result.authorized)
-        self.assertEqual("MISSING_62_EVIDENCE_CONTRACT", result.reason_code)
+        self.assertEqual("SELF_ATTESTED_62_EVIDENCE", result.reason_code)
     def test_placeholder_snapshot_evidence_fails(self):
         library = load_library()
         contract = load_json(CONTRACT_PATH)
         for value in ["pending", "not-run", "expected-only", "todo"]:
             request = downstream_request()
-            request["snapshot_evidence"]["recorded_at"] = value
+            request["snapshot_evidence"] = {
+                "source_issue": 62,
+                "record_id": "ace62-compatible-fixture",
+                "evidence_artifact_ref": value,
+            }
             with self.subTest(value=value):
                 result = library.validate_sampling_request(request, contract)
                 self.assertFalse(result.authorized)
