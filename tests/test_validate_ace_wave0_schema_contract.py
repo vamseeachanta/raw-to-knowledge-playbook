@@ -340,8 +340,8 @@ class AceWave0SchemaContractTests(unittest.TestCase):
             "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md",
             rows[68]["plan_path"],
         )
-        self.assertEqual("status:plan-review", rows[68]["status_snapshot"])
-        self.assertFalse(rows[68]["implementation_ready"])
+        self.assertEqual("status:plan-approved", rows[68]["status_snapshot"])
+        self.assertTrue(rows[68]["implementation_ready"])
         self.assertEqual(
             "docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md",
             rows[69]["plan_path"],
@@ -396,7 +396,7 @@ class AceWave0SchemaContractTests(unittest.TestCase):
 
         self.assertNotIn("#65 split status_snapshot", "\n".join(errors))
 
-    def test_split_registry_allows_68_plan_review_without_approval_marker(self):
+    def test_split_registry_allows_68_approval_marker_semantics(self):
         validator = load_validator()
         schema = load_schema()
 
@@ -405,7 +405,7 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         self.assertNotIn("#68 split status_snapshot", "\n".join(errors))
         self.assertNotIn("#68 implementation_ready", "\n".join(errors))
 
-    def test_plan_review_transition_rejects_lingering_blocked_draft_surfaces(self):
+    def test_plan_approval_transition_rejects_lingering_plan_review_surfaces(self):
         validator = load_validator()
         schema = load_schema()
         plan_path = REPO_ROOT / "docs" / "plans" / "2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md"
@@ -419,16 +419,16 @@ class AceWave0SchemaContractTests(unittest.TestCase):
             fake_coordination = tmp_root / "coordination.md"
 
             fake_plan.write_text(plan_path.read_text().replace(
+                "> **Status:** plan-approved",
                 "> **Status:** plan-review",
-                "> **Status:** blocked-draft",
             ))
             fake_readme.write_text(readme_path.read_text().replace(
+                "| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | ace-public-surface-self-scan-control-plane | `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md` | 2026-06-30 | plan-approved |",
                 "| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | ace-public-surface-self-scan-control-plane | `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md` | 2026-06-30 | plan-review |",
-                "| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | ace-public-surface-self-scan-control-plane | `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md` | 2026-06-30 | blocked-draft |",
             ))
             fake_coordination.write_text(coordination_path.read_text().replace(
+                "plan-approved: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
                 "plan-review: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
-                "blocked-draft: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
             ))
 
             original_repo_path = validator._repo_path
@@ -459,7 +459,7 @@ class AceWave0SchemaContractTests(unittest.TestCase):
             fake_coordination = Path(tmp) / "coordination.md"
             original_text = coordination_path.read_text()
             mutated_text = original_text.replace(
-                "plan-review: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
+                "plan-approved: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
                 "decision pending in plan body: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
             )
             self.assertNotEqual(original_text, mutated_text)

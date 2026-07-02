@@ -1,6 +1,6 @@
 # Plan for #68: ACE Wave 0 Public-Surface Self-Scan for Control-Plane Artifacts
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-06-30
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68
@@ -435,7 +435,7 @@ The future #68 JSON snapshot schema is implementation scope after user approval;
 | Codex provider r3 | APPROVE | Verified the r2 blockers are patched, r3 prep artifacts are retained and mapped, #68 remains non-authorizing, the review summary is accurate, and #69 remains a sibling gate. |
 | Gemini provider r3 | UNAVAILABLE | CLI failed with the same unsupported-client/ineligible-tier authentication condition; no usable review signal. |
 
-**Overall result:** PLAN-REVIEW - formal provider r3 returned Claude APPROVE, Codex APPROVE, and Gemini UNAVAILABLE. This plan is ready for user review only; implementation still requires explicit user approval, `status:plan-approved`, and `.planning/plan-approved/68.md`.
+**Overall result:** PLAN-APPROVED - formal provider r3 returned Claude APPROVE, Codex APPROVE, and Gemini UNAVAILABLE. The user approved this plan on 2026-07-02; implementation is authorized under TDD with `status:plan-approved` and `.planning/plan-approved/68.md`.
 
 ---
 
