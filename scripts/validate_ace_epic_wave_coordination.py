@@ -921,9 +921,14 @@ def validate_text(
 def validate_public_artifact_paths(
     paths: list[Path],
     manifest_contract_path: Path = MANIFEST_CONTRACT_PATH,
+    allow_external_paths: bool = True,
 ) -> list[str]:
     scanner = _load_public_surface_scanner()
-    return scanner.validate_public_artifact_paths(paths, manifest_contract_path=manifest_contract_path)
+    return scanner.validate_public_artifact_paths(
+        paths,
+        manifest_contract_path=manifest_contract_path,
+        allow_external_paths=allow_external_paths,
+    )
 
 
 def _load_public_surface_scanner():
@@ -1007,7 +1012,10 @@ def main(argv: list[str] | None = None) -> int:
     errors = (
         result.errors
         + validate_approval_marker(approval_root / f"{PARENT_ISSUE}.md", PARENT_ISSUE, PARENT_PLAN_PATH)
-        + validate_public_artifact_paths([Path(item) for item in args.scan_public_path])
+        + validate_public_artifact_paths(
+            [Path(item) for item in args.scan_public_path],
+            allow_external_paths=False,
+        )
     )
     if errors:
         for error in errors:

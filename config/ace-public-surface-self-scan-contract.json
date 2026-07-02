@@ -1,0 +1,259 @@
+{
+  "contract_id": "ace-public-surface-self-scan-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 68,
+  "mode": "repo_local_public_surface_self_scan",
+  "private_deny_list_owner_issue": 63,
+  "boundary_owner_issues": {
+    "65": "schema_and_route_store_matrix",
+    "66": "public_token_fixture_and_placeholder_contract",
+    "69": "repo_local_legal_security_scan_gate"
+  },
+  "upstream_contracts": {
+    "public_token_fixture_contract": {
+      "path": "config/ace-public-token-fixture-contract.json",
+      "contract_id": "ace-public-token-fixture-contract",
+      "contract_version": "1.0.0",
+      "owner_issue": 66,
+      "imported_fields": [
+        "public_token_field_name",
+        "public_token_grammar",
+        "generation_request_marker",
+        "generation_request_required_keys",
+        "private_source_terms",
+        "source_like_raw_digest_terms",
+        "placeholder_values",
+        "private_placeholder_mapping",
+        "fixture_set_ids",
+        "forbidden_request_keys",
+        "boundary_owner_issues"
+      ],
+      "imported_values": {
+        "public_token_field_name": "public_source_token",
+        "public_token_grammar": {
+          "prefix": "pst_",
+          "hex_characters": 32
+        },
+        "generation_request_marker": "public_source_token_request",
+        "generation_request_required_keys": [
+          "fixture_set_id",
+          "fixture_row_id",
+          "count"
+        ],
+        "private_source_terms": [
+          "source_id",
+          "source_sha256",
+          "private_lookup_key",
+          "private_lookup_map",
+          "share_relative_path_private_only"
+        ],
+        "source_like_raw_digest_terms": [
+          "source_hash",
+          "provenance_pointer"
+        ],
+        "placeholder_values": [
+          "ACE_PRIVATE_PLACEHOLDER_IDENTITY",
+          "ACE_PRIVATE_PLACEHOLDER_DIGEST",
+          "ACE_PRIVATE_PLACEHOLDER_LOOKUP_KEY",
+          "ACE_PRIVATE_PLACEHOLDER_LOOKUP_MAP",
+          "ACE_PRIVATE_PLACEHOLDER_PATH"
+        ],
+        "private_placeholder_mapping": [
+          {
+            "schema_term": "source_id",
+            "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_IDENTITY"
+          },
+          {
+            "schema_term": "source_sha256",
+            "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_DIGEST"
+          },
+          {
+            "schema_term": "private_lookup_key",
+            "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_LOOKUP_KEY"
+          },
+          {
+            "schema_term": "private_lookup_map",
+            "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_LOOKUP_MAP"
+          },
+          {
+            "schema_term": "share_relative_path_private_only",
+            "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_PATH"
+          }
+        ],
+        "fixture_set_ids": [
+          "wave0_public_token_good"
+        ],
+        "forbidden_request_keys": [
+          "source_name",
+          "source_path",
+          "source_hash",
+          "source_key",
+          "lookup_alias",
+          "display_name",
+          "original_name",
+          "raw_provenance",
+          "deterministic_seed"
+        ],
+        "boundary_owner_issues": {
+          "durable_token_lookup_persistence": 61,
+          "public_output_certification": 63,
+          "public_surface_self_scan": 68
+        }
+      }
+    }
+  },
+  "deny_classes": [
+    {
+      "id": "raw-host-path",
+      "summary": "raw host or source path outside fixed metadata evidence"
+    },
+    {
+      "id": "personal-identifier",
+      "summary": "email, phone-like, or personal-id-like value"
+    },
+    {
+      "id": "confidentiality-marker",
+      "summary": "confidentiality marker phrase"
+    },
+    {
+      "id": "generic-private-identifier",
+      "summary": "generic client, customer, or project identifier assignment"
+    },
+    {
+      "id": "private-source-key",
+      "summary": "private source term used as a public key or assignment"
+    },
+    {
+      "id": "source-like-key",
+      "summary": "source-like digest or provenance term used as a public key"
+    },
+    {
+      "id": "forbidden-request-key",
+      "summary": "#66 forbidden request key used in a public surface"
+    },
+    {
+      "id": "source-like-digest-assignment",
+      "summary": "assigned source-like digest value"
+    },
+    {
+      "id": "public-token-assignment",
+      "summary": "literal public token assignment outside fixture generation"
+    },
+    {
+      "id": "provider-sidecar-leak",
+      "summary": "provider stderr/log sidecar leak trace"
+    },
+    {
+      "id": "unbounded-traversal-command",
+      "summary": "unbounded manifest traversal command"
+    },
+    {
+      "id": "metadata-evidence-path",
+      "summary": "unlisted ACE metadata evidence path"
+    }
+  ],
+  "allow_contexts": [
+    {
+      "id": "schema-term-policy-prose",
+      "allowed_paths": [
+        "docs/plans/*issue-68*.md",
+        "scripts/review/results/*plan-68*.md"
+      ],
+      "heading_constraint": [
+        "Pseudocode",
+        "Contract Details Required Before Implementation",
+        "TDD Test List",
+        "Acceptance Criteria"
+      ],
+      "token_classes": [
+        "schema_term",
+        "placeholder_value",
+        "public_token_grammar",
+        "rule_id"
+      ],
+      "embedding": "html_comment_markdown_only",
+      "max_lines": 40
+    },
+    {
+      "id": "review-artifact-forensics",
+      "allowed_paths": [
+        "scripts/review/results/*plan-68*.md",
+        "scripts/review/results/*plan-68*"
+      ],
+      "heading_constraint": null,
+      "token_classes": [
+        "review_finding_excerpt",
+        "redacted_path_token",
+        "rule_id"
+      ],
+      "embedding": "html_comment_markdown_or_text_sidecar_only",
+      "max_lines": 30
+    }
+  ],
+  "sidecar_selector": {
+    "suffixes": [
+      ".err",
+      ".stderr",
+      ".stdout",
+      ".json",
+      ".log",
+      ".trace"
+    ],
+    "optional_absence_status": "none_found",
+    "required_absence_status": "fail_closed"
+  },
+  "review_artifact_selector": {
+    "root": "scripts/review/results",
+    "issue": 68,
+    "phase_enum": [
+      "plan",
+      "implementation"
+    ],
+    "provider_enum": [
+      "claude",
+      "codex",
+      "gemini",
+      "subagent-boundary",
+      "subagent-scanner",
+      "subagent-workflow"
+    ],
+    "round_pattern": "r[0-9]+"
+  },
+  "issue_comment_snapshot_schema": {
+    "top_level_keys": [
+      "schema_version",
+      "issue_number",
+      "comment_id",
+      "url",
+      "source_kind",
+      "phase",
+      "fetched_at",
+      "body_sha256",
+      "body"
+    ],
+    "source_kind_enum": [
+      "issue_body",
+      "planned_comment",
+      "issue_comment"
+    ],
+    "phase_enum": [
+      "pre_post",
+      "post_refetch"
+    ],
+    "allowed_pairings": [
+      {
+        "pre_post": "planned_comment",
+        "post_refetch": "issue_comment"
+      },
+      {
+        "pre_post": "issue_body",
+        "post_refetch": "issue_body"
+      }
+    ]
+  },
+  "sibling_boundaries": {
+    "legal_security_scan_owner_issue": 69,
+    "legal_scan_config_path": ".legal-deny-list.yaml"
+  },
+  "stock_ci_live_github_dependency": false
+}

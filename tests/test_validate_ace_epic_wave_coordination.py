@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import contextlib
+import io
 import json
 import re
 import sys
@@ -1151,6 +1153,17 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
             result = validator.validate_public_artifact_paths([Path(tmp) / "missing.md"])
 
         self.assertIn("missing public artifact scan path", "\n".join(result))
+
+    def test_cli_public_artifact_scan_rejects_outside_absolute_paths(self):
+        validator = load_validator()
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            rc = validator.main(["--scan-public-path", "/etc/hosts"])
+
+        self.assertEqual(1, rc)
+        self.assertIn("scan-path-absolute", stderr.getvalue())
 
     def test_public_artifact_scan_rejects_leaks(self):
         validator = load_validator()

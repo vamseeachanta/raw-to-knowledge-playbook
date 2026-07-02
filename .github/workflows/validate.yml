@@ -100,10 +100,28 @@ jobs:
             --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
             --scan-public-path .planning/plan-approved/68.md \
             --scan-public-path config/ace-public-surface-self-scan-contract.json \
+            --scan-public-path scripts/ace_public_surface_contract.py \
+            --scan-public-path scripts/ace_public_surface_review.py \
+            --scan-public-path scripts/ace_public_surface_rules.py \
             --scan-public-path scripts/ace_public_surface_scan.py \
             --scan-public-path scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path tests/ace_public_surface_test_helpers.py \
+            --scan-public-path tests/test_validate_ace_public_surface_contract.py \
+            --scan-public-path tests/test_validate_ace_public_surface_review.py \
+            --scan-public-path tests/test_validate_ace_public_surface_rules.py \
+            --scan-public-path tests/test_validate_ace_public_surface_snapshot_urls.py \
             --scan-public-path tests/test_validate_ace_public_surface_scan.py \
             --scan-public-path .github/workflows/validate.yml
+          for provider in claude codex gemini subagent-boundary subagent-scanner subagent-workflow; do
+            for round in r1 r2 r3; do
+              uv run python scripts/validate_ace_public_surface_scan.py \
+                --review-issue 68 \
+                --review-phase plan \
+                --review-provider "$provider" \
+                --review-round "$round" \
+                --include-sidecars
+            done
+          done
 
       - name: Validate ACE bounded sampling firewall contract
         run: |
