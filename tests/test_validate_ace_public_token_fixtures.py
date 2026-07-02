@@ -128,11 +128,26 @@ class AcePublicTokenFixtureTests(unittest.TestCase):
                 public_output_contract["source_like_raw_digest_terms"] = []
                 output_path.write_text(json.dumps(public_output_contract))
                 drift_errors = library.validate_contract(drifted, schema)
+
+                alias_conflict = deepcopy(reconciled)
+                public_output_contract = {
+                    "public_token_field_name": "public_source_token",
+                    "public_token_grammar": {"prefix": "pst_", "hex_characters": 32, "extra": "drift"},
+                    "public_safe_source_reference_fields": ["public_source_token"],
+                    "public_source_reference_fields": [source_term("source", "id")],
+                    "private_only_provenance_fields": EXPECTED_PRIVATE_TERMS,
+                    "private_only_fields": ["other_private_field"],
+                    "source_like_raw_digest_terms": EXPECTED_SOURCE_DIGEST_TERMS,
+                    "source_hash_private_terms": [],
+                }
+                output_path.write_text(json.dumps(public_output_contract))
+                alias_errors = library.validate_contract(alias_conflict, schema)
             finally:
                 library.repo_path = original_repo_path
 
         self.assertIn("must not remain provisional", "\n".join(still_provisional))
         self.assertIn("#63 public output contract", "\n".join(drift_errors))
+        self.assertIn("#63 public output contract", "\n".join(alias_errors))
 
     def test_good_fixture_uses_generation_request_marker(self):
         fixture = load_json(FIXTURE_PATH)

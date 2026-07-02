@@ -224,20 +224,20 @@ def _validate_public_output_token_policy(contract: dict, output_contract: dict, 
     if output_contract.get("public_token_field_name") != contract.get("public_token_field_name"):
         errors.append("#66 fixture field must match #63 public output contract")
     grammar = output_contract.get("public_token_grammar", {})
-    if grammar.get("prefix") != TOKEN_PREFIX or grammar.get("hex_characters") != TOKEN_HEX_CHARS:
+    if grammar != {"prefix": TOKEN_PREFIX, "hex_characters": TOKEN_HEX_CHARS}:
         errors.append("#63 public output contract token grammar must match #66 fixture grammar")
 
 
 def _validate_public_output_field_policy(contract: dict, output_contract: dict, errors: list[str]) -> None:
-    public_refs = _first_present_list(
+    public_refs = _consistent_alias_list(
         output_contract,
         ["public_safe_source_reference_fields", "public_source_reference_fields"],
     )
-    private_terms = _first_present_list(
+    private_terms = _consistent_alias_list(
         output_contract,
         ["private_only_provenance_fields", "private_only_fields", "banned_public_fields"],
     )
-    digest_terms = _first_present_list(
+    digest_terms = _consistent_alias_list(
         output_contract,
         ["source_like_raw_digest_terms", "source_hash_private_terms"],
     )
@@ -249,11 +249,11 @@ def _validate_public_output_field_policy(contract: dict, output_contract: dict, 
         errors.append("#63 public output contract source-like digest fields must match #66 digest terms")
 
 
-def _first_present_list(record: dict, names: list[str]):
-    for name in names:
-        if name in record:
-            return record[name]
-    return None
+def _consistent_alias_list(record: dict, names: list[str]):
+    values = [record[name] for name in names if name in record]
+    if not values:
+        return None
+    return values[0] if all(value == values[0] for value in values) else "__alias_conflict__"
 
 
 def _validate_fixture_top_level(fixture: dict, errors: list[str]) -> None:
