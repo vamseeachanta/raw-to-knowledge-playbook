@@ -922,45 +922,17 @@ def validate_public_artifact_paths(
     paths: list[Path],
     manifest_contract_path: Path = MANIFEST_CONTRACT_PATH,
 ) -> list[str]:
-    errors: list[str] = []
-    contract, contract_errors = _load_manifest_contract(manifest_contract_path)
-    errors.extend(contract_errors)
-    allowed_metadata_paths = _fixed_metadata_evidence_paths(contract)
-    for root in paths:
-        if not root.exists():
-            errors.append(f"missing public artifact scan path: {root}")
-            continue
-        candidates = [root]
-        if root.is_dir():
-            candidates = [path for path in root.rglob("*") if path.is_file()]  # public-artifact-scan-internal-directory-walk-ok
-        for path in candidates:
-            if path.suffix == ".pyc":
-                continue
-            text = path.read_text(errors="ignore")
-            for line_number, line in enumerate(text.splitlines(), start=1):
-                for pattern in DENIED_TRAVERSAL_PATTERNS:
-                    if re.search(pattern, line):
-                        if _allowed_internal_traversal_line(path, line) or _allowed_denied_traversal_policy_prose(line):
-                            continue
-                        errors.append(f"unbounded traversal command is not allowed at {path}:{line_number}: {line.strip()}")
-                        break
-                for pattern in PRIVATE_LEAK_PATTERNS:
-                    if re.search(pattern, line):
-                        errors.append(f"public artifact leak is not allowed at {path}:{line_number}: {line.strip()}")
-                        break
-                for pattern in PRIVATE_SOURCE_FIELD_ASSIGNMENT_PATTERNS:
-                    if re.search(pattern, line):
-                        if _allowed_legal_scanner_policy_line(path, line):
-                            continue
-                        errors.append(f"private source field assignment is not allowed at {path}:{line_number}: {line.strip()}")
-                        break
-                for pattern in SOURCE_LIKE_RAW_DIGEST_PATTERNS:
-                    if re.search(pattern, line):
-                        errors.append(f"source-like raw digest is not allowed at {path}:{line_number}: {line.strip()}")
-                        break
-                if ("ACE_SHARE_ROOT" + "/") in line and not _is_allowed_metadata_evidence_line(line, allowed_metadata_paths):
-                    errors.append(f"unlisted ACE metadata evidence path is not allowed at {path}:{line_number}: {line.strip()}")
-    return errors
+    scanner = _load_public_surface_scanner()
+    return scanner.validate_public_artifact_paths(paths, manifest_contract_path=manifest_contract_path)
+
+
+def _load_public_surface_scanner():
+    script_dir = Path(__file__).resolve().parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+    import ace_public_surface_scan
+
+    return ace_public_surface_scan
 
 
 def _allowed_internal_traversal_line(path: Path, line: str) -> bool:

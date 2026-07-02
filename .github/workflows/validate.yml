@@ -92,6 +92,19 @@ jobs:
             --scan-public-path tests/fixtures/ace-public-token-fixtures/good-request.json \
             --scan-public-path .github/workflows/validate.yml
 
+      - name: Validate ACE public-surface self-scan contract
+        run: |
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/68.md \
+            --scan-public-path config/ace-public-surface-self-scan-contract.json \
+            --scan-public-path scripts/ace_public_surface_scan.py \
+            --scan-public-path scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path tests/test_validate_ace_public_surface_scan.py \
+            --scan-public-path .github/workflows/validate.yml
+
       - name: Validate ACE bounded sampling firewall contract
         run: |
           uv run python scripts/validate_ace_bounded_sampling_firewall.py
@@ -132,6 +145,7 @@ jobs:
           uv run python -m unittest tests.test_validate_ace_manifest_freshness_runtime
           uv run python -m unittest tests.test_validate_ace_manifest_freshness_security
           uv run python -m unittest tests.test_validate_ace_public_token_fixtures
+          uv run python -m unittest tests.test_validate_ace_public_surface_scan
           uv run python -m unittest tests.test_validate_ace_bounded_sampling_firewall
           uv run python -m unittest tests.test_validate_ace_manifest_evidence_integration
 

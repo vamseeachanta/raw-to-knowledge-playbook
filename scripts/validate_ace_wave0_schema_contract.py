@@ -165,9 +165,18 @@ def changed_bound_skill_docs() -> list[Path]:
 
 
 def validate_public_surfaces(paths: list[Path] | None = None) -> list[str]:
-    parent = _load_parent_validator()
+    scanner = _load_public_surface_scanner()
     scan_paths = paths or public_scan_paths()
-    return parent.validate_public_artifact_paths([_repo_path(path) for path in scan_paths])
+    return scanner.validate_public_artifact_paths([_repo_path(path) for path in scan_paths])
+
+
+def _load_public_surface_scanner():
+    script_dir = Path(__file__).resolve().parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+    import ace_public_surface_scan
+
+    return ace_public_surface_scan
 
 
 def _validate_metadata(schema: dict, errors: list[str]) -> None:
