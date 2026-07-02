@@ -36,6 +36,16 @@
         "verdict = rejected (not verified-with-note) per the strict watermark policy (incident A1)",
         "notes instruct re-extraction with the watermark stripped"
       ]
+    },
+    {
+      "id": "ace-61-stale-rescreen",
+      "issue": 61,
+      "name": "ace-boundary-change-resets-trust",
+      "prompt": "Verify an ACE artifact whose visibility or source freshness changed after it was previously verified.",
+      "expect": [
+        "moves lifecycle_state to stale_requires_rescreen",
+        "requires confidentiality re-screen before provisional or verified state can return"
+      ]
     }
   ]
 }

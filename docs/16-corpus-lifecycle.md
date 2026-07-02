@@ -155,5 +155,18 @@ problem, and must not be promised as one.
 - **Single-index edition-aware retrieval:** `is_current` default + as-of override;
   never a latest/archive split.
 
+## ACE #61 lifecycle hook
+
+ACE storage records use the #61 lifecycle states:
+`candidate`, `provisional`, `verified`, `rejected`, `superseded`, and
+`stale_requires_rescreen`. Drift, manifest freshness changes, or boundary
+changes reset affected records to `stale_requires_rescreen`; they do not keep a
+stale verified status.
+
+The recovery path is deliberately two-step: `stale_requires_rescreen` returns to
+`provisional` only after rescreen evidence exists, then separate verification can
+promote it to `verified`. Direct stale-to-verified promotion is outside the
+allowed transition table.
+
 *Snapshot 2026-06. Full primary-source citations and the UNVERIFIED-figure
 caveats: issue #17.*

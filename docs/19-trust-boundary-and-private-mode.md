@@ -52,7 +52,7 @@ it is worth keeping regardless of how open the gates are.
 
 | Control | Private internal mode | Public / shared-boundary mode |
 |---|---|---|
-| Raw source file off-repo (sha256 pointer) | **Required** | **Required** |
+| Raw source file off-repo (private-sidecar digest only) | **Required** | **Required** |
 | Private never crosses to public | **Required** | **Required** |
 | Provenance / citation on every value | **Required** | **Required** |
 | Verbatim-length caps, cumulative-coverage limits | **Discretion** | Tighten (fair-use exposure) |
@@ -72,14 +72,14 @@ confidentiality each ride different ones:
 
 | Derived form committed | Copyright lens | Confidentiality lens | Routing |
 |---|---|---|---|
-| **Raw source file** | the whole work | the whole source | **never committed** — sha256 pointer only |
+| **Raw source file** | the whole work | the whole source | **never committed** — private-sidecar digest reference only |
 | Verbatim clause quote | copyrighted **expression**, attributed | source text | private unless source is public-domain |
 | Text "parts" / page excerpts | **full** verbatim body text | full source body | private |
 | Table CSV of values | numeric **facts** (lean uncopyrightable) | PII/values can hide in cells | per source class |
 | Summaries / derived constants | **transformative** | abstracted by default | shareable when corroborated |
 | Chunks + embeddings | verbatim text in the vector store | same text, now a retrieval surface | follows source `visibility:` |
 | **Generated agent prose** | paraphrase (risk: verbatim-in-disguise) | **#1 leak vector** — agents *writing about* private material (doc 07 §4) | abstraction-by-default |
-| sha256 provenance pointer | none | none | always safe |
+| Opaque provenance bundle reference | none | none | public-safe when it carries no raw digest |
 
 ## Inflow / leak vectors — where it reaches the *wrong* boundary
 
@@ -126,3 +126,19 @@ public) and **provenance**, and leave the rest to operator discretion — escala
 to the public column only for content that will actually be shared. That is the
 standard internal-knowledge-base model; the playbook supplies the engineering half
 (firewall + boundary + provenance), and the legal half stays with the organization.
+
+## ACE #61 private boundary hook
+
+The #61 knowledge-store contract is a methodology and control-plane artifact. It
+does not publish ACE content, link a wiki route, or certify public egress by
+itself. Public navigation and wiki exposure remain blocked until the #63 canary
+certifies the relevant surface.
+
+raw source digest values stay private-sidecar only. Public surfaces use opaque
+tokens, provenance bundle references, or non-digest hash references when a public
+artifact needs to cite private provenance shape.
+
+Inside the private boundary, #61 permits opaque provenance bundle references and
+closed lifecycle states so agents can work progressively without committing raw
+source detail. Anything promoted toward a shared boundary must pass the
+independent scan and publication gate first.

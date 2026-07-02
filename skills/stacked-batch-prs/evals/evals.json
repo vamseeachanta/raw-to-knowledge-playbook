@@ -24,6 +24,14 @@
       "given": "A reviewer is about to merge the newest PR in a 3-PR stack first.",
       "when": "The merge-order rule is applied.",
       "then": "The oldest open PR is merged first; higher PRs wait until the one beneath them lands, with bases re-targeted as they move."
+    },
+    {
+      "id": "ace-61-bulk-scale-gate",
+      "issue": 61,
+      "name": "ace-downstream-wave-requires-61-binding-before-scale",
+      "given": "A downstream ACE ingestion wave tries to scale beyond pilot sampling without a #61 success and lifecycle binding.",
+      "when": "The stacked batch planner prepares the work queue.",
+      "then": "The batch is blocked until the #61 validators pass and the downstream plan records the binding."
     }
   ]
 }

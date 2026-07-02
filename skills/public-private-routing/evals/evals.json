@@ -24,6 +24,16 @@
       "name": "raw-source-firewall",
       "prompt": "Run /route-visibility on a staged diff that includes a raw licensed source PDF.",
       "expect": ["blocks: only derived parts + a sources: sha256 pointer may be committed, never the raw source"]
+    },
+    {
+      "id": "ace-61-publication-gate",
+      "issue": 61,
+      "name": "ace-publication-stays-blocked-before-canary",
+      "prompt": "Run /route-visibility on a scan-clean ACE methodology contract that also tries to add docs navigation or wiki publication.",
+      "expect": [
+        "allows the scan-clean methodology artifact",
+        "blocks docs navigation, llm-wiki output, and public corpus summaries until the #63 canary has passing evidence"
+      ]
     }
   ]
 }

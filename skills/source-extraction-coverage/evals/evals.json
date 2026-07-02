@@ -27,6 +27,16 @@
         "type/classification is decided on scanned structure (formula density), not the filename (incident D4)",
         "routes to the xlsx formula-graph recipe, not a data-only read"
       ]
+    },
+    {
+      "id": "ace-61-success-denominator",
+      "issue": 61,
+      "name": "ace-success-denominator-excludes-hard-exclusions",
+      "prompt": "Run /extract-source on an ACE bounded sample with hard exclusions and successful routed items.",
+      "expect": [
+        "uses eligible_candidate_items as the success denominator",
+        "reports hard_excluded_items separately as % excluded"
+      ]
     }
   ]
 }

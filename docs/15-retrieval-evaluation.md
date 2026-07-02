@@ -123,5 +123,17 @@ answer quality:
 - **Span-flag-before-score:** run cheap LettuceDetect first; escalate only flagged
   answers to expensive LLM-judge faithfulness.
 
+## ACE #61 eval exclusion hook
+
+ACE golden and silver eval cases are storage-form `eval_case` records, not ingest
+inputs and not retrieval chunks. The #61 contract requires them to stay outside
+both the ingest path and the chunk store so regression tests cannot leak answer
+keys into retrieval.
+
+ACE reporting uses `eligible_candidate_items`, `successful_routed_items`,
+`total_classified_items`, and `hard_excluded_items` from the #61 success-metric
+contract. Zero-denominator states are explicit outcomes, not silent pass/fail
+shortcuts.
+
 *Snapshot 2026-06. Re-run the doc 12 trust rubric before adopting. Full
 primary-source citations and the bias evidence base: issue #16.*

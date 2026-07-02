@@ -27,6 +27,16 @@
         "fails the non-degenerate-identity check (incident B2)",
         "would otherwise let two distinct rows collapse and silently drop one"
       ]
+    },
+    {
+      "id": "ace-61-retrieval-chunk-metadata",
+      "issue": 61,
+      "name": "ace-retrieval-chunk-metadata-required",
+      "prompt": "Run /check-page-shape on an ACE retrieval chunk missing citation_id, edition, or lifecycle_state metadata.",
+      "expect": [
+        "blocks the page because #61 retrieval chunks require closed metadata",
+        "names the missing metadata fields instead of treating the chunk as verified"
+      ]
     }
   ]
 }

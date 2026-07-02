@@ -58,6 +58,7 @@ UNBOUNDED_TRAVERSAL_PATTERNS = [
     re.compile(rf"\bdu\s+[^\n`]*{MANIFEST_PATH_RE}", re.IGNORECASE),
     re.compile(rf"\brg\s+[^\n`]*{MANIFEST_PATH_RE}", re.IGNORECASE),
     re.compile(rf"\bfd\s+[^\n`]*{MANIFEST_PATH_RE}", re.IGNORECASE),
+    re.compile(rf"\bgrep\s+(?:-[A-Za-z]*[rR][A-Za-z]*\b|--recursive\b)[^\n`]*{MANIFEST_PATH_RE}", re.IGNORECASE),
     re.compile(r"\bos\.walk\s*\("),
     re.compile(r"\.rglob\s*\("),
     re.compile(rf"\bjq\b[^\n`]*{MANIFEST_PATH_RE}", re.IGNORECASE),

@@ -183,7 +183,7 @@ def row(issue: int) -> str:
         if issue in {51, 61, 62, 63}
         else "yes; #62 status:plan-approved+approval marker+implemented validator+recorded passing-command+snapshot_id before sampling"
     )
-    dependencies = "#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate"
+    dependencies = "#51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command + implementation cross-review closeout durable-output gate"
     if issue == 62:
         dependencies = "#65 schema is the canonical registry source; #70 consumes the #62 evidence contract for #67 blocked operational boundary integration; #51 remains umbrella context only"
     return (
@@ -585,13 +585,13 @@ class AceEpicWaveCoordinationValidationTests(unittest.TestCase):
         self.assertIn("#52 #61 dependency", "\n".join(result.errors))
 
     def test_dependencies_include_wave0_and_lifecycle_contract(self):
-        good_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate |"
+        good_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command + implementation cross-review closeout durable-output gate |"
         bad_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #61 durable-output gate |"
         bad_doc = GOOD_DOC.replace(good_row, bad_row)
         self.assert_rejects(bad_doc, "#52 dependencies")
 
     def test_lifecycle_contract_requires_full_gate_details(self):
-        good_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command durable-output gate |"
+        good_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 status:plan-approved + approval marker + implemented validator + recorded passing-command + implementation cross-review closeout durable-output gate |"
         bad_row = "| #52 | docs/plans/issue-52.md | lane:claude | T2 | draft | 2026-06-29 no status label; no approval marker | false | #1, #12 | content-triage-and-exclusion; scripts/validate_ace_wave1_text_json.py | Claude: pending; Codex: pending; Gemini: unavailable: auth exit 41 | #51; #61 durable-output gate |"
         bad_doc = GOOD_DOC.replace(good_row, bad_row)
         self.assert_rejects(bad_doc, "#52 #61 gate")

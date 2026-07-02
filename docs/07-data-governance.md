@@ -9,6 +9,8 @@ kept the campaign clean.
 - **Raw licensed PDFs never enter any repo.** They live in an off-repo,
   read-only archive. The wiki stores *derived* data (text parts, table CSVs,
   captions) plus a `sources:` pointer in frontmatter.
+- raw source digest values stay private-sidecar only. Public surfaces use opaque
+  source tokens, provenance bundle references, or non-digest hash references.
 - A **deny-list scan** runs pre-commit: API keys, private mount paths,
   client identifiers, personal data patterns.
 - Derived data from vendor-licensed sources lives in a **private** wiki;
@@ -20,7 +22,7 @@ kept the campaign clean.
 ## 2. Provenance chain (every artifact answers "where did this come from?")
 
 ```
-source file (off-repo, sha256 recorded)
+source file (off-repo, private-sidecar digest reference)
   → landing page frontmatter (code id, publisher, revision, source pointer,
                               extraction_policy, extraction date)
     → part files (page-number citations)
@@ -77,3 +79,15 @@ material. Two controls:
 > derived forms and leak vectors), and the **private-mode operating posture** —
 > gates relaxed inside the boundary, two structural invariants kept, the rest
 > operator discretion — see [doc 19](19-trust-boundary-and-private-mode.md).
+
+## 6. ACE #61 logical storage hook
+
+ACE wave artifacts use the #61 logical storage forms: landing page, part file,
+dataset table, media descriptor, geometry metadata, private sidecar record,
+exclusion record, retrieval chunk, and eval case. Route targets and target stores
+come from the #65 schema; #61 imports that vocabulary instead of redefining it.
+
+raw source digest values stay private-sidecar only. Private provenance is exposed publicly only through an opaque
+`private_provenance_bundle_ref`. Exact private lookup material stays outside
+tracked public artifacts, while every public record still carries enough
+provenance shape to support audit and downstream verification.

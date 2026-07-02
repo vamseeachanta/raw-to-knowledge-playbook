@@ -756,9 +756,9 @@ def _validate_row(
     if issue in PUBLICATION_GATE_ISSUES and "#61" not in dependencies:
         errors.append(f"#{issue} dependencies must include #61 durable-output lifecycle gate")
     if issue in PUBLICATION_GATE_ISSUES:
-        lifecycle_phrase = "status:plan-approved + approval marker + implemented validator + recorded passing-command"
+        lifecycle_phrase = "status:plan-approved + approval marker + implemented validator + recorded passing-command + implementation cross-review closeout"
         if not _has_gate_phrase(dependencies, 61, lifecycle_phrase):
-            errors.append(f"#{issue} #61 gate must require status:plan-approved, approval marker, implemented validator, and recorded passing-command")
+            errors.append(f"#{issue} #61 gate must require status:plan-approved, approval marker, implemented validator, recorded passing-command, and implementation cross-review closeout")
 
     metric = row.get("expected useful ingestion / success metric / difficulty", "")
     if issue in CONTROL_SUCCESS_SENTINEL_ISSUES:

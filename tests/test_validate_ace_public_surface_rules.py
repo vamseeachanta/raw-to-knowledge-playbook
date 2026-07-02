@@ -152,6 +152,24 @@ class AcePublicSurfaceRulesTests(unittest.TestCase):
 
         self.assertIn("unbounded-traversal-command", "\n".join(errors))
 
+    def test_blocks_recursive_grep_manifest_traversal_examples(self):
+        validator = load_validator()
+        grep = "gr" + "ep"
+        examples = [
+            f"{grep} -R needle {ace_root()}",
+            f"{grep} -r needle assets.json",
+            f"{grep} --recursive needle master-index.jsonl",
+            f"{grep} -Rn needle index.db",
+            f"{grep} -r needle _cad-index",
+        ]
+
+        with repo_tmpdir() as tmp:
+            for index, command in enumerate(examples):
+                with self.subTest(command=command):
+                    path = write_tmp(tmp, f"grep-{index}.md", command + "\n")
+                    errors = validator.validate_public_artifact_paths([path])
+                    self.assertIn("unbounded-traversal-command", "\n".join(errors))
+
     def test_allow_context_does_not_hide_other_deny_classes(self):
         validator = load_validator()
 

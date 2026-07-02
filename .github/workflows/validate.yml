@@ -76,6 +76,43 @@ jobs:
             --scan-public-path scripts/review/results/2026-07-01-implementation-62-security-r1.md \
             --scan-public-path scripts/review/results/2026-07-01-implementation-62-governance-r1.md
 
+      - name: Validate ACE knowledge-store and success metric contracts
+        run: |
+          uv run python scripts/validate_ace_knowledge_store_contract.py \
+            --chunk-record tests/fixtures/ace-knowledge-store-contract/valid-retrieval-chunk.json \
+            --eval-record tests/fixtures/ace-knowledge-store-contract/valid-eval-case.json
+          uv run python scripts/validate_ace_ingested_success_metric.py \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-ingestion-metric.json \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-control-metric.json \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-no-eligible-metric.json \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-no-classified-metric.json
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-29-issue-61-ace-cross-wave-knowledge-store-retrieval-evaluation-lifecycle-contract.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/61.md \
+            --scan-public-path docs/case-studies/ace-share-knowledge-store-contract.md \
+            --scan-public-path config/ace-knowledge-store-contract.json \
+            --scan-public-path config/ace-ingested-success-metric-contract.json \
+            --scan-public-path scripts/validate_ace_knowledge_store_contract.py \
+            --scan-public-path scripts/validate_ace_ingested_success_metric.py \
+            --scan-public-path tests/test_validate_ace_knowledge_store_contract.py \
+            --scan-public-path tests/test_validate_ace_ingested_success_metric.py \
+            --scan-public-path tests/fixtures/ace-knowledge-store-contract/ \
+            --scan-public-path docs/14-chunking-and-embedding.md \
+            --scan-public-path docs/15-retrieval-evaluation.md \
+            --scan-public-path docs/16-corpus-lifecycle.md \
+            --scan-public-path docs/07-data-governance.md \
+            --scan-public-path docs/19-trust-boundary-and-private-mode.md \
+            --scan-public-path skills/page-shape-contract/evals/evals.json \
+            --scan-public-path skills/source-extraction-coverage/evals/evals.json \
+            --scan-public-path skills/source-extract-fidelity/evals/evals.json \
+            --scan-public-path skills/verify-batch/evals/evals.json \
+            --scan-public-path skills/independent-oracle-validation/evals/evals.json \
+            --scan-public-path skills/public-private-routing/evals/evals.json \
+            --scan-public-path skills/stacked-batch-prs/evals/evals.json \
+            --scan-public-path .github/workflows/validate.yml
+
       - name: Validate ACE public token fixture contract
         run: |
           uv run python scripts/validate_ace_public_token_fixtures.py
@@ -162,6 +199,8 @@ jobs:
           uv run python -m unittest tests.test_validate_ace_manifest_freshness
           uv run python -m unittest tests.test_validate_ace_manifest_freshness_runtime
           uv run python -m unittest tests.test_validate_ace_manifest_freshness_security
+          uv run python -m unittest tests.test_validate_ace_knowledge_store_contract
+          uv run python -m unittest tests.test_validate_ace_ingested_success_metric
           uv run python -m unittest tests.test_validate_ace_public_token_fixtures
           uv run python -m unittest tests.test_validate_ace_public_surface_scan
           uv run python -m unittest tests.test_validate_ace_bounded_sampling_firewall
