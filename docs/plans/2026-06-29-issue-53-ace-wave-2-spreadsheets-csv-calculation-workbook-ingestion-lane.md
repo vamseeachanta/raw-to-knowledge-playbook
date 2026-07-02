@@ -1,6 +1,6 @@
 # Plan for #53: ACE Wave 2 Spreadsheets, CSV, and Calculation Workbook Ingestion Lane
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53
@@ -22,15 +22,15 @@
 - `skills/source-extraction-coverage/SKILL.md`, `skills/source-extract-fidelity/SKILL.md`, `skills/independent-oracle-validation/SKILL.md`, and `skills/public-private-routing/SKILL.md` define the estimate/yield, fidelity, oracle, and routing gates this lane will consume.
 
 ### Related issues and live gate state
-- [#53](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53) is OPEN with `lane:codex`, `priority:high`, and no `status:*` label as of 2026-07-02.
+- [#53](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53) has user approval recorded in `.planning/plan-approved/53.md`; implementation still requires the live `status:plan-approved` label and this plan's dependency gates.
 - [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) is the approved parent epic; it does not approve child implementation.
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains the unapproved wave-0 umbrella. Its split implementation issues [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) are implemented/closed and may be consumed as closed contracts.
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) has approval and an implemented manifest freshness validator, but operational sampling for downstream waves must still fail closed unless the request supplies a trusted evidence pointer accepted by [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70).
 - [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) implemented trusted-evidence integration, but `artifacts/ace-manifest-freshness/trusted-evidence-registry.json` currently has an empty `trusted_evidence` list. Therefore [#53](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53) may plan synthetic fixtures and validators, but operational ACE sampling remains blocked until a trusted [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence row exists.
 - [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) bounds downstream sampling requests. Any approved implementation of this plan must prove per-bucket caps, maximum files/bytes, deterministic seed/sort, and metadata-only request shape before touching operational manifests.
 - [#71](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71) is implemented/closed and may be consumed for validator hardening around non-ready rows, manifest source membership, and scan-safe negative fixtures.
-- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is in `status:plan-review`, with no approval marker. Durable stores, target paths, retrieval metadata, lifecycle state, persistent metrics, and durable ingested-success reporting remain blocked pending [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) approval and implemented validator evidence.
-- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is in `status:plan-review`, with no approval marker. Public docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public corpus summaries, measured ACE-derived case studies, and external publication remain blocked pending [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval and implemented canary evidence.
+- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) has user approval recorded in `.planning/plan-approved/61.md`. Durable stores, target paths, retrieval metadata, lifecycle state, persistent metrics, and durable ingested-success reporting remain blocked pending [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) implemented validator evidence.
+- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has user approval recorded in `.planning/plan-approved/63.md`. Public docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public corpus summaries, measured ACE-derived case studies, and external publication remain blocked pending [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) implemented canary evidence.
 
 ### Source inventory
 - The issue-body inventory states an approximate spreadsheet/data rollup of 37.6k files / 48.7 GB, including `.xls`, `.xlsx`, `.xlsm`, and `.csv`.
@@ -286,7 +286,7 @@ If review produces a later no-MAJOR round, the scan path list will be updated to
 | Codex r2 | MINOR | #53 coordination row needed synthetic-only/deferred-format summary and r2 scan artifacts needed materialization. Findings patched in this revision. |
 | Gemini r2 | UNAVAILABLE | Gemini CLI failed with unsupported-client/ineligible-tier before returning findings; sanitized artifact retained. |
 
-**Overall result:** PLAN-REVIEW READY - active-provider r2 returned no MAJOR findings after this revision patched the remaining MINOR findings. Implementation remains blocked pending user approval, `status:plan-approved`, and `.planning/plan-approved/53.md`.
+**Overall result:** PLAN-APPROVED - active-provider r2 returned no MAJOR findings after this revision patched the remaining MINOR findings. User approval is recorded in `.planning/plan-approved/53.md`; implementation may proceed only after the live issue carries `status:plan-approved` and this plan's dependency gates are satisfied.
 
 ---
 

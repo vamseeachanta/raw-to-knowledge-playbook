@@ -1,6 +1,6 @@
 # Plan for #61: ACE Cross-Wave Knowledge-Store, Retrieval, Evaluation, and Lifecycle Contract
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61
@@ -29,8 +29,8 @@
 - [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) are the closed/implemented split contracts that #61 will consume for route/store schema, public token fixture boundaries, bounded sampling firewall, public-surface scan, legal/security scan, and manifest evidence integration.
 - [#71](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71) is closed and will be consumed only for split-registry status/plan consistency rules.
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) is closed with `status:plan-approved`, `.planning/plan-approved/62.md`, an implemented manifest freshness validator, and a recorded valid evidence fixture.
-- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) remains open with no approval marker and no implemented public-output canary. #61 will not authorize docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public summaries, or external publication exposure.
-- [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) is in `status:plan-review`; until it is approved and implemented, #61 will use only generic `--scan-public-path` public-surface scans and will not claim review selector/snapshot mode support.
+- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has user approval recorded in `.planning/plan-approved/63.md` but no implemented public-output canary. #61 will not authorize docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public summaries, or external publication exposure.
+- [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) has user approval recorded in `.planning/plan-approved/72.md`; until it is implemented, #61 will use only generic `--scan-public-path` public-surface scans and will not claim review selector/snapshot mode support.
 - [#12](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/12) remains the method anchor for storage-format research. #61 will define logical contracts and adapter requirements, not a permanent physical database/vector-store choice.
 
 ### Source inventory boundary
@@ -56,7 +56,7 @@
 #61 OPEN labels=strengthening,lane:claude,priority:high
 #51 OPEN labels=strengthening,lane:claude,priority:high; no local approval marker
 #62 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
-#63 OPEN labels=strengthening,lane:claude,priority:high; no local approval marker
+#63 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists
 #65 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high
 #66 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high
 #67 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high
@@ -64,7 +64,7 @@
 #69 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high
 #70 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high
 #71 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:medium
-#72 OPEN labels=strengthening,status:plan-review,lane:claude,priority:medium
+#72 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:medium; local marker exists
 ```
 
 **File existence**:
@@ -383,7 +383,7 @@ bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces
 git diff --check
 ```
 
-Plan-review verification will run the generic public scan only over the plan and review artifacts; selector/snapshot mode will remain out of scope until #72 is implemented. The plan-review gate may apply `status:plan-review` only after the patched plan, review artifacts, validation evidence, pushed commit, and GitHub evidence comment exist. `status:plan-approved` and `.planning/plan-approved/61.md` remain user-only authorization gates.
+Plan-review verification will run the generic public scan only over the plan and review artifacts; selector/snapshot mode will remain out of scope until #72 is implemented. The plan-review gate may apply `status:plan-review` only after the patched plan, review artifacts, validation evidence, pushed commit, and GitHub evidence comment exist. User approval for `status:plan-approved` is recorded in `.planning/plan-approved/61.md`.
 
 ---
 
@@ -418,7 +418,7 @@ Plan-review verification will run the generic public scan only over the plan and
 | Codex r2 | MINOR | Plan-review/approval gate wording, all-changed-artifact source-ban coverage, and `% excluded` zero-total behavior needed tightening. Findings patched in this draft. |
 | Gemini r2 | UNAVAILABLE | Gemini CLI failed with unsupported-client/ineligible-tier before returning findings. |
 
-**Overall result:** PLAN-REVIEW READY - r1 returned Claude MAJOR and Codex MAJOR, and r2 active-provider review returned Claude MINOR and Codex MINOR with no usable MAJOR. Gemini was unavailable in both rounds. This draft patches the r2 findings and remains blocked from implementation until the user approves #61, applies `status:plan-approved`, and creates `.planning/plan-approved/61.md`.
+**Overall result:** PLAN-APPROVED - r1 returned Claude MAJOR and Codex MAJOR, and r2 active-provider review returned Claude MINOR and Codex MINOR with no usable MAJOR. Gemini was unavailable in both rounds. User approval is recorded in `.planning/plan-approved/61.md`; implementation may proceed only after the live issue carries `status:plan-approved` and this plan's dependency gates are satisfied.
 
 ---
 
@@ -429,7 +429,7 @@ Plan-review verification will run the generic public scan only over the plan and
 - **Risk:** Golden Q/A leakage into the ingest path would invalidate retrieval metrics. The implementation must treat eval cases as outside the chunk store.
 - **Risk:** Physical storage-engine selection remains unsettled under #12. #61 must avoid selecting a permanent backend without follow-on storage-format research or explicit user approval.
 - **Risk:** #51 remains a draft umbrella. #61 may proceed by consuming the closed split contracts #65-#70, but it must not claim the #51 umbrella itself is approved.
-- **Risk:** #63 remains unapproved. #61 may define private/internal contracts, but public exposure remains blocked until #63 is approved and implemented.
+- **Risk:** #63 remains unimplemented. #61 may define private/internal contracts, but public exposure remains blocked until #63 is implemented with canary evidence.
 - **Risk:** #72 remains unimplemented. #61 review and validation must use generic public scans only.
 
 ---

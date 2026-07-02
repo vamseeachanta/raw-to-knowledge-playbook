@@ -1,6 +1,6 @@
 # Plan for #72: Generalize Public-Surface Review Selector and Snapshot Modes Beyond Issue 68
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T2
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72
@@ -83,7 +83,7 @@ EXISTS tests/test_validate_ace_public_surface_snapshot_urls.py
 EXISTS tests/test_validate_ace_public_surface_scan.py
 EXISTS docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md
 NEW docs/plans/2026-07-02-issue-72-generalize-public-surface-review-selector-snapshot-modes.md
-MISSING .planning/plan-approved/72.md
+EXISTS .planning/plan-approved/72.md after user approval
 ```
 
 **Reproduction proofs** (verified 2026-07-02):
@@ -314,7 +314,7 @@ verify:
 | Codex r2 | MINOR | Found omitted rules test module declaration and missing Gemini selector/sidecar command or classification. Current draft patches both findings. |
 | Gemini r2 | UNAVAILABLE | CLI returned the same unsupported-client/ineligible-tier condition; no usable review signal. |
 
-**Overall result:** PLAN-REVIEW - r2 returned Claude MINOR and Codex MINOR with no usable MAJOR; Gemini remained unavailable. The r2 MINOR findings are patched in this draft. Implementation remains blocked pending user approval, `status:plan-approved`, and `.planning/plan-approved/72.md`.
+**Overall result:** PLAN-APPROVED - r2 returned Claude MINOR and Codex MINOR with no usable MAJOR; Gemini remained unavailable. The r2 MINOR findings are patched in this draft. User approval is recorded in `.planning/plan-approved/72.md`; implementation may proceed only after the live issue carries `status:plan-approved` and this plan's dependency gates are satisfied.
 
 ---
 

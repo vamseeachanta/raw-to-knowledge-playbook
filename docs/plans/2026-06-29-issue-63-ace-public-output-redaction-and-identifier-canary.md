@@ -1,6 +1,6 @@
 # Plan for #63: ACE Cross-Wave Public-Output Redaction and Identifier Canary
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T3
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63
@@ -26,9 +26,9 @@
 ### Related issues and live status
 - [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) is the approved parent epic and remains open as the tracker.
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains an open umbrella issue with no `status:*` label and no local approval marker. #63 will consume the implemented split contracts rather than treating the #51 umbrella as approved.
-- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is in `status:plan-review`; implementation of #63 will remain blocked until #61 is user-approved or the user explicitly authorizes #63 as an independent canary-only exception.
+- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) has user approval recorded in `.planning/plan-approved/61.md`; #63 no longer needs an independent canary-only exception for the approval dependency, but durable certification work remains subject to #61 implemented validator evidence where this plan requires it.
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#71](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71) are closed implemented split contracts that #63 will consume where relevant.
-- [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) is in `status:plan-review`; until it is approved and implemented, #63 will use explicit `--scan-public-path` inputs and will not depend on generalized review selector/snapshot modes.
+- [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) has user approval recorded in `.planning/plan-approved/72.md`; until it is implemented, #63 will use explicit `--scan-public-path` inputs and will not depend on generalized review selector/snapshot modes.
 - [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60) are downstream wave plans that must not publish docs, `mkdocs.yml` entries, `llm-wiki` outputs, issue closeout summaries, or external public artifacts without the #63 canary passing.
 
 ### Source inventory boundary
@@ -52,7 +52,7 @@
 ```text
 #63 OPEN labels=strengthening,lane:claude,priority:high
 #51 OPEN labels=strengthening,lane:claude,priority:high; no local approval marker
-#61 OPEN labels=strengthening,status:plan-review,lane:claude,priority:high; no local approval marker
+#61 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists
 #62 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
 #65 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high
 #66 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high
@@ -61,7 +61,7 @@
 #69 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high
 #70 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high
 #71 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:medium
-#72 OPEN labels=strengthening,status:plan-review,lane:claude,priority:medium
+#72 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:medium; local marker exists
 ```
 
 **File existence**:
@@ -329,7 +329,7 @@ bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces
 git diff --check
 ```
 
-Plan-review verification will run generic public scans over this plan, `docs/plans/README.md`, and the review artifacts. Review selector/snapshot mode will remain out of scope until #72 is implemented. `status:plan-review` may be applied only after the patched plan and review artifacts are committed, pushed, and linked from a GitHub evidence comment. `status:plan-approved` and `.planning/plan-approved/63.md` remain user-only authorization gates.
+Plan-review verification will run generic public scans over this plan, `docs/plans/README.md`, and the review artifacts. Review selector/snapshot mode will remain out of scope until #72 is implemented. `status:plan-review` may be applied only after the patched plan and review artifacts are committed, pushed, and linked from a GitHub evidence comment. User approval for `status:plan-approved` is recorded in `.planning/plan-approved/63.md`.
 
 ---
 
@@ -367,7 +367,7 @@ Plan-review verification will run generic public scans over this plan, `docs/pla
 | Codex r2 | MINOR | r1 review artifact file-existence evidence was stale after the r1 artifacts were created. Finding patched in this draft. |
 | Gemini r2 | UNAVAILABLE | Gemini CLI failed with unsupported-client/ineligible-tier before returning findings. |
 
-**Overall result:** PLAN-REVIEW READY - r1 returned Codex MAJOR and Claude MINOR; r2 active-provider review returned Claude MINOR and Codex MINOR with no usable MAJOR. Gemini was unavailable in both rounds, so the T3 review panel degraded to active providers only with explicit UNAVAILABLE artifacts. This draft patches the r2 findings and remains blocked from implementation until the user approves #63, applies `status:plan-approved`, and creates `.planning/plan-approved/63.md`.
+**Overall result:** PLAN-APPROVED - r1 returned Codex MAJOR and Claude MINOR; r2 active-provider review returned Claude MINOR and Codex MINOR with no usable MAJOR. Gemini was unavailable in both rounds, so the T3 review panel degraded to active providers only with explicit UNAVAILABLE artifacts. User approval is recorded in `.planning/plan-approved/63.md`; implementation may proceed only after the live issue carries `status:plan-approved` and this plan's dependency gates are satisfied.
 
 ---
 
@@ -377,7 +377,7 @@ Plan-review verification will run generic public scans over this plan, `docs/pla
 - **Risk:** Negative fixtures and deny-list examples could self-block public/legal scans. The implementation must use runtime synthesis or neutral placeholders and validate the changed artifacts with both scanners.
 - **Risk:** A committed private deny-list could leak the exact private inventory it is meant to block. The plan keeps committed configs generic and requires private runtime inputs to stay outside the repo.
 - **Risk:** Source-hash sweep output could publish raw digest values while trying to classify them. The report must record stable hit keys and redacted/classes, not raw source digest values.
-- **Risk:** #51 remains a draft umbrella and #61 remains approval-blocked. #63 may proceed to plan review, but implementation stays blocked unless the user approves #61 or explicitly authorizes an independent canary-only exception.
+- **Risk:** #51 remains a draft umbrella and #61 remains unimplemented. #63 may proceed from approval to implementation only within this plan's dependency gates.
 - **Risk:** #72 remains unimplemented. #63 must use explicit scan paths and cannot rely on generalized review selector/snapshot modes yet.
 
 ---

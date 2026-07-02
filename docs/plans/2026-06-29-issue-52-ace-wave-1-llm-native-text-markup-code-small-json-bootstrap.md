@@ -1,6 +1,6 @@
 # Plan for #52: ACE Wave 1 LLM-Native Text, Markup, Code, and Small JSON Bootstrap
 
-> **Status:** plan-review
+> **Status:** plan-approved
 > **Complexity:** T2
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52
@@ -27,12 +27,12 @@
 
 - [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) is the approved parent epic and authorizes progressive planning, not child implementation.
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains an open umbrella issue with no `status:*` label and no local approval marker. This plan will not treat the [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) umbrella as approved.
-- [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) remains open with no `status:*` label and no local approval marker.
-- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is in `status:plan-review` and remains unapproved. Durable stores, target paths, retrieval metadata, lifecycle state, and persistent success metrics will stay blocked until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved and implemented.
+- [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) has user approval recorded in `.planning/plan-approved/52.md`; implementation still requires the live `status:plan-approved` label and this plan's dependency gates.
+- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) has user approval recorded in `.planning/plan-approved/61.md`. Durable stores, target paths, retrieval metadata, lifecycle state, and persistent success metrics will stay blocked until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is implemented with validator evidence.
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) is closed with `status:plan-approved`, `.planning/plan-approved/62.md`, an implemented manifest freshness validator, and a recorded valid evidence fixture. Operational downstream sampling still requires a trusted [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) evidence-registry pointer; if `artifacts/ace-manifest-freshness/trusted-evidence-registry.json` has no trusted evidence entry for the requested snapshot, [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) sampling fails closed.
-- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is in `status:plan-review` and remains unapproved. Public-facing reports, docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public corpus summaries, and external publication exposure will stay blocked until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and implemented.
+- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has user approval recorded in `.planning/plan-approved/63.md`. Public-facing reports, docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public corpus summaries, and external publication exposure will stay blocked until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is implemented with canary evidence.
 - [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69) are closed wave-0 split contracts that this wave will consume for route/schema, placeholder, bounded sampling, public scan, and legal scan. [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) is the closed manifest-evidence integration contract consumed separately for trusted [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) pointers.
-- [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) is in `status:plan-review`; until approved and implemented, this plan will use only generic `--scan-public-path` public-surface scans and will not claim selector/snapshot review support.
+- [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) has user approval recorded in `.planning/plan-approved/72.md`; until implemented, this plan will use only generic `--scan-public-path` public-surface scans and will not claim selector/snapshot review support.
 
 ### Source inventory boundary
 
@@ -56,13 +56,13 @@
 **Live issue status** (verified 2026-07-02):
 
 ```text
-#52 OPEN labels=strengthening,lane:codex,priority:high; no local approval marker
+#52 OPEN labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
 #51 OPEN labels=strengthening,lane:claude,priority:high; no local approval marker
-#61 OPEN labels=strengthening,status:plan-review,lane:claude,priority:high; no local approval marker
+#61 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists
 #62 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
-#63 OPEN labels=strengthening,status:plan-review,lane:claude,priority:high; no local approval marker
+#63 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists
 #65-#69 CLOSED with status:plan-approved labels and local approval markers; #70 CLOSED with status:plan-approved label and local approval marker as manifest-evidence integration
-#72 OPEN labels=strengthening,status:plan-review,lane:claude,priority:medium
+#72 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:medium; local marker exists
 ```
 
 **File existence**:
@@ -291,7 +291,7 @@ If [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) i
 | Codex r2 | MINOR | Found missing explicit pushed-evidence requirement and repo-local issue-comment scan path ambiguity. Findings patched in this draft. |
 | Gemini r2 | UNAVAILABLE | Gemini CLI failed before returning findings due unsupported-client/ineligible-tier. Raw stderr was not retained because it contained local host paths. |
 
-**Overall result:** PLAN-REVIEW READY - r1 returned active-provider MAJOR findings, then r2 returned Claude MINOR and Codex MINOR with no usable active-provider MAJOR. Gemini was unavailable in both rounds. This draft patches the r2 findings and remains blocked from implementation until the user approves [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52), applies `status:plan-approved`, and creates `.planning/plan-approved/52.md`.
+**Overall result:** PLAN-APPROVED - r1 returned active-provider MAJOR findings, then r2 returned Claude MINOR and Codex MINOR with no usable active-provider MAJOR. Gemini was unavailable in both rounds. User approval is recorded in `.planning/plan-approved/52.md`; implementation may proceed only after the live issue carries `status:plan-approved` and this plan's dependency gates are satisfied.
 
 ---
 
@@ -301,8 +301,8 @@ If [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) i
 - **Risk:** JSON generatedness can be ambiguous; implementation will need false-positive and false-negative fixtures for config JSON versus generated caches, lockfiles, package indexes, and repeated telemetry-like objects.
 - **Risk:** [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) validator evidence can exist while [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) trusted evidence registry has no trusted pointer for operational sampling. [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) must treat that as blocked sampling, not as implicit authorization.
 - **Risk:** A public-safe methodology report can still leak by prose. The public-surface and legal scans must cover reports, review artifacts, tests, fixtures, and issue comments before commit/comment.
-- **Risk:** [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) remains unapproved. [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) can define wave-1 method contracts, but durable output, target paths, retrieval metadata, lifecycle state, and persistent metrics remain blocked.
-- **Risk:** [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) remains unapproved. Public exposure remains blocked even if [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) creates scan-clean methodology artifacts.
+- **Risk:** [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) remains unimplemented. [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) can define wave-1 method contracts, but durable output, target paths, retrieval metadata, lifecycle state, and persistent metrics remain blocked.
+- **Risk:** [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) remains unimplemented. Public exposure remains blocked even if [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) creates scan-clean methodology artifacts.
 - **Risk:** [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) remains unimplemented. Review and validation must use generic public scans only.
 - **Risk:** `docs/` is deployed through MkDocs/Pages even for pages not listed in navigation. Before [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63), any [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52) `docs/` artifact must stay synthetic-fixture-only and must not include measured ACE-derived corpus summaries.
 - **Open:** If implementation discovers reusable JSON/schema filtering rules beyond this lane, closeout must either update the relevant skill/doc/eval or file a follow-on issue before close.
