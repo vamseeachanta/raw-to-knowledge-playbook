@@ -209,7 +209,7 @@ These checks must be satisfied before [#51](https://github.com/vamseeachanta/raw
 
 - **Risk:** The split registry can drift from issue bodies; pre-label review must refetch live issue metadata before any status transition.
 - **Risk:** Review fatigue from r1-r28 can hide fresh defects; final review must treat the rewritten plan as a new artifact, not a patched version to rubber-stamp.
-- **Risk:** Gemini remains unavailable due an unsupported-client tier failure; the plan cannot enter `status:plan-review` unless Gemini is restored/migrated or the user explicitly authorizes a degraded-quorum round.
+- **Risk:** Gemini remains unavailable due to an unsupported-client tier failure; the plan cannot enter `status:plan-review` unless Gemini is restored/migrated or the user explicitly authorizes a degraded-quorum round.
 - **Open:** The next concrete planning target after [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) review should be the cross-wave lifecycle gate [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61), because durable downstream outputs depend on it.
 
 ---
