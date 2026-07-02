@@ -23,7 +23,7 @@
     {
       "name": "raw-source-firewall",
       "prompt": "Run /route-visibility on a staged diff that includes a raw licensed source PDF.",
-      "expect": ["blocks: only derived parts + a sources: sha256 pointer may be committed, never the raw source"]
+      "expect": ["blocks: only derived parts plus opaque source tokens or provenance bundle refs may be committed; raw source digest values stay private-sidecar only"]
     },
     {
       "id": "ace-61-publication-gate",

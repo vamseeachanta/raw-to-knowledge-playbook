@@ -1,0 +1,34 @@
+{
+  "contract_id": "ace-ingested-success-metric-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 61,
+  "imports_success_fields_from_issue": 65,
+  "success_metric": {
+    "numerator_field": "successful_routed_items",
+    "denominator_field": "eligible_candidate_items",
+    "formula": "successful_routed_items / eligible_candidate_items * 100"
+  },
+  "exclusion_metric": {
+    "numerator_field": "hard_excluded_items",
+    "denominator_field": "total_classified_items",
+    "formula": "hard_excluded_items / total_classified_items * 100"
+  },
+  "metric_status_values": [
+    "measured",
+    "no_eligible_candidates",
+    "no_classified_items",
+    "not_applicable_control_plane",
+    "invalid_metric"
+  ],
+  "control_plane_zero_sentinel": {
+    "metric_status": "not_applicable_control_plane",
+    "measured_success_numerator": 0,
+    "measured_success_denominator": 0,
+    "success_threshold": 0
+  },
+  "public_safety_notes": [
+    "The metric is aggregate-only and carries no source identifiers.",
+    "Hard exclusions are reported separately from ingestion failures.",
+    "Zero denominators use closed status values instead of emitting misleading percentages."
+  ]
+}

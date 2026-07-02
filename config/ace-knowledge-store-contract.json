@@ -1,0 +1,129 @@
+{
+  "contract_id": "ace-knowledge-store-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 61,
+  "depends_on_schema_issue": 65,
+  "depends_on_manifest_evidence_issue": 62,
+  "publication_gate_issue": 63,
+  "selector_generalization_issue": 72,
+  "route_store_dependency": {
+    "owner_issue": 65,
+    "schema_path": "artifacts/ace-wave0-ledger-schema.json",
+    "validator_path": "scripts/validate_ace_wave0_schema_contract.py",
+    "mode": "import_only"
+  },
+  "storage_forms": [
+    "landing_page",
+    "part_file",
+    "dataset_table",
+    "media_descriptor",
+    "geometry_metadata",
+    "private_sidecar_record",
+    "exclusion_record",
+    "retrieval_chunk",
+    "eval_case"
+  ],
+  "required_metadata_by_storage_form": {
+    "landing_page": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "part_file": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "dataset_table": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "media_descriptor": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "geometry_metadata": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "private_sidecar_record": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "exclusion_record": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "retrieval_chunk": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    },
+    "eval_case": {
+      "field_groups": ["identity", "routing", "lifecycle", "verification", "provenance", "evaluation", "success"]
+    }
+  },
+  "lifecycle_states": [
+    "candidate",
+    "provisional",
+    "verified",
+    "rejected",
+    "superseded",
+    "stale_requires_rescreen"
+  ],
+  "lifecycle_transitions": [
+    {"from": "candidate", "to": "provisional", "reason_required": "initial_parse"},
+    {"from": "candidate", "to": "rejected", "reason_required": "screen_failure"},
+    {"from": "candidate", "to": "stale_requires_rescreen", "reason_required": "source_or_policy_change"},
+    {"from": "provisional", "to": "verified", "reason_required": "independent_verification"},
+    {"from": "provisional", "to": "rejected", "reason_required": "verification_failure"},
+    {"from": "provisional", "to": "stale_requires_rescreen", "reason_required": "source_or_policy_change"},
+    {"from": "verified", "to": "superseded", "reason_required": "replacement_artifact"},
+    {"from": "verified", "to": "stale_requires_rescreen", "reason_required": "source_or_policy_change"},
+    {"from": "rejected", "to": "stale_requires_rescreen", "reason_required": "source_replacement_or_audit_correction"},
+    {"from": "stale_requires_rescreen", "to": "provisional", "reason_required": "confidentiality_rescreen_passed"},
+    {"from": "stale_requires_rescreen", "to": "rejected", "reason_required": "rescreen_failure"},
+    {"from": "superseded", "to": "stale_requires_rescreen", "reason_required": "audit_correction"}
+  ],
+  "enum_owner_map": {
+    "route_target": {"owner_issue": 65, "source": "artifacts/ace-wave0-ledger-schema.json"},
+    "logical_target_store": {"owner_issue": 65, "source": "artifacts/ace-wave0-ledger-schema.json"},
+    "lifecycle_state": {"owner_issue": 61, "source": "config/ace-knowledge-store-contract.json"},
+    "extraction_verification_state": {"owner_issue": 65, "source": "artifacts/ace-wave0-ledger-schema.json"},
+    "page_shape_parse_status": {"owner_skill": "page-shape-contract", "source": "skills/page-shape-contract/SKILL.md"},
+    "manifest_freshness_status": {"owner_issue": 62, "source": "config/ace-manifest-evidence-contract.json"},
+    "publication_certification_status": {"owner_issue": 63, "source": "issue 63 public-output canary"}
+  },
+  "private_provenance_policy": {
+    "allowed_public_fields": ["private_provenance_bundle_ref"],
+    "opaque_reference_required": true,
+    "committed_private_lookup_material": false
+  },
+  "retrieval_chunk_required_metadata": [
+    "citation_id",
+    "logical_document_key",
+    "edition",
+    "revision",
+    "is_current",
+    "as_of_timestamp",
+    "visibility",
+    "lifecycle_state",
+    "parse_status",
+    "hash_reference",
+    "structure_type",
+    "route_target",
+    "logical_target_store"
+  ],
+  "publication_gate": {
+    "owner_issue": 63,
+    "publication_exposure_allowed": false,
+    "required_evidence": ["implemented_canary", "passing_command", "exit_code_0"],
+    "blocked_public_surfaces": [
+      "docs_navigation",
+      "mkdocs_yml",
+      "llm_wiki",
+      "external_publication",
+      "derived_public_summaries"
+    ]
+  },
+  "eval_contract": {
+    "golden_cases_outside_ingest_path": true,
+    "golden_cases_outside_chunk_store": true,
+    "allowed_eval_tiers": ["golden", "silver"]
+  },
+  "bulk_scale_gate_requires_61": true,
+  "public_safety_notes": [
+    "This contract is public-safe methodology only.",
+    "It defines logical storage forms and validation rules without reading operational source roots.",
+    "Published ACE-derived corpus output still requires the issue 63 public-output canary."
+  ]
+}

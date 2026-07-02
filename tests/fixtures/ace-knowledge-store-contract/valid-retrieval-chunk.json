@@ -1,0 +1,16 @@
+{
+  "citation_id": "doc-1@rev-a#hashref-synthetic",
+  "logical_document_key": "doc-1",
+  "edition": "synthetic-edition",
+  "revision": "rev-a",
+  "is_current": true,
+  "as_of_timestamp": "2026-07-02T00:00:00Z",
+  "visibility": "private",
+  "lifecycle_state": "verified",
+  "parse_status": "parse_succeeded",
+  "hash_reference": "hashref:synthetic",
+  "structure_type": "table",
+  "route_target": "metadata_only",
+  "logical_target_store": "metadata_ledger_store",
+  "table_preserved": true
+}

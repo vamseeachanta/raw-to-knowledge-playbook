@@ -25,8 +25,9 @@ Everything else in this doc is adjustable. These two are not — they are cheap,
 structural, and they prevent the one irreversible mistake:
 
 1. **The raw source file never enters any repo.** It lives in an off-repo,
-   read-only archive; the repo stores only *derived* data plus a `sources:` sha256
-   pointer (doc 07 §1). This keeps the repo from *being* the redistributable copy.
+   read-only archive; the repo stores only *derived* data plus opaque source
+   tokens or provenance bundle references. Raw source digest values stay
+   private-sidecar only. This keeps the repo from *being* the redistributable copy.
 2. **Private-classified data never crosses into a public/shared repo.** The
    `visibility:` frontmatter field is the single point that, if wrong, turns an
    internal knowledge base into publication. It is machine-checked at commit
