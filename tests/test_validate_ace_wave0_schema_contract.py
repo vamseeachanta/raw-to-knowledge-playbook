@@ -340,7 +340,7 @@ class AceWave0SchemaContractTests(unittest.TestCase):
             "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md",
             rows[68]["plan_path"],
         )
-        self.assertEqual("status:blocked-draft", rows[68]["status_snapshot"])
+        self.assertEqual("status:plan-review", rows[68]["status_snapshot"])
         self.assertFalse(rows[68]["implementation_ready"])
         self.assertEqual(
             "docs/plans/2026-07-01-issue-69-repo-local-legal-security-scan-gate.md",
@@ -396,13 +396,60 @@ class AceWave0SchemaContractTests(unittest.TestCase):
 
         self.assertNotIn("#65 split status_snapshot", "\n".join(errors))
 
-    def test_split_registry_allows_68_readme_draft_coarsening_when_blocked_draft_source_exists(self):
+    def test_split_registry_allows_68_plan_review_without_approval_marker(self):
         validator = load_validator()
         schema = load_schema()
 
         errors = validator.validate_schema(schema)
 
         self.assertNotIn("#68 split status_snapshot", "\n".join(errors))
+        self.assertNotIn("#68 implementation_ready", "\n".join(errors))
+
+    def test_plan_review_transition_rejects_lingering_blocked_draft_surfaces(self):
+        validator = load_validator()
+        schema = load_schema()
+        plan_path = REPO_ROOT / "docs" / "plans" / "2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md"
+        readme_path = REPO_ROOT / "docs" / "plans" / "README.md"
+        coordination_path = REPO_ROOT / "docs" / "plans" / "ace-share-ingestion-wave-coordination.md"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            fake_plan = tmp_root / "plan.md"
+            fake_readme = tmp_root / "README.md"
+            fake_coordination = tmp_root / "coordination.md"
+
+            fake_plan.write_text(plan_path.read_text().replace(
+                "> **Status:** plan-review",
+                "> **Status:** blocked-draft",
+            ))
+            fake_readme.write_text(readme_path.read_text().replace(
+                "| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | ace-public-surface-self-scan-control-plane | `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md` | 2026-06-30 | plan-review |",
+                "| [#68](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68) | ace-public-surface-self-scan-control-plane | `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md` | 2026-06-30 | blocked-draft |",
+            ))
+            fake_coordination.write_text(coordination_path.read_text().replace(
+                "plan-review: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
+                "blocked-draft: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
+            ))
+
+            original_repo_path = validator._repo_path
+
+            def mapped_repo_path(path: Path) -> Path:
+                path_string = Path(path).as_posix()
+                if path_string == "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md":
+                    return fake_plan
+                if path_string == "docs/plans/README.md":
+                    return fake_readme
+                if path_string == "docs/plans/ace-share-ingestion-wave-coordination.md":
+                    return fake_coordination
+                return original_repo_path(path)
+
+            validator._repo_path = mapped_repo_path
+            try:
+                errors = validator.validate_schema(schema)
+            finally:
+                validator._repo_path = original_repo_path
+
+        self.assertIn("#68 split status_snapshot", "\n".join(errors))
 
     def test_split_registry_uses_68_plan_body_when_coordination_status_is_silent(self):
         validator = load_validator()
@@ -410,10 +457,13 @@ class AceWave0SchemaContractTests(unittest.TestCase):
         coordination_path = REPO_ROOT / "docs" / "plans" / "ace-share-ingestion-wave-coordination.md"
         with tempfile.TemporaryDirectory() as tmp:
             fake_coordination = Path(tmp) / "coordination.md"
-            fake_coordination.write_text(coordination_path.read_text().replace(
-                "blocked-draft: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
+            original_text = coordination_path.read_text()
+            mutated_text = original_text.replace(
+                "plan-review: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
                 "decision pending in plan body: `docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md`",
-            ))
+            )
+            self.assertNotEqual(original_text, mutated_text)
+            fake_coordination.write_text(mutated_text)
             original_repo_path = validator._repo_path
 
             def mapped_repo_path(path: Path) -> Path:

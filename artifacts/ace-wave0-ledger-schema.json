@@ -305,7 +305,7 @@
       "scope": "public_surface_self_scan",
       "lane": "lane:claude",
       "plan_path": "docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md",
-      "status_snapshot": "status:blocked-draft",
+      "status_snapshot": "status:plan-review",
       "implementation_ready": false,
       "depends_on": [
         65,
