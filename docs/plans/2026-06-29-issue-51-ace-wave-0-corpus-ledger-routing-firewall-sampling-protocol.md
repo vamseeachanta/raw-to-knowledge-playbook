@@ -7,7 +7,7 @@
 > **Client:** N/A
 > **Project:** N/A
 > **Lane:** lane:claude
-> **Review artifacts:** r27/r28 blocking review evidence recorded; PENDING final no-MAJOR round after the r28 patches; historical r16-r26 artifacts remain public-history evidence only
+> **Review artifacts:** r27/r28 blocking review evidence recorded; r29/r30 active-provider review returned no MAJOR; historical r16-r26 artifacts remain public-history evidence only
 
 ---
 
@@ -84,7 +84,7 @@ N/A - governance/planning issue; no runtime failure is alleged.
 | Local-only quarantined review residue | Pre-existing untracked [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) r1-r15 artifacts moved outside the repo; not cited as plan-review evidence and not eligible for public commit |
 | Split issue plans and closeouts | GitHub issues [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#69](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/69), their plan files, implementation artifacts, and implementation-review artifacts |
 | Blocking #51 review artifacts | `scripts/review/results/2026-07-02-plan-51-*-r27.md` and `scripts/review/results/2026-07-02-plan-51-*-r28.md` |
-| Future final #51 review artifacts | `scripts/review/results/2026-07-02-plan-51-*-r29.md` or later |
+| Final no-MAJOR active-provider review artifacts | `scripts/review/results/2026-07-02-plan-51-*-r29.md` and `scripts/review/results/2026-07-02-plan-51-*-r30.md` |
 
 ---
 
@@ -199,9 +199,10 @@ These checks must be satisfied before [#51](https://github.com/vamseeachanta/raw
 | Gemini r26 | UNAVAILABLE | Noninteractive Gemini auth failed with rc=41. |
 | r27 split-closeout refresh | MAJOR/MINOR/UNAVAILABLE | Found untracked r1-r15 residue, missing explicit #69 legal gate, stale #65 legal-scan state, stale #51 ledger/body state, and Gemini unsupported-client unavailability. |
 | r28 focused re-review | MAJOR/MINOR/UNAVAILABLE | Found untracked r27 artifacts before they were committed, #68 selector/snapshot overclaim, stale r27 bookkeeping, final-round identity ambiguity, and Gemini failure-class wording. |
-| r29 final focused re-review | PENDING | Required before any status transition. |
+| r29 final focused re-review | APPROVE/MINOR/UNAVAILABLE | Active providers returned no MAJOR; Claude found minor ledger bookkeeping, codex reviews approved, Gemini remained unavailable. |
+| r30 bookkeeping re-review | MINOR/UNAVAILABLE | Claude verified the r29 fixes and found no active-provider MAJOR; remaining minor items were stale round bookkeeping and missing issue checkpoint comment, both addressed by this closeout. Gemini remained unavailable due unsupported-client tier. |
 
-**Overall result:** This plan remains draft-only. The refreshed plan keeps [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) as an umbrella coordination plan. No implementation or approval label will be applied by this plan revision.
+**Overall result:** This plan remains draft-only. The refreshed plan keeps [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) as an umbrella coordination plan. Active-provider review has no remaining MAJOR findings, but no implementation or approval label will be applied by this plan revision because Gemini remains unavailable and degraded-quorum authorization is user-controlled.
 
 ---
 
