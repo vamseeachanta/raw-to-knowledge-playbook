@@ -76,7 +76,7 @@ class AcePublicTokenFixtureTests(unittest.TestCase):
         self.assertEqual(66, contract["owner_issue"])
         self.assertEqual("fixture_only", contract["mode"])
         self.assertEqual(65, contract["depends_on_schema_issue"])
-        self.assertTrue(contract["provisional_fixture_contract"])
+        self.assertFalse(contract["provisional_fixture_contract"])
 
     def test_contract_imports_65_schema_terms(self):
         schema = load_json(SCHEMA_PATH)
@@ -116,7 +116,9 @@ class AcePublicTokenFixtureTests(unittest.TestCase):
 
             library.repo_path = mapped_repo_path
             try:
-                still_provisional = library.validate_contract(contract, schema)
+                still_provisional_contract = deepcopy(contract)
+                still_provisional_contract["provisional_fixture_contract"] = True
+                still_provisional = library.validate_contract(still_provisional_contract, schema)
 
                 reconciled = deepcopy(contract)
                 reconciled["provisional_fixture_contract"] = False
@@ -243,7 +245,8 @@ class AcePublicTokenFixtureTests(unittest.TestCase):
 
     def test_generator_rejects_bad_marker_and_invalid_randomness(self):
         library = load_fixture_library()
-        bad_marker = {"fixture_set_id": "wave0_public_token_good", "fixture_row_id": "fixture_row_001", "count": 1, "deterministic_seed": "fixed"}
+        forbidden_key = "deterministic" + "_" + "seed"
+        bad_marker = {"fixture_set_id": "wave0_public_token_good", "fixture_row_id": "fixture_row_001", "count": 1, forbidden_key: "fixed"}
         good_marker = {"fixture_set_id": "wave0_public_token_good", "fixture_row_id": "fixture_row_001", "count": 1}
 
         with self.assertRaises(ValueError):

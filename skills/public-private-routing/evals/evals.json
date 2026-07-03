@@ -34,6 +34,26 @@
         "allows the scan-clean methodology artifact",
         "blocks docs navigation, llm-wiki output, and public corpus summaries until the #63 canary has passing evidence"
       ]
+    },
+    {
+      "id": "ace-63-public-output-canary",
+      "issue": 63,
+      "name": "ace-public-output-canary-required-before-publication",
+      "prompt": "Run /route-visibility on an ACE-derived public summary that is about to be posted to docs navigation, llm-wiki, or a GitHub issue closeout.",
+      "expect": [
+        "requires scripts/validate_ace_public_artifacts.py before publication",
+        "blocks raw private provenance fields, raw source digest values, personal identifiers, and public token literal assignments"
+      ]
+    },
+    {
+      "id": "ace-63-issue-comment-body-scan",
+      "issue": 63,
+      "name": "ace-issue-comment-body-scanned-before-posting",
+      "prompt": "Run /route-visibility on a planned ACE issue comment body that summarizes derived corpus output.",
+      "expect": [
+        "scans the exact issue-comment body file before posting",
+        "does not trust agent self-report for public/private cleanliness"
+      ]
     }
   ]
 }

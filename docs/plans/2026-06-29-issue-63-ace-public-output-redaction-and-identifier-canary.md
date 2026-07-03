@@ -1,6 +1,6 @@
 # Plan for #63: ACE Cross-Wave Public-Output Redaction and Identifier Canary
 
-> **Status:** plan-approved
+> **Status:** completed
 > **Complexity:** T3
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63
@@ -21,12 +21,12 @@
 - `.legal-deny-list.yaml`, `scripts/legal/legal-sanity-scan.sh`, and `scripts/legal/legal_sanity_scan.py` will be consumed as the implemented #69 legal/security scan gate. The committed legal config already declares `private_runtime_config_owner_issue: 63` and intentionally contains no real private/client inventories.
 - `.github/workflows/validate.yml` already runs #66, #68, and #69 validators; #63 implementation will add the public-output canary and its unit tests to that workflow.
 - `scripts/ace_public_token_fixtures.py` already enforces the #66/#63 handoff: once `config/ace-public-output-contract.json` exists, `config/ace-public-token-fixture-contract.json` must set `provisional_fixture_contract` to `false` and the #63 token grammar/field policy must match #66.
-- Current #66 baseline verification is not green: `uv run python scripts/validate_ace_public_token_fixtures.py` fails on `tests/test_validate_ace_public_token_fixtures.py` because the test source contains a literal forbidden request-key example. #63 implementation must repair that scan-clean baseline before completing the #66/#63 handoff.
+- The #66 baseline verification had a scan-clean failure in `tests/test_validate_ace_public_token_fixtures.py`; #63 implementation repairs that baseline before completing the #66/#63 handoff.
 
 ### Related issues and live status
 - [#50](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/50) is the approved parent epic and remains open as the tracker.
 - [#51](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/51) remains an open umbrella issue with no `status:*` label and no local approval marker. #63 will consume the implemented split contracts rather than treating the #51 umbrella as approved.
-- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) has user approval recorded in `.planning/plan-approved/61.md`; #63 no longer needs an independent canary-only exception for the approval dependency, but durable certification work remains subject to #61 implemented validator evidence where this plan requires it.
+- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is closed with user approval recorded in `.planning/plan-approved/61.md`, implemented validator evidence, recorded passing-command evidence, and implementation cross-review closeout.
 - [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) and [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65)-[#71](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71) are closed implemented split contracts that #63 will consume where relevant.
 - [#72](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/72) has user approval recorded in `.planning/plan-approved/72.md`; until it is implemented, #63 will use explicit `--scan-public-path` inputs and will not depend on generalized review selector/snapshot modes.
 - [#52](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52)-[#60](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/60) are downstream wave plans that must not publish docs, `mkdocs.yml` entries, `llm-wiki` outputs, issue closeout summaries, or external public artifacts without the #63 canary passing.
@@ -38,13 +38,13 @@
 - Negative fixtures will remain scan-clean: tests will synthesize forbidden-looking values at runtime or store neutral placeholders with deterministic fixture markers. No tracked bad fixture will contain a raw private path, raw digest, real public token value, email, phone, real client/project/customer identifier, or copied private snippet.
 
 ### Gaps identified
-- No #63 public-output certification contract exists that ties #66 token policy, #68 public-surface scanner, #69 legal scan, issue-comment scanning, and publication/closeout gates together.
-- No `scripts/validate_ace_public_artifacts.py` canary exists for publication and closeout surfaces.
-- No #63 synthetic canary fixture set exists for EXIF/GPS, title-block/BOM, unsafe field/table names, copied-private-snippet sentinels, issue comments, or public-summary bodies.
-- No source-hash/source-digest policy sweep report exists to classify repo-tracked public methodology references and prevent raw source hashes from being treated as public source references.
-- No CI step invokes a #63 public-output canary.
-- No #63 review artifacts exist under `scripts/review/results/`.
-- Existing #66 public-token fixture validation currently fails on a scan-cleanliness issue in `tests/test_validate_ace_public_token_fixtures.py`; #63 must either repair that baseline before the handoff or remain blocked.
+- #63 implementation supplies the public-output certification contract tying #66 token policy, #68 public-surface scanning, #69 legal scanning, issue-comment scanning, and publication/closeout gates together.
+- #63 implementation supplies `scripts/validate_ace_public_artifacts.py` for publication and closeout surfaces.
+- #63 implementation supplies a synthetic canary fixture directory and runtime-synthesized negative tests for media metadata, engineering metadata, copied-snippet, issue-comment, and public-summary bodies.
+- #63 implementation supplies a source-hash/source-digest policy sweep report that classifies repo-tracked public methodology references without publishing raw digest values.
+- CI invokes the #63 public-output canary and unit tests.
+- Plan-review artifacts exist under `scripts/review/results/`; implementation review artifacts are added during closeout.
+- The #66 public-token fixture validation baseline is repaired and remains green after the #63 handoff.
 
 ### Evidence
 
@@ -52,7 +52,7 @@
 ```text
 #63 OPEN labels=strengthening,lane:claude,priority:high
 #51 OPEN labels=strengthening,lane:claude,priority:high; no local approval marker
-#61 OPEN labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists
+#61 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists; implemented-validator evidence recorded
 #62 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
 #65 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high
 #66 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high
@@ -377,7 +377,7 @@ Plan-review verification will run generic public scans over this plan, `docs/pla
 - **Risk:** Negative fixtures and deny-list examples could self-block public/legal scans. The implementation must use runtime synthesis or neutral placeholders and validate the changed artifacts with both scanners.
 - **Risk:** A committed private deny-list could leak the exact private inventory it is meant to block. The plan keeps committed configs generic and requires private runtime inputs to stay outside the repo.
 - **Risk:** Source-hash sweep output could publish raw digest values while trying to classify them. The report must record stable hit keys and redacted/classes, not raw source digest values.
-- **Risk:** #51 remains a draft umbrella and #61 remains unimplemented. #63 may proceed from approval to implementation only within this plan's dependency gates.
+- **Risk:** #51 remains a draft umbrella. #61 is completed, and #63 stays within the implemented split-contract dependency gates rather than treating the #51 umbrella as approved.
 - **Risk:** #72 remains unimplemented. #63 must use explicit scan paths and cannot rely on generalized review selector/snapshot modes yet.
 
 ---

@@ -91,3 +91,11 @@ raw source digest values stay private-sidecar only. Private provenance is expose
 `private_provenance_bundle_ref`. Exact private lookup material stays outside
 tracked public artifacts, while every public record still carries enough
 provenance shape to support audit and downstream verification.
+
+## 7. ACE #63 public-output certification hook
+
+ACE-derived public outputs must pass `scripts/validate_ace_public_artifacts.py`
+before docs navigation, `mkdocs.yml`, `llm-wiki`, issue closeout summaries, or
+external publication. The #63 canary imports the #66 public-token policy, #68
+public-surface scanner, and #69 legal/security scanner; it is the publication
+gate, not a replacement for the raw-source firewall.

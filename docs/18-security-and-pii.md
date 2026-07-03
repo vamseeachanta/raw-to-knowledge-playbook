@@ -141,6 +141,16 @@ Evidence imagery (doc 11) carries PII in two layers:
 7. **Re-verify each provider DPA at adoption time;** record verified retention terms
    + date in externalized gate-policy YAML.
 
+## ACE #63 publication canary
+
+For ACE-derived public artifacts, security and PII egress checks converge at
+`scripts/validate_ace_public_artifacts.py`. The canary blocks public-output
+surfaces that carry personal identifier shapes, private-like identifiers, media
+metadata assignments, unsafe engineering metadata assignments, copied private
+snippets, raw private provenance values, or concrete public-token assignments.
+Issue-comment bodies and closeout summaries are scanned as explicit text inputs
+before posting.
+
 *Snapshot 2026-06. Provider retention terms churn — re-verify against the DPA at
 adoption. Full primary-source citations (vendor docs, the court order, license
 files): issue #19.*

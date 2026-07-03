@@ -1,0 +1,92 @@
+{
+  "contract_id": "ace-public-output-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 63,
+  "mode": "publication_certification",
+  "stock_ci_live_github_dependency": false,
+  "upstream_contracts": {
+    "public_token_fixture_contract": {
+      "path": "config/ace-public-token-fixture-contract.json",
+      "owner_issue": 66
+    },
+    "public_surface_self_scan_contract": {
+      "path": "config/ace-public-surface-self-scan-contract.json",
+      "owner_issue": 68
+    },
+    "legal_security_scan": {
+      "path": ".legal-deny-list.yaml",
+      "owner_issue": 69
+    }
+  },
+  "public_token_field_name": "public_source_token",
+  "public_token_grammar": {
+    "prefix": "pst_",
+    "hex_characters": 32
+  },
+  "public_safe_source_reference_fields": [
+    "public_source_token"
+  ],
+  "private_only_provenance_fields": [
+    "source_id",
+    "source_sha256",
+    "private_lookup_key",
+    "private_lookup_map",
+    "share_relative_path_private_only"
+  ],
+  "private_only_fields": [
+    "source_id",
+    "source_sha256",
+    "private_lookup_key",
+    "private_lookup_map",
+    "share_relative_path_private_only"
+  ],
+  "banned_public_fields": [
+    "source_id",
+    "source_sha256",
+    "private_lookup_key",
+    "private_lookup_map",
+    "share_relative_path_private_only"
+  ],
+  "source_like_raw_digest_terms": [
+    "source_hash",
+    "provenance_pointer"
+  ],
+  "source_hash_private_terms": [
+    "source_hash",
+    "provenance_pointer"
+  ],
+  "git_governance_sha_fields": [
+    "reviewed_commit_sha",
+    "commit_sha",
+    "git_commit_sha"
+  ],
+  "public_output_surfaces": [
+    "docs",
+    "skills",
+    "review_artifacts",
+    "issue_comment_bodies",
+    "closeout_summaries",
+    "mkdocs_nav",
+    "llm_wiki_outputs",
+    "external_publication_summaries"
+  ],
+  "allowed_public_reference_policy": {
+    "source_reference_fields": [
+      "public_source_token"
+    ],
+    "raw_source_digest_public_reference": false,
+    "raw_private_lookup_public_reference": false
+  },
+  "required_certification_evidence": [
+    "canary_command",
+    "exit_code",
+    "scanned_paths",
+    "contract_version",
+    "timestamp_utc"
+  ],
+  "sanitized_aggregate_contexts": [
+    "bounded_sample_counts",
+    "success_metric_percentages",
+    "synthetic_examples"
+  ]
+}

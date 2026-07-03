@@ -143,3 +143,13 @@ Inside the private boundary, #61 permits opaque provenance bundle references and
 closed lifecycle states so agents can work progressively without committing raw
 source detail. Anything promoted toward a shared boundary must pass the
 independent scan and publication gate first.
+
+## ACE #63 publication boundary hook
+
+The #63 canary is the concrete promotion gate for ACE-derived public outputs.
+Before adding public docs navigation, `mkdocs.yml` entries, `llm-wiki` output,
+GitHub-public corpus summaries, issue closeout summaries, or external publication,
+run `scripts/validate_ace_public_artifacts.py` over the exact surfaces and any
+planned issue-comment body. The gate keeps raw source digest provenance,
+private lookup material, media metadata assignments, unsafe engineering metadata
+assignments, and concrete public-token assignments out of shared artifacts.

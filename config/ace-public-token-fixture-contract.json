@@ -5,7 +5,7 @@
   "mode": "fixture_only",
   "depends_on_schema_issue": 65,
   "schema_path": "artifacts/ace-wave0-ledger-schema.json",
-  "provisional_fixture_contract": true,
+  "provisional_fixture_contract": false,
   "public_token_policy_owner_issues": [
     66,
     63
