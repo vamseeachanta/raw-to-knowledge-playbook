@@ -73,12 +73,24 @@ files.
    ```
    Use only the closed classes: `data`, `calculation`, `mixed`, `guarded`,
    `unsupported`.
+   For ACE wave 2 / issue #53, keep that original class and add the separate
+   ACE-facing workbook class from `ace_classification_from_inventory()`:
+   `data_workbook`, `calculation_workbook`, `report_workbook`, or
+   `excluded_workbook`. Use `classify --ace` to emit those ACE fields from the
+   CLI. Do not use a workbook class as a route target.
 6. **Require the triplet before promotion.**
    - `data`: input schema/ranges -> parser or schema code -> normalized tables.
    - `calculation`: input cells/formula graph -> evaluator or ported code ->
      recomputed output proof.
    - `mixed`: separate data and formula paths before output proof.
    - `guarded` or `unsupported`: explicit deferral artifact with reason.
+7. **Apply the ACE #53 deferrals.**
+   - `.xls`, `.xlsb`, and `.ods` stay `excluded_workbook` until an approved
+     adapter issue lands with tests.
+   - `.xlsm` macro presence and external links are inventory facts only; never
+     execute macros or trust linked content during ingestion.
+   - Protected workbooks route to explicit deferral unless a separate access
+     review authorizes metadata-only handling.
 
 ## Verification
 - `uv run skills/validate_skill.py --strict` passes.
@@ -87,6 +99,8 @@ files.
 - No raw `.xls`, `.xlsx`, `.xlsm`, or `.xlsb` bytes are committed.
 - Every canary source has URL, license note, byte count, and sha256.
 - Formula workbooks are never marked verified from cached values alone.
+- ACE #53 synthetic fixtures pass
+  `uv run python scripts/validate_ace_wave2_spreadsheet_csv.py`.
 
 ## Cleanup
 - Remove any temporary inventory/output files produced outside committed paths.

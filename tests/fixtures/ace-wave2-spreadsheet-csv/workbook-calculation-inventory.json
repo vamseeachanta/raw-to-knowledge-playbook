@@ -1,0 +1,26 @@
+{
+  "workbook": "synthetic-calculation.xlsx",
+  "file_extension": ".xlsx",
+  "workbook_protected": false,
+  "macro_presence": false,
+  "external_link_count": 0,
+  "summary": {
+    "formula_count": 2,
+    "table_count": 0,
+    "merged_range_count": 0,
+    "chart_count": 0,
+    "protected_sheet_count": 0
+  },
+  "sheets": [
+    {
+      "name": "Calc",
+      "formulas": [
+        {"cell": "B2", "formula": "=A2*1.1", "cached_value": 11},
+        {"cell": "B3", "formula": "=A3*1.1", "cached_value": 22}
+      ],
+      "tables": [],
+      "merged_ranges": [],
+      "chart_count": 0
+    }
+  ]
+}

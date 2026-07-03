@@ -8,14 +8,21 @@
 # ///
 from __future__ import annotations
 
-import argparse, hashlib, json, os, re, tempfile, urllib.request
+import argparse, hashlib, json, os, re, tempfile, urllib.request, zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from openpyxl import Workbook, load_workbook
-from openpyxl.workbook.defined_name import DefinedName
-from openpyxl.worksheet.table import Table, TableStyleInfo
+try:
+    from openpyxl import Workbook, load_workbook
+    from openpyxl.workbook.defined_name import DefinedName
+    from openpyxl.worksheet.table import Table, TableStyleInfo
+except Exception:  # pragma: no cover - dependency import is surfaced at runtime.
+    Workbook = None
+    load_workbook = None
+    DefinedName = None
+    Table = None
+    TableStyleInfo = None
 
 try:
     from python_calamine import CalamineWorkbook
@@ -24,6 +31,7 @@ except Exception:  # pragma: no cover - dependency import is surfaced in reports
 
 CATEGORY_VALUES = {"simple", "complex"}
 CLASS_VALUES = {"data", "calculation", "mixed", "guarded", "unsupported"}
+ACE_WORKBOOK_CLASS_VALUES = {"data_workbook", "calculation_workbook", "report_workbook", "excluded_workbook"}
 REQUIRED_FIELDS = {
     "public_fixture_id",
     "category",
@@ -207,8 +215,12 @@ def inventory_sheet(ws: Any, value_ws: Any) -> dict[str, Any]:
 
 
 def inventory_workbook(path: Path, public_fixture_id: str | None = None) -> dict[str, Any]:
-    formula_wb = load_workbook(path, data_only=False, read_only=False, keep_links=True)
-    value_wb = load_workbook(path, data_only=True, read_only=True, keep_links=True)
+    if load_workbook is None:
+        raise RuntimeError("openpyxl is required to inventory workbook bytes")
+    suffix = path.suffix.lower()
+    keep_vba = suffix == ".xlsm"
+    formula_wb = load_workbook(path, data_only=False, read_only=False, keep_links=True, keep_vba=keep_vba)
+    value_wb = load_workbook(path, data_only=True, read_only=True, keep_links=True, keep_vba=keep_vba)
     sheets = []
     for ws in formula_wb.worksheets:
         sheets.append(inventory_sheet(ws, value_wb[ws.title]))
@@ -226,6 +238,9 @@ def inventory_workbook(path: Path, public_fixture_id: str | None = None) -> dict
         "date_system": str(formula_wb.epoch.date()),
         "defined_names": defined_name_titles(formula_wb),
         "workbook_protected": workbook_is_protected(formula_wb),
+        "file_extension": suffix,
+        "macro_presence": workbook_has_macro_payload(path),
+        "external_link_count": len(getattr(formula_wb, "_external_links", []) or []),
         "sheets": sheets,
         "summary": {
             "formula_count": sum(s["formula_count"] for s in sheets),
@@ -281,29 +296,102 @@ def classify_inventory(evidence: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def ace_classification_from_inventory(evidence: dict[str, Any]) -> dict[str, Any]:
+    original = classify_inventory(evidence)
+    original_class = original["classification"]
+    summary = evidence.get("summary", {})
+    extension = str(evidence.get("file_extension") or Path(str(evidence.get("workbook", ""))).suffix).lower()
+    flags = ace_inventory_flags(evidence)
+    deferrals: list[str] = []
+    report_evidence = _has_report_evidence(summary)
+
+    if extension in {".xls", ".xlsb", ".ods"}:
+        workbook_class = "excluded_workbook"
+        route_target = "metadata_only"
+        deferrals.append("adapter_required")
+    elif original_class == "guarded":
+        workbook_class = "excluded_workbook"
+        route_target = "excluded_no_ingest"
+        deferrals.append("protected_workbook")
+    elif original_class in {"calculation", "mixed"}:
+        workbook_class = "calculation_workbook"
+        route_target = "metadata_only"
+    elif original_class == "unsupported" and report_evidence:
+        workbook_class = "report_workbook"
+        route_target = "metadata_only"
+    elif original_class == "data":
+        workbook_class = "data_workbook"
+        route_target = "metadata_only"
+    else:
+        workbook_class = "excluded_workbook"
+        route_target = "excluded_no_ingest"
+        deferrals.append("unsupported_workbook")
+
+    if "macro_present" in flags or "external_links_present" in flags:
+        deferrals.append("macro_or_external_logic_deferred")
+
+    return {
+        "original_canary_class": original_class,
+        "workbook_class": workbook_class,
+        "route_target": route_target,
+        "content_eligible": workbook_class != "excluded_workbook",
+        "status": original["status"],
+        "inventory_flags": flags,
+        "deferral_reasons": sorted(set(deferrals)),
+        "report_evidence": report_evidence,
+        "valid_workbook_class": workbook_class in ACE_WORKBOOK_CLASS_VALUES,
+    }
+
+
+def ace_inventory_flags(evidence: dict[str, Any]) -> list[str]:
+    flags = sorted(observed_flags(evidence))
+    if evidence.get("macro_presence"):
+        flags.append("macro_present")
+    if int(evidence.get("external_link_count") or 0) > 0:
+        flags.append("external_links_present")
+    return sorted(set(flags))
+
+
+def workbook_has_macro_payload(path: Path) -> bool:
+    if path.suffix.lower() != ".xlsm" or not zipfile.is_zipfile(path):
+        return False
+    with zipfile.ZipFile(path) as archive:
+        return any(name.lower() == "xl/vbaproject.bin" for name in archive.namelist())
+
+
+def _has_report_evidence(summary: dict[str, Any]) -> bool:
+    chart_count = int(summary.get("chart_count") or 0)
+    return chart_count > 0
+
+
 def observed_flags(evidence: dict[str, Any]) -> set[str]:
     summary = evidence["summary"]
+    sheets = evidence.get("sheets", [])
+    sheet_names = evidence.get("sheet_names") or [
+        sheet["name"] for sheet in sheets if isinstance(sheet, dict) and "name" in sheet
+    ]
+    defined_names = evidence.get("defined_names") or []
     flags: set[str] = set()
     if summary["formula_count"]:
         flags.add("formula")
-    if len(evidence["sheet_names"]) > 1:
+    if len(sheet_names) > 1:
         flags.add("multiple_sheets")
     if summary["table_count"]:
         flags.add("table")
     if summary["merged_range_count"]:
         flags.add("merged_cells")
-    if str(evidence["date_system"]).startswith("1904"):
+    if str(evidence.get("date_system", "")).startswith("1904"):
         flags.add("date_1904")
-    if evidence["defined_names"]:
+    if defined_names:
         flags.add("defined_names")
     if summary["chart_count"]:
         flags.add("charts")
-    if evidence["workbook_protected"] or summary["protected_sheet_count"]:
+    if evidence.get("workbook_protected") or summary["protected_sheet_count"]:
         flags.add("protection")
     if not (summary["formula_count"] or summary["chart_count"] or "protection" in flags):
         flags.add("data_only")
-    for sheet in evidence["sheets"]:
-        if any("!" in item["formula"] for item in sheet["formulas"]):
+    for sheet in sheets:
+        if any("!" in item["formula"] for item in sheet.get("formulas", [])):
             flags.add("cross_sheet_formula")
     return flags
 
@@ -325,6 +413,8 @@ def triplet_contract(classification: str) -> dict[str, str]:
 
 
 def make_simple_workbook(path: Path) -> None:
+    if Workbook is None or Table is None or TableStyleInfo is None:
+        raise RuntimeError("openpyxl is required for workbook self-test")
     wb = Workbook()
     ws = wb.active
     ws.title = "Data"
@@ -338,6 +428,8 @@ def make_simple_workbook(path: Path) -> None:
 
 
 def make_complex_workbook(path: Path) -> None:
+    if Workbook is None or DefinedName is None:
+        raise RuntimeError("openpyxl is required for workbook self-test")
     wb = Workbook()
     inputs = wb.active
     inputs.title = "Inputs"
@@ -351,6 +443,8 @@ def make_complex_workbook(path: Path) -> None:
 
 
 def make_guarded_workbook(path: Path) -> None:
+    if Workbook is None:
+        raise RuntimeError("openpyxl is required for workbook self-test")
     wb = Workbook()
     ws = wb.active
     ws["A1"] = "guarded"
@@ -397,6 +491,7 @@ def main() -> int:
     i.add_argument("--source-id", dest="public_fixture_id")
     c = sub.add_parser("classify")
     c.add_argument("--inventory", type=Path, required=True)
+    c.add_argument("--ace", action="store_true", help="emit ACE wave-2 workbook class mapping")
     sub.add_parser("self-test")
     args = parser.parse_args()
     if args.command == "manifest-check":
@@ -406,7 +501,8 @@ def main() -> int:
     elif args.command == "inventory":
         result = inventory_workbook(args.workbook, args.public_fixture_id)
     elif args.command == "classify":
-        result = classify_inventory(load_json(args.inventory))
+        inventory = load_json(args.inventory)
+        result = ace_classification_from_inventory(inventory) if args.ace else classify_inventory(inventory)
     else:
         result = run_self_test()
     write_json(result)

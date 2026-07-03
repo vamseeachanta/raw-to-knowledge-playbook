@@ -1,0 +1,6 @@
+{
+  "units": {"value": "kN"},
+  "sign_conventions": {"value": "positive tension"},
+  "coordinate_frames": {"value": "not_applicable"},
+  "producer": "synthetic_fixture"
+}

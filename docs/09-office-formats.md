@@ -72,6 +72,25 @@ workbook forward — only the distilled logic.
 exports can use two different XLSX layouts (block-structured matrices vs
 flat tables) requiring dual-path parsing. Probe the structure; don't assume.
 
+### ACE wave-2 workbook classes
+
+For [#53](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53),
+the workbook canary keeps its original classes (`data`, `calculation`, `mixed`,
+`guarded`, `unsupported`) and emits a separate ACE-facing `workbook_class`:
+
+| Inventory evidence | ACE class | Rule |
+|---|---|---|
+| Data-only `.xlsx` tables/ranges | `data_workbook` | Parser output still needs range/table proof and known-loss notes. |
+| Formulas, named ranges, or mixed tables/formulas | `calculation_workbook` | Cached values are evidence only; success requires input contract, code/evaluator artifact, and independent output proof. |
+| Chart-heavy workbook evidence without a formula proof lane | `report_workbook` | Metadata-only until a report/figure lane verifies the reporting concept. |
+| Protected, unsupported legacy/binary formats, macro-dependent, or external-link-dependent logic | `excluded_workbook` | Defer or exclude until an approved adapter/static-analysis issue lands. |
+
+`workbook_class` is not a route target. Routing still uses the #65 route enum
+(`metadata_only`, `excluded_no_ingest`, `private_sidecar`, `public_llm_wiki`)
+after public/private and durable-output gates pass. `.xls`, `.xlsb`, and `.ods`
+are metadata-only/deferred in #53; `.xlsm` macro presence and external links are
+inventory facts, not executable evidence.
+
 ### What "verified" means for a calculation
 
 The vision-verification model from PDFs translates as:

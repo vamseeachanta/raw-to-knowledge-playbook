@@ -51,6 +51,24 @@ carries a sidecar provenance record: units per column, sign conventions,
 coordinate frames, and any producer quirks. A convention that lives only in
 the original author's head becomes a "bug report" later.
 
+### ACE wave-2 CSV/delimited contract
+
+For [#53](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53),
+`skills/format-coverage-ledger/resources/csv_dialect_probe.py` is the
+repo-local probe for synthetic CSV and delimited fixtures. A usable row records
+delimiter, field counts, ragged-row evidence, numeric-column hints, a content
+digest, and a convention sidecar for units, sign conventions, coordinate frames,
+and producer quirks. `csv_table`, `delimited_table`, and `ragged_delimited` are
+classifier values; they are separate from route targets.
+
+Ragged or unknown-convention rows are hard exclusions in #53, not failed
+successes. `% ingested success` remains
+`successful_routed_items / eligible_candidate_items * 100`, with hard
+exclusions reported separately. #53 classifier records intentionally avoid
+durable target paths, retrieval metadata, lifecycle fields, private sidecars,
+and persistent metrics; those belong to the implemented #61 durable-output
+workflow after exact artifact validation.
+
 ### Effort estimation by density
 
 Dataset volume scales effort non-linearly: one standard with 166 tables +

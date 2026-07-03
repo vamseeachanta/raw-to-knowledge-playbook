@@ -1,0 +1,58 @@
+{
+  "records": [
+    {
+      "candidate_id": "fixture-data-workbook",
+      "source_kind": "workbook",
+      "original_canary_class": "data",
+      "workbook_class": "data_workbook",
+      "route_target": "metadata_only",
+      "logical_target_store": "metadata_ledger_store",
+      "visibility": "private",
+      "known_losses": ["formulas_absent", "charts_absent"],
+      "extraction_estimate": {"unit": "tables", "expected_count": 1},
+      "extraction_yield": {"unit": "tables", "observed_count": 1}
+    },
+    {
+      "candidate_id": "fixture-ragged-csv",
+      "source_kind": "delimited",
+      "delimited_class": "ragged_delimited",
+      "route_target": "excluded_no_ingest",
+      "logical_target_store": "excluded_no_store",
+      "visibility": "none",
+      "hard_exclusion_reason": "ragged_rows",
+      "known_losses": ["row_width_mismatch"],
+      "dialect_probe": {
+        "delimiter": ",",
+        "quotechar": "\"",
+        "encoding": "utf-8",
+        "line_ending": "LF",
+        "header": ["id", "value", "unit"],
+        "row_count": 2,
+        "expected_field_count": 3,
+        "field_counts": [3, 3, 2],
+        "ragged_rows": [
+          {"row_number": 3, "field_count": 2, "expected_field_count": 3}
+        ],
+        "content_digest": "022119b1539cc4de4ddc783fac0ec1fbb376429e4529e3f13079df78de226e7b",
+        "numeric_columns": ["value"]
+      },
+      "convention_sidecar": {
+        "units": {"value": "kN"},
+        "sign_conventions": {"value": "positive_up"},
+        "coordinate_frames": {"value": "fixture_frame"},
+        "producer": "synthetic_fixture"
+      }
+    }
+  ],
+  "metric": {
+    "metric_scope": "synthetic_fixture",
+    "wave_class": "ingestion_wave",
+    "metric_status": "measured",
+    "total_classified_items": 2,
+    "hard_excluded_items": 1,
+    "eligible_candidate_items": 1,
+    "successful_routed_items": 1,
+    "ingested_success_percent": 100.0,
+    "excluded_percent": 50.0
+  }
+}

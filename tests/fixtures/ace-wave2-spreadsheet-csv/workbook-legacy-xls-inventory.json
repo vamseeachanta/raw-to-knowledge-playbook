@@ -1,0 +1,15 @@
+{
+  "workbook": "legacy-workbook.xls",
+  "file_extension": ".xls",
+  "workbook_protected": false,
+  "macro_presence": false,
+  "external_link_count": 0,
+  "summary": {
+    "formula_count": 0,
+    "table_count": 0,
+    "merged_range_count": 0,
+    "chart_count": 0,
+    "protected_sheet_count": 0
+  },
+  "sheets": []
+}

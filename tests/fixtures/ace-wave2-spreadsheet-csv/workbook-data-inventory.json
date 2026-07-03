@@ -1,0 +1,17 @@
+{
+  "workbook": "synthetic-data.xlsx",
+  "file_extension": ".xlsx",
+  "workbook_protected": false,
+  "macro_presence": false,
+  "external_link_count": 0,
+  "summary": {
+    "formula_count": 0,
+    "table_count": 1,
+    "merged_range_count": 0,
+    "chart_count": 0,
+    "protected_sheet_count": 0
+  },
+  "sheets": [
+    {"name": "Data", "formulas": [], "tables": ["DataTable"], "merged_ranges": [], "chart_count": 0}
+  ]
+}

@@ -29,8 +29,8 @@
 - [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70) implemented trusted-evidence integration, but `artifacts/ace-manifest-freshness/trusted-evidence-registry.json` currently has an empty `trusted_evidence` list. Therefore [#53](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53) may plan synthetic fixtures and validators, but operational ACE sampling remains blocked until a trusted [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence row exists.
 - [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) bounds downstream sampling requests. Any approved implementation of this plan must prove per-bucket caps, maximum files/bytes, deterministic seed/sort, and metadata-only request shape before touching operational manifests.
 - [#71](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/71) is implemented/closed and may be consumed for validator hardening around non-ready rows, manifest source membership, and scan-safe negative fixtures.
-- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) has user approval recorded in `.planning/plan-approved/61.md`. Durable stores, target paths, retrieval metadata, lifecycle state, persistent metrics, and durable ingested-success reporting remain blocked pending [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) implemented validator evidence.
-- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) has user approval recorded in `.planning/plan-approved/63.md`. Public docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public corpus summaries, measured ACE-derived case studies, and external publication remain blocked pending [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) implemented canary evidence.
+- [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is implemented/closed with user approval recorded in `.planning/plan-approved/61.md`, implemented validators, recorded passing-command evidence, and implementation closeout evidence. #53 classifier rows still must not carry durable stores, target paths, retrieval metadata, lifecycle state, persistent metrics, or private measured sidecars unless a separate #61-backed durable-output workflow validates the exact artifact set.
+- [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is implemented/closed with user approval recorded in `.planning/plan-approved/63.md`, an implemented public-output canary, and recorded passing-command evidence. Public docs navigation, `mkdocs.yml`, `llm-wiki`, GitHub-public corpus summaries, measured ACE-derived case studies, and external publication still require the #63 canary to pass on the exact artifact set before exposure.
 
 ### Source inventory
 - The issue-body inventory states an approximate spreadsheet/data rollup of 37.6k files / 48.7 GB, including `.xls`, `.xlsx`, `.xlsm`, and `.csv`.
@@ -41,7 +41,7 @@
 | Extension/type | Content class | Expected useful ingestion | Detailed content analysis | Success measurement | Ease/difficulty |
 |---|---|---:|---|---|---:|
 | `.csv` | Flat tabular data export | 80-95% when dialect/schema are stable | Detect delimiter, quote rules, encoding, line endings, header shape, row width, typed columns, units/sign/coordinate sidecars, and row/content digests. | `successful_routed_items / eligible_candidate_items * 100`; ragged/ambiguous rows excluded with reason. | 3/11 |
-| `.tsv`, `.psv`, generic delimited `.txt`/`.dat` | Delimited data export | 70-90% when producer conventions are known | Same as CSV, plus explicit producer family and delimiter evidence; route unknown dialects to provisional or excluded status. | Same success metric; unknown producer conventions counted separately from hard parse failures. | 4/11 |
+| `.tsv`, `.psv`, generic delimited `.txt`/`.dat` | Delimited data export | 70-90% when producer conventions are known | Same as CSV, plus explicit producer family and delimiter evidence; route unknown dialects to excluded status in #53. | Same success metric; unknown producer conventions counted separately from hard parse failures. | 4/11 |
 | `.xlsx` data workbook | OpenXML workbook with tables/ranges | 75-90% for data-heavy sheets | Inventory sheets, tables, merged ranges, date system, formulas, charts, named ranges, protection, external links, and parser versions before extraction. | A workbook is successful only after class, route, known losses, and table/range proof are recorded. | 3/11 |
 | `.xlsx` calculation/report workbook | Formula/reporting workbook | 40-80% depending formula/chart complexity | Separate visible values from formulas, named ranges, dependency graph, charts, and layout/reporting concepts; cached values are evidence only. | Successful calculation ingestion requires input contract, code/evaluator artifact, and independent output proof. | 4/11 |
 | `.xls` | Legacy binary Excel workbook | Metadata-only/deferred until an approved parser adapter exists | Current `xlsx_canary.py` is OpenXML-first and does not prove `.xls` content extraction. The approved implementation may inventory extension-level metadata and must file or cite a follow-on adapter issue before counting `.xls` content as eligible. | Excluded from content-ingestion denominator unless an approved `.xls` adapter and tests land. | 5/11 |
@@ -96,8 +96,8 @@ N/A - planning/governance issue; no runtime failure is alleged.
 | Workbook canary evals | skills/xlsx-input-code-output-canary/evals/evals.json |
 | CSV/delimited probe helper | skills/format-coverage-ledger/resources/csv_dialect_probe.py |
 | Format coverage skill | skills/format-coverage-ledger/SKILL.md |
-| Public measured ACE report | Deferred until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) approval and implemented canary evidence |
-| Private measured ACE sidecar | Deferred until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) approval plus implemented durable-output validator evidence, and then only through an approved private/off-public route |
+| Public measured ACE report | Deferred unless the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) public-output canary passes on the exact artifact set |
+| Private measured ACE sidecar | Deferred unless a [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61)-backed durable-output workflow validates the exact artifact set and private/off-public route |
 | Review artifact - Claude r1 | scripts/review/results/2026-07-02-plan-53-claude-r1.md |
 | Review artifact - Codex r1 | scripts/review/results/2026-07-02-plan-53-codex-r1.md |
 | Review artifact - Gemini r1 | scripts/review/results/2026-07-02-plan-53-gemini-r1.md |
@@ -111,7 +111,7 @@ N/A - planning/governance issue; no runtime failure is alleged.
 
 This issue will produce a spreadsheet/CSV ingestion-lane pilot plan and, after user approval only, a test-first implementation that classifies workbook and delimited sources, blocks unsafe sampling/publication/durable-output paths, adds a CSV dialect probe, updates the workbook canary without breaking existing class behavior, and records known spreadsheet/data extraction losses.
 
-The approved implementation will use synthetic scan-safe fixtures by default. Under the current [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) contract, downstream operational requests are metadata-only request records; they do not authorize reading workbook/CSV content bytes for measured ingestion. Therefore this issue's executable success metrics will be measured on synthetic fixtures unless a later approved issue extends the sampling firewall to content-byte pilots. Any measured ACE-derived private sidecar, target path, lifecycle field, durable metric, or persistent store write remains blocked until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved and implemented. Any public output remains blocked until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and implemented.
+The approved implementation will use synthetic scan-safe fixtures by default. Under the current [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) contract, downstream operational requests are metadata-only request records; they do not authorize reading workbook/CSV content bytes for measured ingestion. Therefore this issue's executable success metrics will be measured on synthetic fixtures unless a later approved issue extends the sampling firewall to content-byte pilots. Any measured ACE-derived private sidecar, target path, lifecycle field, durable metric, or persistent store write must go through a #61-backed durable-output workflow on the exact artifact set. Any public output must pass the #63 canary on the exact artifact set before exposure.
 
 ### Workbook Class and Route Mapping
 
@@ -123,7 +123,7 @@ The approved implementation will keep existing canary classes intact and add sep
 | `calculation` | `calculation_workbook` | Route from visibility/routing policy | Requires input contract, code/evaluator artifact, and independent output proof. |
 | `mixed` with formula/table/chart evidence | `calculation_workbook` | Route from visibility/routing policy, never from class alone | Formula-bearing mixed workbooks remain calculation workbooks; if `summary.chart_count > 0`, the ACE record may also carry `report_evidence=true` for later report-lane triage, but `workbook_class` stays `calculation_workbook`. |
 | `guarded` | `excluded_workbook` | Usually `excluded_no_ingest` unless access review authorizes metadata-only handling | Protection state is an explicit deferral reason. |
-| `unsupported` with report evidence | `report_workbook` | Usually `metadata_only` until a report-lane proof exists | Report evidence is defined only from emitted inventory fields: `summary.chart_count > 0` with `summary.formula_count == 0`, or `summary.merged_range_count > 0` with `summary.table_count == 0` and `summary.formula_count == 0`. |
+| `unsupported` with report evidence | `report_workbook` | Usually `metadata_only` until a report-lane proof exists | Report evidence is defined from emitted chart inventory fields such as `summary.chart_count > 0`. Formula-bearing inventories may carry `report_evidence=true`, but they stay `calculation_workbook`. |
 | `unsupported` without report evidence | `excluded_workbook` | Usually `excluded_no_ingest` or `metadata_only` | Unsupported parser, `.xls` without adapter, non-primary binary container without parser, and macro-dependent logic are not content-ingestion successes. |
 
 The planned validator will enforce separate enum fields for `workbook_class` and `route_target` so `excluded_workbook` cannot be confused with the [#65](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/65) `excluded_no_ingest` route target.
@@ -159,10 +159,10 @@ for each candidate spreadsheet/delimited record:
     detect dialect with a structured parser
     validate row widths and content digests
     require units/sign/coordinate sidecar for numeric engineering data
-    route ragged or unknown-producer data as provisional/excluded with reason
+    route ragged or unknown-producer data as excluded_no_ingest with reason
   keep operational requests metadata-only until a later approved issue extends #67 for content-byte pilots
-  block durable stores, retrieval metadata, lifecycle fields, target paths, private sidecars, and persistent metrics until #61 is approved and implemented
-  block docs nav, mkdocs, llm-wiki, public case reports, and external publication until #63 is approved and implemented
+  keep durable stores, retrieval metadata, lifecycle fields, target paths, private sidecars, and persistent metrics outside #53 classifier rows unless the exact artifact set passes the #61 workflow
+  keep docs nav, mkdocs, llm-wiki, public case reports, and external publication outside #53 unless the exact artifact set passes the #63 canary
   compute success only for eligible candidate items, with hard exclusions reported separately
 ```
 
@@ -186,7 +186,7 @@ for each candidate spreadsheet/delimited record:
 | Modify | docs/plans/ace-share-ingestion-wave-coordination.md | Update #53 row after review with current gates and review artifact paths |
 | Modify | .github/workflows/validate.yml | Run the #53 validator/tests once implemented |
 
-Public `docs/case-studies/` output is intentionally not in the implementation file set until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) supplies public-output authorization and passing canary evidence. Private measured ACE sidecars are also intentionally absent until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) supplies durable-output authorization and passing validator evidence.
+Public `docs/case-studies/` output is intentionally not in the implementation file set; any such output must pass the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) public-output canary on the exact artifact set before exposure. Private measured ACE sidecars are also intentionally absent from #53 classifier rows unless a [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61)-backed durable-output workflow validates the exact artifact set.
 
 ---
 
@@ -196,7 +196,7 @@ Public `docs/case-studies/` output is intentionally not in the implementation fi
 |---|---|---|---|
 | test_workbook_classification_closed_values | Workbook class enum stays closed | Synthetic workbook inventories | Only `data_workbook`, `calculation_workbook`, `report_workbook`, `excluded_workbook` |
 | test_existing_canary_classes_map_losslessly | Existing canary classes are preserved | `data`, `calculation`, `mixed`, `guarded`, `unsupported` fixtures | ACE class plus original class retained |
-| test_report_workbook_class_uses_emitted_inventory_fields | Report classification uses current inventory evidence | Unsupported chart-only and merged-range inventories | Existing canary class remains `unsupported`; ACE `workbook_class=report_workbook` only when chart/merged-range rules match |
+| test_report_workbook_class_uses_emitted_inventory_fields | Report classification uses current inventory evidence | Unsupported chart-only inventory | Existing canary class remains `unsupported`; ACE `workbook_class=report_workbook` only when chart evidence matches |
 | test_mixed_formula_chart_stays_calculation_workbook | Mixed formula/chart workbooks do not get two class dispositions | Mixed formula/chart inventory | `workbook_class=calculation_workbook` plus optional `report_evidence=true` |
 | test_workbook_route_enum_is_separate_from_class_enum | Route target is not workbook class | Excluded workbook record | `workbook_class=excluded_workbook`, `route_target=excluded_no_ingest` |
 | test_formula_cached_values_not_verification | Cached values are never proof | Formula workbook with cached values only | Verification refused without independent output proof |
@@ -207,15 +207,15 @@ Public `docs/case-studies/` output is intentionally not in the implementation fi
 | test_macro_enabled_logic_is_deferred | Macros are not executed or silently trusted | `.xlsm` fixture metadata | Macro-dependent logic routes to excluded/deferred status |
 | test_protected_workbook_is_deferred | Guarded workbooks fail closed | Protected workbook inventory | `workbook_class=excluded_workbook`, route decision, and explicit deferral reason |
 | test_csv_dialect_field_count_digests | CSV parser integrity | comma, semicolon, tab, quoted, ragged fixtures | Dialect reported, ragged rows fail, digests emitted |
-| test_csv_convention_sidecar_required | Numeric conventions are explicit | Numeric CSV without units/sign/coordinate sidecar | Remains provisional/non-durable |
+| test_csv_convention_sidecar_required | Numeric conventions are explicit | Numeric CSV without units/sign/coordinate sidecar | Routes excluded/non-durable |
 | test_raw_workbook_bytes_not_repo_local | Raw workbooks are not committed | Repo-local workbook bytes | Validator fails |
 | test_routing_before_target_write | Routing precedes target-path selection | Unknown/private fixture | Public/durable target blocked |
 | test_67_cap_violation_fails_closed | Bounded sampling caps are enforced | Over-cap sampling request | Request denied with #67 blocker |
 | test_67_boundary_caps_import_contract_values | Boundary caps are imported from #67 | Request at 200 rows, 25 files, 1048576 bytes and one-over variants | Boundary accepted when other gates pass; one-over variants fail |
 | test_missing_trusted_62_evidence_fails_closed | Empty #70 registry blocks operational sampling | Downstream request without trusted pointer | Sampling denied; synthetic-only path remains allowed |
 | test_fixture_62_evidence_cannot_authorize_sampling | Fixture evidence cannot authorize operational run | #62 fixture pointer | Request denied |
-| test_61_durable_fields_blocked | Durable outputs remain blocked | Plan/output record with store path/retrieval/lifecycle/persistent metrics before #61 | Validator fails |
-| test_63_public_output_blocked | Public surfaces remain blocked | Docs nav, mkdocs, llm-wiki, public case-report path before #63 | Validator fails |
+| test_61_durable_fields_blocked | Durable outputs remain blocked | Plan/output record with store path/retrieval/lifecycle/persistent metrics without exact #61 durable-output validation | Validator fails |
+| test_63_public_output_blocked | Public surfaces remain blocked | Docs nav, mkdocs, llm-wiki, public case-report path without exact #63 public-output canary pass | Validator fails |
 | test_wave2_success_metric_defined | `% ingested success` is measurable | Synthetic pilot ledger | Numerator, denominator, threshold, command, exclusions present |
 | test_scan_safe_negative_fixtures | Negative examples do not self-block scanners | Runtime-assembled hostile strings | Tests can assert denials while source files pass public/legal scans |
 
@@ -237,8 +237,8 @@ Public `docs/case-studies/` output is intentionally not in the implementation fi
 - [ ] Public/private routing occurs before any derived page, dataset, code artifact, or target path is selected.
 - [ ] Operational ACE sampling is blocked unless a [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67) bounded request supplies a trusted [#62](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/62) evidence pointer accepted by [#70](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/70).
 - [ ] Current operational sampling remains metadata-only under [#67](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/67); content-byte pilot sampling requires a future approved firewall-extension issue.
-- [ ] Durable stores, retrieval metadata, lifecycle state, persistent metrics, target paths, and private measured sidecars remain blocked until [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61) is approved and implemented.
-- [ ] Public docs navigation, `mkdocs.yml`, `llm-wiki`, measured ACE-derived public summaries, GitHub-public corpus reports, and external publication remain blocked until [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) is approved and implemented.
+- [ ] Durable stores, retrieval metadata, lifecycle state, persistent metrics, target paths, and private measured sidecars stay outside #53 classifier rows unless a [#61](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61)-backed durable-output workflow validates the exact artifact set.
+- [ ] Public docs navigation, `mkdocs.yml`, `llm-wiki`, measured ACE-derived public summaries, GitHub-public corpus reports, and external publication stay outside #53 unless the [#63](https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/63) canary passes on the exact artifact set.
 - [ ] Plan-review evidence is committed, pushed, and linked in a scanned issue comment before applying `status:plan-review`.
 - [ ] The issue-comment body is written to a repo-local temporary review artifact, scanned by `validate_ace_public_surface_scan.py` and `scripts/legal/legal-sanity-scan.sh`, posted via `gh issue comment --body-file`, then removed before final commit/closeout.
 - [ ] No `status:plan-approved` label is applied and no `.planning/plan-approved/53.md` marker is created by the planning agent.

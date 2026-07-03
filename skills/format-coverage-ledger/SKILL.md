@@ -42,6 +42,9 @@ metadata:
    - **docx → txt** (python-docx): paragraphs + tables.
    - **xlsx → csv per sheet** (openpyxl), `data_only=True` so cells hold the
      **computed values** — note this means **formulas are not captured**.
+   - **csv/delimited → probed table** with
+     `resources/csv_dialect_probe.py`: delimiter, row widths, ragged rows,
+     numeric-column hints, content digest, and convention-sidecar validation.
    - **msg → txt thread** (MSG reader): the message thread text.
    - **pdf → txt**: deterministic text layer.
    - **pptx → txt**: slide text + tables.
@@ -53,6 +56,7 @@ metadata:
    | Format | Captured (text/CSV lane) | KNOWN loss of this lane (record it) |
    |---|---|---|
    | xlsx | computed cell values (`data_only`) | **formulas, named ranges, charts/plots** |
+   | csv/delimited | parsed rows, delimiter, field counts, content digest | **units, sign conventions, coordinate frames, producer quirks unless sidecar is present** |
    | pptx | slide-shape text + tables | **diagrams, plots, drawn figures, speaker notes** (often the engineering content) |
    | msg | message thread text | **attachments** (dropped) |
    | docx | text + tables | **embedded images/figures** |
@@ -85,6 +89,12 @@ metadata:
    `review_status`, and `implementation_ready`. `% ingested success` uses
    `successful_routed_items / eligible_candidate_items * 100`; hard exclusions
    are reported separately as `% excluded`.
+6. **For ACE wave 2 / issue #53, keep classifier rows non-durable.** The
+   spreadsheet/CSV validator may classify `csv_table`, `delimited_table`,
+   `ragged_delimited`, `data_workbook`, `calculation_workbook`,
+   `report_workbook`, and `excluded_workbook`, but target paths, retrieval
+   metadata, lifecycle state, persistent metrics, and private sidecars belong to
+   the #61 durable-output workflow and must not be smuggled into #53 rows.
 
 ## Verification
 - Every extracted page declares a coverage ledger naming the lane's known loss;
@@ -96,6 +106,9 @@ metadata:
 - ACE wave ledgers include method issue, skill group, expected useful ingestion
   range, `% ingested success`, difficulty rank, review status, and
   implementation readiness.
+- CSV/delimited ACE wave-2 fixtures pass
+  `uv run python scripts/validate_ace_wave2_spreadsheet_csv.py` and carry a
+  convention sidecar before numeric engineering data is considered usable.
 
 ## Cleanup
 - Raw binary stays in the temp/off-repo location; only derived parts + pointers
