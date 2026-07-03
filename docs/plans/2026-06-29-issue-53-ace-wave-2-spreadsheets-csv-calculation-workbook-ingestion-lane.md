@@ -1,6 +1,6 @@
 # Plan for #53: ACE Wave 2 Spreadsheets, CSV, and Calculation Workbook Ingestion Lane
 
-> **Status:** plan-approved
+> **Status:** completed
 > **Complexity:** T3
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/53
@@ -59,7 +59,7 @@
 
 **Issue status** (verified 2026-07-02):
 ```
-#53 OPEN labels=strengthening,lane:codex,priority:high
+#53 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists; implementation closeout comment posted
 ```
 
 **File existence** (verified 2026-07-02):
@@ -73,9 +73,9 @@ EXISTS skills/format-coverage-ledger/SKILL.md
 EXISTS scripts/ace_bounded_sampling_firewall.py
 EXISTS scripts/ace_manifest_evidence_trust.py
 EXISTS artifacts/ace-manifest-freshness/trusted-evidence-registry.json
-MISSING skills/format-coverage-ledger/resources/csv_dialect_probe.py
-MISSING scripts/validate_ace_wave2_spreadsheet_csv.py
-MISSING tests/test_validate_ace_wave2_spreadsheet_csv.py
+EXISTS skills/format-coverage-ledger/resources/csv_dialect_probe.py
+EXISTS scripts/validate_ace_wave2_spreadsheet_csv.py
+EXISTS tests/test_validate_ace_wave2_spreadsheet_csv.py
 ```
 
 **Reproduction proofs**:
