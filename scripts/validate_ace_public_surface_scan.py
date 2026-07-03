@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the ACE public-surface self-scan contract for issue 68."""
+"""Validate the ACE public-surface self-scan contract."""
 from __future__ import annotations
 
 import argparse
@@ -15,6 +15,7 @@ from ace_public_surface_scan import (  # noqa: E402
     CONTRACT_PATH,
     review_sidecar_status,
     select_review_artifact_paths,
+    validate_contract,
     validate_contract_file,
     validate_issue_comment_snapshot_file,
     validate_issue_comment_snapshot_pair,

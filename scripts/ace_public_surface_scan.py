@@ -1,10 +1,10 @@
-"""Repo-local public-surface scanner facade for ACE issue 68."""
+"""Repo-local public-surface scanner facade for ACE public artifacts."""
 from __future__ import annotations
 
 try:
     from .ace_public_surface_contract import (
         CONTRACT_PATH, MANIFEST_CONTRACT_PATH, REVIEW_ROOT, TOKEN_CONTRACT_PATH,
-        load_json, repo_path, validate_contract, validate_contract_file,
+        allowed_issue_numbers, issue_number_allowed, load_json, repo_path, validate_contract, validate_contract_file,
     )
     from .ace_public_surface_review import (
         review_sidecar_status, select_review_artifact_paths, validate_issue_comment_snapshot_file,
@@ -14,7 +14,7 @@ try:
 except ImportError:
     from ace_public_surface_contract import (
         CONTRACT_PATH, MANIFEST_CONTRACT_PATH, REVIEW_ROOT, TOKEN_CONTRACT_PATH,
-        load_json, repo_path, validate_contract, validate_contract_file,
+        allowed_issue_numbers, issue_number_allowed, load_json, repo_path, validate_contract, validate_contract_file,
     )
     from ace_public_surface_review import (
         review_sidecar_status, select_review_artifact_paths, validate_issue_comment_snapshot_file,
@@ -27,6 +27,8 @@ __all__ = [
     "MANIFEST_CONTRACT_PATH",
     "REVIEW_ROOT",
     "TOKEN_CONTRACT_PATH",
+    "allowed_issue_numbers",
+    "issue_number_allowed",
     "load_json",
     "repo_path",
     "review_sidecar_status",

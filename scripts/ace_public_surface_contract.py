@@ -1,4 +1,4 @@
-"""Repo-local public-surface scanner helpers for ACE issue 68."""
+"""Repo-local public-surface scanner contract helpers for ACE public artifacts."""
 from __future__ import annotations
 
 import hashlib
@@ -108,6 +108,7 @@ EXPECTED_PROVIDERS = {
     "subagent-scanner",
     "subagent-workflow",
 }
+ALLOWED_ISSUE_NUMBERS = [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72]
 SNAPSHOT_KEYS = [
     "schema_version",
     "issue_number",
@@ -122,7 +123,7 @@ SNAPSHOT_KEYS = [
 REVIEW_PHASES = {"plan", "implementation"}
 ROUND_RE = re.compile(r"^r[0-9]+$")
 REVIEW_ARTIFACT_RE = re.compile(
-    r"^[0-9]{4}-[0-9]{2}-[0-9]{2}-(?P<phase>plan|implementation)-68-"
+    r"^[0-9]{4}-[0-9]{2}-[0-9]{2}-(?P<phase>plan|implementation)-(?P<issue>[0-9]+)-"
     r"(?P<provider>claude|codex|gemini|subagent-boundary|subagent-scanner|subagent-workflow)-"
     r"(?P<round>r[0-9]+)\.md$"
 )
@@ -138,6 +139,19 @@ def repo_path(path: Path) -> Path:
 
 def load_json(path: Path) -> dict:
     return json.loads(repo_path(path).read_text())
+
+
+def allowed_issue_numbers(contract_path: Path = CONTRACT_PATH) -> set[int]:
+    try:
+        selector = load_json(contract_path).get("review_artifact_selector", {})
+    except (FileNotFoundError, json.JSONDecodeError):
+        return set()
+    numbers = selector.get("allowed_issue_numbers", [])
+    return {int(number) for number in numbers if isinstance(number, int) and not isinstance(number, bool)}
+
+
+def issue_number_allowed(issue_number: object, contract_path: Path = CONTRACT_PATH) -> bool:
+    return isinstance(issue_number, int) and not isinstance(issue_number, bool) and issue_number in allowed_issue_numbers(contract_path)
 
 
 def validate_contract_file(path: Path = CONTRACT_PATH) -> list[str]:
@@ -224,8 +238,18 @@ def _validate_scan_policy_contract(contract: dict, errors: list[str]) -> None:
     if set(contract.get("sidecar_selector", {}).get("suffixes", [])) != SIDECAR_SUFFIXES:
         errors.append("public-surface sidecar suffix set must stay closed")
     selector = contract.get("review_artifact_selector", {})
+    if "issue" in selector:
+        errors.append("review artifact selector contains stale singular issue key")
+    if selector.get("allowed_issue_numbers") != ALLOWED_ISSUE_NUMBERS:
+        errors.append("review artifact allowed issue numbers must match closed ACE issue enum")
+    if selector.get("root") != REVIEW_ROOT.as_posix():
+        errors.append("review artifact root must stay closed")
+    if set(selector.get("phase_enum", [])) != REVIEW_PHASES:
+        errors.append("review artifact phase enum must stay closed")
     if set(selector.get("provider_enum", [])) != EXPECTED_PROVIDERS:
         errors.append("review artifact provider enum must stay closed")
+    if selector.get("round_pattern") != ROUND_RE.pattern.removeprefix("^").removesuffix("$"):
+        errors.append("review artifact round pattern must stay closed")
     snapshot = contract.get("issue_comment_snapshot_schema", {})
     if snapshot.get("top_level_keys") != SNAPSHOT_KEYS:
         errors.append("issue/comment snapshot keys must stay closed")

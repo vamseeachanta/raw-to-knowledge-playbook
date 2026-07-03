@@ -53,7 +53,7 @@ class AcePublicSurfaceSnapshotUrlTests(unittest.TestCase):
 
         self.assertEqual(3, "\n".join(errors).count("snapshot-url"))
 
-    def test_snapshot_urls_are_pinned_to_issue_68(self):
+    def test_snapshot_urls_derive_expected_issue_from_snapshot_issue_number(self):
         validator = load_validator()
 
         with repo_tmpdir() as tmp:
@@ -119,7 +119,40 @@ class AcePublicSurfaceSnapshotUrlTests(unittest.TestCase):
             )
 
         self.assertEqual(2, "\n".join(errors).count("snapshot-url"))
-        self.assertEqual(4, "\n".join(errors).count("snapshot-issue"))
+        self.assertNotIn("snapshot-issue", "\n".join(errors))
+
+    def test_snapshot_urls_reject_unlisted_issue_even_when_url_matches(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            planned_url_64 = write_tmp(
+                tmp.as_posix(),
+                "planned-64.json",
+                json.dumps(
+                    snapshot_record(
+                        body="safe body\n",
+                        source_kind="planned_comment",
+                        phase="pre_post",
+                        issue_number=64,
+                    )
+                ),
+            )
+            comment_url_64 = write_tmp(
+                tmp.as_posix(),
+                "comment-64.json",
+                json.dumps(
+                    snapshot_record(
+                        body="safe body\n",
+                        source_kind="issue_comment",
+                        phase="post_refetch",
+                        issue_number=64,
+                        comment_id=123,
+                    )
+                ),
+            )
+            errors = validator.validate_issue_comment_snapshot_file(planned_url_64) + validator.validate_issue_comment_snapshot_file(comment_url_64)
+
+        self.assertEqual(2, "\n".join(errors).count("snapshot-issue"))
 
 
 if __name__ == "__main__":

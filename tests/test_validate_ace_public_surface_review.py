@@ -24,6 +24,61 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
         self.assertIn(artifact, selected)
         self.assertNotIn(ignored, selected)
 
+    def test_review_artifact_selector_accepts_contract_authorized_non_68_issue(self):
+        validator = load_validator()
+
+        root = REPO_ROOT / "scripts" / "review" / "results"
+        artifact = write_tmp(root.as_posix(), "2099-01-06-plan-72-claude-r94.md", "## Verdict\nAPPROVE\n")
+        other_issue = write_tmp(root.as_posix(), "2099-01-06-plan-68-claude-r94.md", "## Verdict\nAPPROVE\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+        self.addCleanup(lambda: other_issue.exists() and other_issue.unlink())
+
+        selected, errors = validator.select_review_artifact_paths(
+            review_issue=72,
+            phase="plan",
+            provider="claude",
+            round_id="r94",
+        )
+
+        self.assertEqual([], errors)
+        self.assertEqual([artifact], selected)
+
+    def test_review_artifact_selector_rejects_unlisted_issue(self):
+        validator = load_validator()
+
+        selected, errors = validator.select_review_artifact_paths(
+            review_issue=64,
+            phase="plan",
+            provider="claude",
+            round_id="r94",
+        )
+
+        self.assertEqual([], selected)
+        self.assertIn("review-issue", "\n".join(errors))
+
+    def test_review_artifact_regex_parses_issue_number_and_legacy_names_stay_unselectable(self):
+        validator = load_validator()
+
+        root = REPO_ROOT / "scripts" / "review" / "results"
+        good = write_tmp(root.as_posix(), "2099-01-07-implementation-72-codex-r93.md", "## Verdict\nAPPROVE\n")
+        roundless = write_tmp(root.as_posix(), "2099-01-07-implementation-72-codex.md", "## Verdict\nAPPROVE\n")
+        disagreement = write_tmp(root.as_posix(), "2099-01-07-implementation-72-disagreement-r93.md", "## Verdict\nAPPROVE\n")
+        self.addCleanup(lambda: good.exists() and good.unlink())
+        self.addCleanup(lambda: roundless.exists() and roundless.unlink())
+        self.addCleanup(lambda: disagreement.exists() and disagreement.unlink())
+
+        selected, errors = validator.select_review_artifact_paths(
+            review_issue=72,
+            phase="implementation",
+            provider="codex",
+            round_id="r93",
+        )
+
+        self.assertEqual([], errors)
+        self.assertEqual([good], selected)
+        self.assertNotIn(roundless, selected)
+        self.assertNotIn(disagreement, selected)
+
     def test_review_artifact_selector_rejects_non_date_prefix_and_custom_root(self):
         validator = load_validator()
 
@@ -91,6 +146,25 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
             phase="plan",
             provider="claude",
             round_id="r97",
+            include_sidecars=True,
+        )
+
+        self.assertIn("provider-sidecar-leak", "\n".join(errors))
+
+    def test_non_68_sidecars_are_scanned(self):
+        validator = load_validator()
+
+        root = REPO_ROOT / "scripts" / "review" / "results"
+        artifact = write_tmp(root.as_posix(), "2099-01-08-plan-72-claude-r92.md", "## Verdict\nAPPROVE\n")
+        sidecar = write_tmp(root.as_posix(), "2099-01-08-plan-72-claude-r92.stderr", f"trace: file://{private_path_text()}\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+        self.addCleanup(lambda: sidecar.exists() and sidecar.unlink())
+
+        errors = validator.validate_review_artifacts(
+            review_issue=72,
+            phase="plan",
+            provider="claude",
+            round_id="r92",
             include_sidecars=True,
         )
 
@@ -183,6 +257,125 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
             errors = validator.validate_issue_comment_snapshot_pair(pre, mismatched)
 
         self.assertIn("snapshot-pair-body-hash", "\n".join(errors))
+
+    def test_snapshot_record_accepts_contract_authorized_non_68_issue(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            planned = write_tmp(
+                tmp,
+                "planned-72.json",
+                json.dumps(
+                    snapshot_record(
+                        body="safe body\n",
+                        source_kind="planned_comment",
+                        phase="pre_post",
+                        issue_number=72,
+                    )
+                ),
+            )
+            comment = write_tmp(
+                tmp,
+                "comment-72.json",
+                json.dumps(
+                    snapshot_record(
+                        body="safe body\n",
+                        source_kind="issue_comment",
+                        phase="post_refetch",
+                        issue_number=72,
+                        comment_id=123,
+                    )
+                ),
+            )
+
+            self.assertEqual([], validator.validate_issue_comment_snapshot_file(planned))
+            self.assertEqual([], validator.validate_issue_comment_snapshot_file(comment))
+
+    def test_snapshot_record_rejects_unlisted_issue(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            snapshot = write_tmp(
+                tmp,
+                "planned-64.json",
+                json.dumps(
+                    snapshot_record(
+                        body="safe body\n",
+                        source_kind="planned_comment",
+                        phase="pre_post",
+                        issue_number=64,
+                    )
+                ),
+            )
+            errors = validator.validate_issue_comment_snapshot_file(snapshot)
+
+        self.assertIn("snapshot-issue", "\n".join(errors))
+
+    def test_issue_comment_snapshot_pre_post_is_rejected_and_url_checked(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            snapshot = write_tmp(
+                tmp,
+                "issue-comment-pre-post.json",
+                json.dumps(
+                    snapshot_record(
+                        body="safe body\n",
+                        source_kind="issue_comment",
+                        phase="pre_post",
+                        issue_number=72,
+                        comment_id=123,
+                        url="https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68#issuecomment-123",
+                    )
+                ),
+            )
+            errors = validator.validate_issue_comment_snapshot_file(snapshot)
+
+        joined = "\n".join(errors)
+        self.assertIn("snapshot-source-phase", joined)
+        self.assertIn("snapshot-url", joined)
+
+    def test_snapshot_pair_allows_matching_non_68_issue_and_rejects_cross_issue_pair(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            body = "safe body\n"
+            pre_72 = write_tmp(
+                tmp,
+                "pre-72.json",
+                json.dumps(snapshot_record(body=body, source_kind="planned_comment", phase="pre_post", issue_number=72)),
+            )
+            post_72 = write_tmp(
+                tmp,
+                "post-72.json",
+                json.dumps(
+                    snapshot_record(
+                        body=body,
+                        source_kind="issue_comment",
+                        phase="post_refetch",
+                        issue_number=72,
+                        comment_id=123,
+                    )
+                ),
+            )
+            post_68 = write_tmp(
+                tmp,
+                "post-68.json",
+                json.dumps(
+                    snapshot_record(
+                        body=body,
+                        source_kind="issue_comment",
+                        phase="post_refetch",
+                        issue_number=68,
+                        comment_id=123,
+                    )
+                ),
+            )
+
+            self.assertEqual([], validator.validate_issue_comment_snapshot_pair(pre_72, post_72))
+            errors = validator.validate_issue_comment_snapshot_pair(pre_72, post_68)
+
+        self.assertIn("snapshot-pair-issue", "\n".join(errors))
 
     def test_issue_comment_snapshot_rejects_forged_url_relationship(self):
         validator = load_validator()
@@ -281,6 +474,7 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
         self.assertIn("tests.test_validate_ace_public_surface_scan", workflow)
         self.assertIn("--scan-public-path config/ace-public-surface-self-scan-contract.json", workflow)
         self.assertIn("--review-issue 68", workflow)
+        self.assertIn("--review-issue 72", workflow)
         self.assertIn("--include-sidecars", workflow)
 
     def test_cli_scan_uses_supplied_contract_path(self):
@@ -347,6 +541,39 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
         if artifact.exists():
             artifact.unlink()
         self.assertIn("owner_issue", "\n".join(errors))
+
+    def test_cli_review_and_snapshot_accept_contract_authorized_issue(self):
+        validator = load_validator()
+        root = REPO_ROOT / "scripts" / "review" / "results"
+        artifact = write_tmp(root.as_posix(), "2099-01-09-plan-72-claude-r91.md", "## Verdict\nAPPROVE\n")
+        self.addCleanup(lambda: artifact.exists() and artifact.unlink())
+
+        with repo_tmpdir() as tmp:
+            snapshot = write_tmp(
+                tmp.as_posix(),
+                "snapshot-72.json",
+                json.dumps(snapshot_record(body="safe\n", source_kind="planned_comment", phase="pre_post", issue_number=72)),
+            )
+            args = type(
+                "Args",
+                (),
+                {
+                    "contract": str(CONTRACT_PATH),
+                    "scan_public_path": [],
+                    "review_issue": 72,
+                    "review_phase": "plan",
+                    "review_provider": "claude",
+                    "review_round": "r91",
+                    "review_root": "scripts/review/results",
+                    "include_sidecars": False,
+                    "sidecar_required": False,
+                    "snapshot": [str(snapshot)],
+                    "snapshot_pair": [],
+                },
+            )()
+            errors = validator.collect_errors(args)
+
+        self.assertEqual([], errors)
 
 
 if __name__ == "__main__":

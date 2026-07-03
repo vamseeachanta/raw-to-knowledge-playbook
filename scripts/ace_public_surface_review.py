@@ -1,4 +1,4 @@
-"""Review artifact and issue/comment snapshot scanning for ACE issue 68."""
+"""Review artifact and issue/comment snapshot scanning for ACE public artifacts."""
 from __future__ import annotations
 
 import hashlib
@@ -10,7 +10,7 @@ try:
     from .ace_public_surface_contract import (
         CONTRACT_PATH, MANIFEST_CONTRACT_PATH, REVIEW_ARTIFACT_RE, REVIEW_PHASES, REVIEW_ROOT, ROUND_RE,
         SEMVER_RE, SIDECAR_SUFFIXES, SNAPSHOT_KEYS, SNAPSHOT_PAIRINGS, SNAPSHOT_PHASES,
-        SNAPSHOT_SOURCE_KINDS, EXPECTED_PROVIDERS, _imported_token_values, load_json, repo_path,
+        SNAPSHOT_SOURCE_KINDS, EXPECTED_PROVIDERS, _imported_token_values, issue_number_allowed, load_json, repo_path,
     )
     from .ace_public_surface_rules import (
         _allowed_metadata_evidence_paths, _scan_line, validate_public_artifact_paths,
@@ -19,7 +19,7 @@ except ImportError:
     from ace_public_surface_contract import (
         CONTRACT_PATH, MANIFEST_CONTRACT_PATH, REVIEW_ARTIFACT_RE, REVIEW_PHASES, REVIEW_ROOT, ROUND_RE,
         SEMVER_RE, SIDECAR_SUFFIXES, SNAPSHOT_KEYS, SNAPSHOT_PAIRINGS, SNAPSHOT_PHASES,
-        SNAPSHOT_SOURCE_KINDS, EXPECTED_PROVIDERS, _imported_token_values, load_json, repo_path,
+        SNAPSHOT_SOURCE_KINDS, EXPECTED_PROVIDERS, _imported_token_values, issue_number_allowed, load_json, repo_path,
     )
     from ace_public_surface_rules import (
         _allowed_metadata_evidence_paths, _scan_line, validate_public_artifact_paths,
@@ -45,6 +45,7 @@ def validate_review_artifacts(
         include_sidecars=include_sidecars,
         sidecar_required=sidecar_required,
         review_root=review_root,
+        contract_path=contract_path,
     )
     if errors:
         return errors
@@ -55,7 +56,7 @@ def validate_issue_comment_snapshot_file(path: Path, contract_path: Path = CONTR
     snapshot, errors = _load_snapshot(path)
     if errors:
         return errors
-    errors.extend(_validate_snapshot_record(snapshot, path))
+    errors.extend(_validate_snapshot_record(snapshot, path, contract_path))
     if not errors:
         errors.extend(_scan_snapshot_body(snapshot, path, contract_path))
     return errors
@@ -84,8 +85,9 @@ def select_review_artifact_paths(
     include_sidecars: bool = False,
     sidecar_required: bool = False,
     review_root: Path = REVIEW_ROOT,
+    contract_path: Path = CONTRACT_PATH,
 ) -> tuple[list[Path], list[str]]:
-    errors = _validate_review_selector(review_issue, phase, provider, round_id)
+    errors = _validate_review_selector(review_issue, phase, provider, round_id, contract_path)
     root, root_errors = _bounded_review_root(review_root)
     errors.extend(root_errors)
     if root.is_symlink():
@@ -114,7 +116,7 @@ def _load_snapshot(path: Path) -> tuple[dict, list[str]]:
     return payload, []
 
 
-def _validate_snapshot_record(snapshot: dict, path: Path) -> list[str]:
+def _validate_snapshot_record(snapshot: dict, path: Path, contract_path: Path = CONTRACT_PATH) -> list[str]:
     errors: list[str] = []
     if list(snapshot) != SNAPSHOT_KEYS:
         errors.append(f"snapshot-keys: top-level keys must match contract at {path}")
@@ -124,8 +126,8 @@ def _validate_snapshot_record(snapshot: dict, path: Path) -> list[str]:
         errors.append(f"snapshot-source-kind: unknown source_kind at {path}")
     if snapshot.get("phase") not in SNAPSHOT_PHASES:
         errors.append(f"snapshot-phase: unknown phase at {path}")
-    if snapshot.get("issue_number") != 68:
-        errors.append(f"snapshot-issue: issue_number must be 68 at {path}")
+    if not issue_number_allowed(snapshot.get("issue_number"), contract_path):
+        errors.append(f"snapshot-issue: issue_number is not contract-authorized at {path}")
     errors.extend(_validate_snapshot_phase_shape(snapshot, path))
     if _body_hash(snapshot.get("body", "")) != snapshot.get("body_sha256"):
         errors.append(f"snapshot-body-hash: body_sha256 does not match body at {path}")
@@ -136,9 +138,15 @@ def _validate_snapshot_phase_shape(snapshot: dict, path: Path) -> list[str]:
     errors: list[str] = []
     if snapshot.get("phase") == "pre_post" and snapshot.get("comment_id") is not None:
         errors.append(f"snapshot-comment-id: pre_post comment_id must be null at {path}")
+    if snapshot.get("source_kind") == "planned_comment" and snapshot.get("phase") != "pre_post":
+        errors.append(f"snapshot-source-phase: planned_comment must be pre_post at {path}")
+    if snapshot.get("source_kind") == "issue_comment" and snapshot.get("phase") != "post_refetch":
+        errors.append(f"snapshot-source-phase: issue_comment must be post_refetch at {path}")
     if snapshot.get("phase") == "post_refetch" and snapshot.get("source_kind") == "issue_comment":
         if snapshot.get("comment_id") is None:
             errors.append(f"snapshot-comment-id: refetched issue_comment needs comment_id at {path}")
+        errors.extend(_validate_github_comment_url(snapshot, path))
+    elif snapshot.get("source_kind") == "issue_comment":
         errors.extend(_validate_github_comment_url(snapshot, path))
     if snapshot.get("source_kind") == "planned_comment":
         errors.extend(_validate_github_issue_url(snapshot, path))
@@ -149,7 +157,7 @@ def _validate_snapshot_phase_shape(snapshot: dict, path: Path) -> list[str]:
 
 def _validate_github_comment_url(snapshot: dict, path: Path) -> list[str]:
     parsed = urlparse(str(snapshot.get("url", "")))
-    issue = 68
+    issue = snapshot.get("issue_number")
     comment_id = snapshot.get("comment_id")
     expected_path = f"/vamseeachanta/raw-to-knowledge-playbook/issues/{issue}"
     expected_fragment = f"issuecomment-{comment_id}"
@@ -167,7 +175,7 @@ def _validate_github_comment_url(snapshot: dict, path: Path) -> list[str]:
 
 def _validate_github_issue_url(snapshot: dict, path: Path) -> list[str]:
     parsed = urlparse(str(snapshot.get("url", "")))
-    issue = 68
+    issue = snapshot.get("issue_number")
     expected_path = f"/vamseeachanta/raw-to-knowledge-playbook/issues/{issue}"
     if (
         parsed.scheme != "https"
@@ -209,10 +217,10 @@ def _body_hash(body: str) -> str:
     return hashlib.sha256(str(body).encode()).hexdigest()
 
 
-def _validate_review_selector(review_issue: int, phase: str, provider: str, round_id: str) -> list[str]:
+def _validate_review_selector(review_issue: int, phase: str, provider: str, round_id: str, contract_path: Path = CONTRACT_PATH) -> list[str]:
     errors: list[str] = []
-    if review_issue != 68:
-        errors.append("review-issue: #68 scanner accepts only issue 68 selectors")
+    if not issue_number_allowed(review_issue, contract_path):
+        errors.append("review-issue: issue number is not contract-authorized")
     if phase not in REVIEW_PHASES:
         errors.append(f"review-phase: unknown phase {phase!r}")
     if provider not in EXPECTED_PROVIDERS:
@@ -230,7 +238,7 @@ def _select_review_markdown(
     round_id: str,
 ) -> tuple[list[Path], list[str]]:
     pattern = f"????-??-??-{phase}-{issue}-{provider}-{round_id}.md"
-    matches = [path for path in sorted(root.glob(pattern)) if _review_name_matches(path.name, phase, provider, round_id)]
+    matches = [path for path in sorted(root.glob(pattern)) if _review_name_matches(path.name, issue, phase, provider, round_id)]
     errors: list[str] = []
     if not matches:
         return [], [f"review-artifact-missing: {pattern}"]
@@ -240,10 +248,11 @@ def _select_review_markdown(
     return ([] if errors else matches), errors
 
 
-def _review_name_matches(name: str, phase: str, provider: str, round_id: str) -> bool:
+def _review_name_matches(name: str, issue: int, phase: str, provider: str, round_id: str) -> bool:
     match = REVIEW_ARTIFACT_RE.fullmatch(name)
     return bool(
         match
+        and int(match.group("issue")) == issue
         and match.group("phase") == phase
         and match.group("provider") == provider
         and match.group("round") == round_id

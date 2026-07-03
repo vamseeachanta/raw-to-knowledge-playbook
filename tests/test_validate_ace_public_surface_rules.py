@@ -276,7 +276,7 @@ class AcePublicSurfaceRulesTests(unittest.TestCase):
         validator = load_validator()
 
         with repo_tmpdir() as tmp:
-            wrong_path = write_tmp(tmp, "docs/plans/issue-67-example.md", allowed_schema_term_block())
+            wrong_path = write_tmp(tmp, "docs/plans/issue-64-example.md", allowed_schema_term_block())
             wrong_heading = write_tmp(
                 tmp,
                 "docs/plans/2026-06-30-issue-68-example.md",
@@ -287,6 +287,73 @@ class AcePublicSurfaceRulesTests(unittest.TestCase):
         joined = "\n".join(errors)
         self.assertIn("allow-context-path", joined)
         self.assertIn("allow-context-heading", joined)
+
+    def test_allow_context_paths_accept_contract_authorized_issue_numbers(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            plan_path = write_tmp(
+                tmp.as_posix(),
+                "docs/plans/2026-07-02-issue-72-example.md",
+                allowed_schema_term_block(),
+            )
+            review_path = write_tmp(
+                tmp.as_posix(),
+                "scripts/review/results/2026-07-02-plan-72-claude-r1.md",
+                allowed_schema_term_block(),
+            )
+            errors = validator.validate_public_artifact_paths([repo_relative(plan_path), repo_relative(review_path)])
+
+        self.assertEqual([], errors)
+
+    def test_allow_context_paths_reject_unlisted_issue_numbers(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            plan_path = write_tmp(
+                tmp.as_posix(),
+                "docs/plans/2026-07-02-issue-64-example.md",
+                allowed_schema_term_block(),
+            )
+            review_path = write_tmp(
+                tmp.as_posix(),
+                "scripts/review/results/2026-07-02-plan-64-claude-r1.md",
+                allowed_schema_term_block(),
+            )
+            errors = validator.validate_public_artifact_paths([repo_relative(plan_path), repo_relative(review_path)])
+
+        self.assertEqual(2, "\n".join(errors).count("allow-context-path"))
+
+    def test_allow_context_paths_reject_mixed_allowed_and_unlisted_issue_tokens(self):
+        validator = load_validator()
+
+        with repo_tmpdir() as tmp:
+            plan_path = write_tmp(
+                tmp.as_posix(),
+                "docs/plans/2026-07-02-issue-72-issue-999-example.md",
+                allowed_schema_term_block(),
+            )
+            review_path = write_tmp(
+                tmp.as_posix(),
+                "scripts/review/results/2026-07-02-plan-72-plan-999-claude-r1.md",
+                allowed_schema_term_block(),
+            )
+            errors = validator.validate_public_artifact_paths([repo_relative(plan_path), repo_relative(review_path)])
+
+        self.assertEqual(2, "\n".join(errors).count("allow-context-path"))
+
+    def test_allow_context_paths_use_supplied_contract_issue_enum(self):
+        validator = load_validator()
+        rules = sys.modules["ace_public_surface_rules"]
+        contract = load_json(CONTRACT_PATH)
+        contract["review_artifact_selector"]["allowed_issue_numbers"] = [68]
+
+        with repo_tmpdir() as tmp:
+            contract_path = write_tmp(tmp.as_posix(), "narrow-contract.json", json.dumps(contract))
+            plan_path = Path("docs/plans/2026-07-02-issue-72-example.md")
+            _, errors = rules._allow_context_rules(plan_path, allowed_schema_term_block(), contract_path=contract_path)
+
+        self.assertIn("allow-context-path", "\n".join(errors))
 
     def test_allow_context_enforces_token_classes_and_max_lines(self):
         validator = load_validator()

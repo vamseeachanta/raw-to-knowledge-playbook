@@ -76,6 +76,10 @@ metadata:
    issue #50, every reusable method gap found during review must be resolved as
    one of `doc-update`, `skill-eval-update`, or `follow-on-issue` before
    closeout. Update the wave's coordination row if the disposition changes.
+8. **Probe generalized selectors as hostile parsers.** When a gate expands from
+   one issue/source/snapshot shape to a closed enum, reviewers must test mixed
+   allowed+unlisted tokens, invalid source-kind/phase pairings, custom contract
+   propagation, and CI coverage for at least one non-default enum member.
 
 ## Verification
 - The PR carries a posted round table: every round's verdict and findings,
@@ -109,3 +113,4 @@ metadata:
 | Record the exact runner | A reviewer running a PEP-723 script with bare `python` produced a false FAIL (missing deps) |
 | Post the round table on the PR | The verification record is part of the deliverable — confidence must be auditable later |
 | Close method gaps into durable artifacts | ACE child waves must improve the playbook or file a follow-on issue instead of burying reusable lessons in a transcript |
+| Hostile selector probes | #72 review found that mixed issue tokens, invalid snapshot phase/source pairs, and default-only CI can make a generalized gate look green while non-default paths fail open |

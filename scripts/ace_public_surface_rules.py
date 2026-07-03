@@ -1,4 +1,4 @@
-"""Public artifact scanning rules for ACE issue 68."""
+"""Public artifact scanning rules for ACE public artifacts."""
 from __future__ import annotations
 
 import json
@@ -15,7 +15,7 @@ try:
         PRIVATE_HOST_PATTERNS, SIDECAR_SUFFIXES, SOURCE_DIGEST_LABELS,
         SOURCE_DIGEST_VALUE_RE, TABLE_ASSIGNMENT_RE, TEXT_ASSIGNMENT_RE, TOKEN_LITERAL_RE,
         UNBOUNDED_TRAVERSAL_PATTERNS, REPO_ROOT, _imported_token_values, load_json,
-        repo_path, validate_contract_file,
+        issue_number_allowed, repo_path, validate_contract_file,
     )
 except ImportError:
     from ace_public_surface_contract import (
@@ -26,7 +26,7 @@ except ImportError:
         PRIVATE_HOST_PATTERNS, SIDECAR_SUFFIXES, SOURCE_DIGEST_LABELS,
         SOURCE_DIGEST_VALUE_RE, TABLE_ASSIGNMENT_RE, TEXT_ASSIGNMENT_RE, TOKEN_LITERAL_RE,
         UNBOUNDED_TRAVERSAL_PATTERNS, REPO_ROOT, _imported_token_values, load_json,
-        repo_path, validate_contract_file,
+        issue_number_allowed, repo_path, validate_contract_file,
     )
 
 
@@ -44,7 +44,7 @@ def validate_public_artifact_paths(
     token_contract = _imported_token_values(contract)
     metadata_paths = _allowed_metadata_evidence_paths(manifest_contract_path)
     for root in paths:
-        errors.extend(_scan_path(root, token_contract, metadata_paths, allow_external_paths))
+        errors.extend(_scan_path(root, token_contract, metadata_paths, allow_external_paths, contract_path))
     return errors
 
 
@@ -76,6 +76,7 @@ def _scan_path(
     token_contract: dict,
     metadata_paths: dict[str, str],
     allow_external_paths: bool,
+    contract_path: Path,
 ) -> list[str]:
     path, path_errors = _bounded_scan_root(root, allow_external_paths)
     if path_errors:
@@ -95,14 +96,14 @@ def _scan_path(
         if not allow_external_paths and not _is_under_repo(candidate):
             errors.append(_error(candidate, 1, "scan-path-symlink", "scan path escapes repo"))
             continue
-        errors.extend(_scan_file(candidate, token_contract, metadata_paths))
+        errors.extend(_scan_file(candidate, token_contract, metadata_paths, contract_path))
     return errors
 
 
-def _scan_file(path: Path, token_contract: dict, metadata_paths: dict[str, str]) -> list[str]:
+def _scan_file(path: Path, token_contract: dict, metadata_paths: dict[str, str], contract_path: Path) -> list[str]:
     text = path.read_text(errors="replace")
     errors = _scan_json_keys(path, text, token_contract)
-    allowed_rules, allow_errors = _allow_context_rules(path, text)
+    allowed_rules, allow_errors = _allow_context_rules(path, text, contract_path)
     errors.extend(allow_errors)
     for line_number, line in enumerate(text.splitlines(), start=1):
         line_errors = _scan_line(path, line_number, line, token_contract, metadata_paths)
@@ -226,15 +227,15 @@ def _rule_id(error: str) -> str:
     return error.split(":", 1)[0]
 
 
-def _allow_context_rules(path: Path, text: str) -> tuple[dict[int, set[str]], list[str]]:
+def _allow_context_rules(path: Path, text: str, contract_path: Path = CONTRACT_PATH) -> tuple[dict[int, set[str]], list[str]]:
     if ALLOW_MARKER not in text:
         return {}, []
     if path.suffix in {".json", ".py"}:
         return {}, [_error(path, 1, "allow-context-forbidden-filetype", "HTML allow sentinel forbidden")]
-    return _parse_allow_contexts(path, text.splitlines())
+    return _parse_allow_contexts(path, text.splitlines(), contract_path)
 
 
-def _parse_allow_contexts(path: Path, lines: list[str]) -> tuple[dict[int, set[str]], list[str]]:
+def _parse_allow_contexts(path: Path, lines: list[str], contract_path: Path = CONTRACT_PATH) -> tuple[dict[int, set[str]], list[str]]:
     errors: list[str] = []
     allowed: dict[int, set[str]] = {}
     open_block: dict | None = None
@@ -244,7 +245,7 @@ def _parse_allow_contexts(path: Path, lines: list[str]) -> tuple[dict[int, set[s
         start = ALLOW_START_RE.fullmatch(line.strip())
         end = ALLOW_END_RE.fullmatch(line.strip())
         if start:
-            open_block = _open_allow_block(path, line_number, start, current_heading, open_block, errors)
+            open_block = _open_allow_block(path, line_number, start, current_heading, open_block, errors, contract_path)
             continue
         if end:
             open_block = _close_allow_block(path, line_number, end, open_block, errors)
@@ -269,13 +270,14 @@ def _open_allow_block(
     heading: str,
     open_block: dict | None,
     errors: list[str],
+    contract_path: Path = CONTRACT_PATH,
 ) -> dict:
     if open_block is not None:
         errors.append(_error(path, line_number, "allow-context-nested", "nested allow context"))
     context_id = start.group("context")
     token_class = start.group("token")
     block = {"id": context_id, "token": token_class, "start": line_number, "lines": 0, "valid": True}
-    block["valid"] = _validate_allow_block_start(path, line_number, context_id, token_class, heading, errors)
+    block["valid"] = _validate_allow_block_start(path, line_number, context_id, token_class, heading, errors, contract_path)
     return block
 
 
@@ -331,12 +333,13 @@ def _validate_allow_block_start(
     token_class: str,
     heading: str,
     errors: list[str],
+    contract_path: Path = CONTRACT_PATH,
 ) -> bool:
     context = ALLOW_CONTEXTS.get(context_id)
     if context is None:
         errors.append(_error(path, line_number, "allow-context-unknown", "unknown allow context"))
         return False
-    valid = _validate_allow_path(path, line_number, context_id, errors)
+    valid = _validate_allow_path(path, line_number, context_id, errors, contract_path)
     if token_class not in context["token_classes"]:
         errors.append(_error(path, line_number, "allow-context-token-class", "unknown allow token class"))
         valid = False
@@ -347,18 +350,35 @@ def _validate_allow_block_start(
     return valid
 
 
-def _validate_allow_path(path: Path, line_number: int, context_id: str, errors: list[str]) -> bool:
+def _validate_allow_path(path: Path, line_number: int, context_id: str, errors: list[str], contract_path: Path = CONTRACT_PATH) -> bool:
     normalized = path.as_posix()
     valid = False
     if context_id == "schema-term-policy-prose":
-        valid = path.suffix == ".md" and "issue-68" in path.name and (
-            "/docs/plans/" in normalized or "/scripts/review/results/" in normalized
+        issue_number = _issue_number_from_allow_path(path, "issue" if "/docs/plans/" in normalized else "plan")
+        valid = (
+            path.suffix == ".md"
+            and issue_number_allowed(issue_number, contract_path)
+            and (
+                ("/docs/plans/" in normalized and f"issue-{issue_number}" in path.name)
+                or ("/scripts/review/results/" in normalized and f"plan-{issue_number}" in path.name)
+            )
         )
     if context_id == "review-artifact-forensics":
-        valid = "/scripts/review/results/" in normalized and "plan-68" in path.name
+        issue_number = _issue_number_from_allow_path(path, "plan")
+        valid = "/scripts/review/results/" in normalized and issue_number_allowed(issue_number, contract_path) and f"plan-{issue_number}" in path.name
     if not valid:
         errors.append(_error(path, line_number, "allow-context-path", "allow path mismatch"))
     return valid
+
+
+def _issue_number_from_allow_path(path: Path, expected_token: str) -> int | None:
+    matches = re.findall(r"(issue|plan)-([0-9]+)", path.name)
+    if len(matches) != 1:
+        return None
+    token, issue_number = matches[0]
+    if token != expected_token:
+        return None
+    return int(issue_number)
 
 
 def _allowed_metadata_evidence_paths(manifest_contract_path: Path) -> dict[str, str]:

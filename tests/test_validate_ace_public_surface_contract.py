@@ -4,6 +4,9 @@ from tests.ace_public_surface_test_helpers import *
 import importlib
 
 
+EXPECTED_ALLOWED_ISSUES = [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72]
+
+
 class AcePublicSurfaceContractTests(unittest.TestCase):
     def test_contract_is_json_and_owned_by_68(self):
         contract = load_json(CONTRACT_PATH)
@@ -55,6 +58,25 @@ class AcePublicSurfaceContractTests(unittest.TestCase):
             {"claude", "codex", "gemini", "subagent-boundary", "subagent-scanner", "subagent-workflow"},
             providers,
         )
+
+    def test_contract_declares_closed_allowed_issue_numbers(self):
+        validator = load_validator()
+        contract = load_json(CONTRACT_PATH)
+        selector = contract["review_artifact_selector"]
+
+        self.assertEqual(EXPECTED_ALLOWED_ISSUES, selector["allowed_issue_numbers"])
+        self.assertNotIn("issue", selector)
+        self.assertNotIn(64, selector["allowed_issue_numbers"])
+        self.assertEqual([], validator.validate_contract(contract))
+
+    def test_contract_rejects_stale_singular_issue_key(self):
+        validator = load_validator()
+        contract = load_json(CONTRACT_PATH)
+        contract["review_artifact_selector"]["issue"] = 68
+
+        errors = validator.validate_contract(contract)
+
+        self.assertIn("stale singular issue", "\n".join(errors))
 
     def test_contract_forbids_blanket_exemptions_and_live_ci_auth(self):
         contract = load_json(CONTRACT_PATH)

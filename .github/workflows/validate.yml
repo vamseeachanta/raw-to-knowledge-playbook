@@ -133,9 +133,11 @@ jobs:
         run: |
           uv run python scripts/validate_ace_public_surface_scan.py \
             --scan-public-path docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md \
+            --scan-public-path docs/plans/2026-07-02-issue-72-generalize-public-surface-review-selector-snapshot-modes.md \
             --scan-public-path docs/plans/README.md \
             --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
             --scan-public-path .planning/plan-approved/68.md \
+            --scan-public-path .planning/plan-approved/72.md \
             --scan-public-path config/ace-public-surface-self-scan-contract.json \
             --scan-public-path scripts/ace_public_surface_contract.py \
             --scan-public-path scripts/ace_public_surface_review.py \
@@ -148,6 +150,14 @@ jobs:
             --scan-public-path tests/test_validate_ace_public_surface_rules.py \
             --scan-public-path tests/test_validate_ace_public_surface_snapshot_urls.py \
             --scan-public-path tests/test_validate_ace_public_surface_scan.py \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-claude-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-claude-r2.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-codex-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-codex-r2.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-gemini-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-gemini-r2.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-72-subagent-scanner-r1.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-72-subagent-workflow-r1.md \
             --scan-public-path .github/workflows/validate.yml
           for provider in claude codex gemini subagent-boundary subagent-scanner subagent-workflow; do
             for round in r1 r2 r3; do
@@ -158,6 +168,24 @@ jobs:
                 --review-round "$round" \
                 --include-sidecars
             done
+          done
+          for provider in claude codex gemini; do
+            for round in r1 r2; do
+              uv run python scripts/validate_ace_public_surface_scan.py \
+                --review-issue 72 \
+                --review-phase plan \
+                --review-provider "$provider" \
+                --review-round "$round" \
+                --include-sidecars
+            done
+          done
+          for provider in subagent-scanner subagent-workflow; do
+            uv run python scripts/validate_ace_public_surface_scan.py \
+              --review-issue 72 \
+              --review-phase implementation \
+              --review-provider "$provider" \
+              --review-round r1 \
+              --include-sidecars
           done
 
       - name: Validate ACE public-output artifact canary

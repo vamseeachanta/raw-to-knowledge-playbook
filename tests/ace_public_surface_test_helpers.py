@@ -112,8 +112,12 @@ def snapshot_record(
     phase: str,
     issue_number: int = 68,
     comment_id=None,
-    url: str = "https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/68",
+    url: str | None = None,
 ) -> dict:
+    if url is None:
+        url = f"https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/{issue_number}"
+        if source_kind == "issue_comment" and phase == "post_refetch" and comment_id is not None:
+            url = f"{url}#issuecomment-{comment_id}"
     return {
         "schema_version": "1.0.0",
         "issue_number": issue_number,
