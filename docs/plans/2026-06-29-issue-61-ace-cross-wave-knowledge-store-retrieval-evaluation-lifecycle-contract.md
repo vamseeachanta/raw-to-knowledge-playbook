@@ -1,6 +1,6 @@
 # Plan for #61: ACE Cross-Wave Knowledge-Store, Retrieval, Evaluation, and Lifecycle Contract
 
-> **Status:** plan-approved
+> **Status:** completed
 > **Complexity:** T3
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/61
