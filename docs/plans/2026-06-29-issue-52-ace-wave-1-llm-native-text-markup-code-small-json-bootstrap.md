@@ -1,6 +1,6 @@
 # Plan for #52: ACE Wave 1 LLM-Native Text, Markup, Code, and Small JSON Bootstrap
 
-> **Status:** plan-approved
+> **Status:** completed
 > **Complexity:** T2
 > **Date:** 2026-07-02
 > **Issue:** https://github.com/vamseeachanta/raw-to-knowledge-playbook/issues/52
@@ -56,7 +56,7 @@
 **Live issue status** (verified 2026-07-03):
 
 ```text
-#52 OPEN labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
+#52 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists; implementation closeout comment posted
 #51 OPEN labels=strengthening,lane:claude,priority:high; no local approval marker
 #61 CLOSED labels=strengthening,status:plan-approved,lane:claude,priority:high; local marker exists; implemented validators and closeout evidence exist
 #62 CLOSED labels=strengthening,status:plan-approved,lane:codex,priority:high; local marker exists
