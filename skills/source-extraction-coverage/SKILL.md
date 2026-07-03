@@ -45,6 +45,12 @@ metadata:
    - `html`: typed-element extraction; strip nav/boilerplate.
    - `scanned`: OCR with a blur gate (OpenCV Laplacian-variance → too blurry
      stays provisional); OCR output is a *claim*, not source text.
+   - `text/markup`: section-aware deterministic copy with paragraph or section
+     estimate/yield.
+   - `small-json/config`: key/schema-aware metadata extraction with generated
+     JSON excluded before extraction.
+   - `code-doc`: docstring/comment metadata only; never recursive source-tree
+     ingestion.
 3. **Extract deterministically.** Tools, not an LLM, do the bulk copy. (LLM
    bulk extraction yielded ~2% coverage — never the bulk path.)
 4. **Record yield.** Write `extraction_yield` after extraction (pages/tables
@@ -58,6 +64,8 @@ metadata:
   (post); a validator script rejects a page missing either.
 - Sources flagged `shallow` appear in the re-extraction backlog, not the
   trusted set.
+- Generated/repetitive JSON and source-tree noise are exclusions, not shallow
+  extraction failures.
 
 ## Cleanup
 - Raw source never copied into any repo; only derived parts + a `sources:`

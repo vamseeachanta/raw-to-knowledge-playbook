@@ -168,5 +168,11 @@ The recovery path is deliberately two-step: `stale_requires_rescreen` returns to
 promote it to `verified`. Direct stale-to-verified promotion is outside the
 allowed transition table.
 
+ACE wave-1 text/config/code-doc rows reset to `stale_requires_rescreen` when the
+generatedness classifier, public/private route rule, `extraction_estimate` /
+`extraction_yield` recipe, or source fixture contract changes. Excluded
+generated/noise rows remain auditable exclusion records; they do not silently
+re-enter the candidate set without a fresh triage pass.
+
 *Snapshot 2026-06. Full primary-source citations and the UNVERIFIED-figure
 caveats: issue #17.*

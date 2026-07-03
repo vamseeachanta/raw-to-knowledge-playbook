@@ -38,6 +38,22 @@
       "given": "A public ACE methodology artifact needs to mention private provenance.",
       "when": "The fidelity gate checks public fields.",
       "then": "Only an opaque private_provenance_bundle_ref is allowed; raw lookup material or literal public token values are rejected."
+    },
+    {
+      "id": "ace-52-config-claim-traceability",
+      "issue": 52,
+      "name": "ace-config-claim-traces-to-retained-metadata",
+      "given": "A wave-1 page summarizes a small JSON config as method metadata.",
+      "when": "The fidelity gate checks each declarative claim.",
+      "then": "Every config-derived claim traces to retained keys or notes; inferred prose beyond the fixture is flagged."
+    },
+    {
+      "id": "ace-52-code-doc-overclaim",
+      "issue": 52,
+      "name": "ace-code-doc-claims-do-not-overreach",
+      "given": "A code-doc row has a module docstring and implementation body.",
+      "when": "The overclaim sweep runs.",
+      "then": "Only docstring/comment metadata can support prose claims; bulk source behavior is not claimed from excluded code."
     }
   ]
 }

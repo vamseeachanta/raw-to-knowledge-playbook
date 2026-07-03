@@ -145,5 +145,11 @@ table was preserved; it must not be flattened into prose to make embedding
 easier. Golden and silver eval cases are not retrieval chunks and remain outside
 the ingest path and chunk store.
 
+ACE wave-1 text/config/code-doc chunks add candidate class, route target,
+logical target store, parse status, visibility, and `extraction_estimate` /
+`extraction_yield`
+metadata. Generated JSON, lockfile-like JSON, source-tree noise, and hard
+exclusions do not become retrieval chunks; they stay in exclusion metrics.
+
 *Snapshot 2026-06. Models and benchmarks age fast — re-run the doc 12 trust
 rubric before adopting. Full primary-source citations: issue #15.*

@@ -1,0 +1,9 @@
+{
+  "objects": [
+    {"kind": "template", "slot": 1, "value": "a"},
+    {"kind": "template", "slot": 2, "value": "b"},
+    {"kind": "template", "slot": 3, "value": "c"},
+    {"kind": "template", "slot": 4, "value": "d"},
+    {"kind": "template", "slot": 5, "value": "e"}
+  ]
+}

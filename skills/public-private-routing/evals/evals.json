@@ -54,6 +54,26 @@
         "scans the exact issue-comment body file before posting",
         "does not trust agent self-report for public/private cleanliness"
       ]
+    },
+    {
+      "id": "ace-52-public-route-clearance",
+      "issue": 52,
+      "name": "ace-wave1-public-route-requires-clearance",
+      "prompt": "Run /route-visibility on a wave-1 text/config/code-doc row routed public_llm_wiki without affirmative clearance.",
+      "expect": [
+        "blocks the public route",
+        "requires #63 public-output canary evidence over the exact surface before publication"
+      ]
+    },
+    {
+      "id": "ace-52-private-fields-blocked",
+      "issue": 52,
+      "name": "ace-wave1-summary-private-fields-blocked",
+      "prompt": "Run /route-visibility on a public wave-1 methodology summary that includes private lookup material or raw source terms.",
+      "expect": [
+        "blocks private lookup material in public summaries",
+        "allows synthetic fixture method language without measured ACE source details"
+      ]
     }
   ]
 }

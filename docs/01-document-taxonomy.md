@@ -36,6 +36,9 @@ This taxonomy has four independent axes:
 | **Word report / specification** | Styled prose + explicit XML tables + tracked changes | L1–L3 + D3 template | Tables are explicit structures (more reliable than PDF detection); extract the report template once per family |
 | **PowerPoint deck** | Narrative skeleton, speaker notes, pasted-image tables | D3 reporting concepts | Highly selective; pasted tables route to the vision lane like PDF figures |
 | **CSV / delimited data file** | "Already structured" — silently fragile | L3–L4 + convention sidecar | Probe dialect, validate field counts, capture units/sign conventions — see [10-structured-data-and-model-files.md](10-structured-data-and-model-files.md) |
+| **LLM-native text / markup** | Hand-authored Markdown, reStructuredText, plain text notes | L1 with `extraction_estimate` / `extraction_yield` | Useful prose is kept by content value; public routing still requires clearance |
+| **Small JSON / config metadata** | Hand-authored config, schema, manifest snippets | L0–L1 metadata | Route metadata-only unless explicitly public-cleared; generated JSON is excluded by content signals |
+| **Code documentation** | Docstrings, comments, README-like source-adjacent notes | L0 metadata/docstring | Never bulk-ingest source trees; extract durable documentation signals only |
 | **Analysis-model input deck** (solver ASCII/keyword files) | Model definition = engineering decisions | D2 logic → externalized YAML config | Parse to config, regenerate the deck; assumption ledger for defaults |
 | **Solver output listing / export** | Block-marked text structure, multi-format per solver | L2–L4 | Auto-detect format by header inspection; sanity-gate values before use |
 | **Web article / post** (blog, LinkedIn) | Short, ephemeral, link-rotted, mutable | L1 + readability extraction + post-JS single-file snapshot | Snapshot at capture; bind the citation to `content hash + captured_at + snapshot filename`, never the live URL alone; fire an async off-site hedge (IA Save Page Now); citations carry two dates (ingested / last-verified) — see [13-lane-flowcharts.md](13-lane-flowcharts.md) chart 10 |
@@ -120,6 +123,9 @@ much to trust it.
 | Word report | ✓ | ✓ | XML tables | ✓ | high-value tables | report template |
 | PowerPoint deck | ✓ | notes + claims | — | — | pasted tables via vision | reporting concepts |
 | CSV / delimited | ✓ | n/a (born structured) | dialect-probed parse | field-count + content-hash | convention sidecar reviewed | joined datasets |
+| LLM-native text / markup | ✓ | ✓ | section-aware | `extraction_estimate` / `extraction_yield` | high-value spans | chunked private/public by route |
+| Small JSON / config | ✓ | metadata-only | schema/content classified | generatedness gate | convention sidecar when kept | rarely |
+| Code documentation | ✓ | docstring/comment metadata | source-tree bulk ingest denied | value-ranked | traceability review | rarely |
 | Solver input deck | ✓ | raw deck text | parsed parameters | round-trip identity check | config ↔ deck regeneration | YAML config library |
 | Solver output | ✓ | listing text | block-aware parse | format auto-detection | sanity gates + cross-format parity | results database |
 | Web article | ✓ | ✓ | — | — | — | link only |

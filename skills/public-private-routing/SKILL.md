@@ -43,6 +43,11 @@ metadata:
 4. **Raw-source firewall.** Assert no raw licensed/confidential source file is
    being committed — only derived parts plus opaque public source tokens or
    public-safe provenance bundle references.
+5. **ACE wave-1 JSON/config/code-derived output.** Before any text, config, or
+   code-doc candidate routes `public_llm_wiki`, require affirmative public
+   clearance and the #63 public-output canary over the exact surface. Without
+   clearance, demote to `private_sidecar`, `metadata_only`, or
+   `excluded_no_ingest`.
 
 ## Verification
 - Pre-commit hook + CI deny-list scan must pass (L3); a hit blocks the commit/merge.

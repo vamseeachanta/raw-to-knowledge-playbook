@@ -58,6 +58,27 @@ Dataset volume scales effort non-linearly: one standard with 166 tables +
 table/figure/column density before committing** to digitize a delimited or
 tabular corpus; density, not document count, predicts the work.
 
+## 1.5 Small JSON and config metadata
+
+Small JSON/config files are structured, but structure alone does not make them
+knowledge. Wave-1 ingestion classifies JSON by content and schema signals before
+route selection:
+
+- Hand-authored configuration with stable keys and readable notes routes
+  `metadata_only` unless it is separately cleared for public publication.
+- Generated or repetitive JSON routes `excluded_no_ingest` when it shows
+  generated timestamps, repeated object templates, high-cardinality cache-like
+  lists, package/lockfile signatures, or minified bulk arrays.
+- The `.json` extension never decides the route. A config file may be useful
+  metadata; a generated cache may be pure noise.
+- Kept config rows still carry `extraction_estimate` and `extraction_yield` so a
+  shallow or empty parse is visible. Generated/noise exclusions are reported as
+  exclusions, not extraction failures.
+
+For code-adjacent sources, never recursively ingest source trees. Extract only
+durable documentation signals such as module docstrings, comments, schemas, or
+small config records after exclusion and visibility gates pass.
+
 ---
 
 ## 2. Analysis-model input files (solver decks)

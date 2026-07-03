@@ -45,6 +45,11 @@ metadata:
 6. **Fail-closed citation:** any derived constant cites code id + publisher +
    revision + source page; if the cited page's frontmatter is missing/mismatched
    the page is invalid (the contract refuses rather than ships an unprovable value).
+7. **ACE wave-1 row shape:** text/config/code-doc rows carry `candidate_id`,
+   `candidate_class`, `route_target`, `logical_target_store`, `visibility`,
+   `parse_status`, `public_clearance`, `signals`, `extraction_estimate`, and
+   `extraction_yield`. Public rows use abstract public tokens and private
+   provenance bundle references, not literal private lookup material.
 
 ## Verification
 - The checker returns a per-rule pass/fail; a pre-commit hook (L3) blocks commit

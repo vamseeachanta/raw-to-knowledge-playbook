@@ -1,0 +1,38 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "fixture-hand-authored-markdown",
+      "candidate_class": "hand_authored_markup",
+      "route_target": "private_sidecar",
+      "logical_target_store": "private_sidecar_store",
+      "parse_status": "synthetic_fixture",
+      "visibility": "private",
+      "public_clearance": false,
+      "extraction_estimate": {"unit": "paragraphs", "expected_count": 2},
+      "extraction_yield": {"unit": "paragraphs", "observed_count": 2},
+      "signals": ["markup_heading", "prose_density"]
+    },
+    {
+      "candidate_id": "fixture-generated-repetitive-json",
+      "candidate_class": "generated_repetitive_json",
+      "route_target": "excluded_no_ingest",
+      "logical_target_store": "excluded_no_store",
+      "parse_status": "synthetic_fixture",
+      "visibility": "none",
+      "public_clearance": false,
+      "hard_exclusion_reason": "generated_repetitive_noise",
+      "signals": ["generated_timestamp", "near_duplicate_object_templates"]
+    }
+  ],
+  "metric": {
+    "metric_scope": "synthetic_fixture",
+    "wave_class": "ingestion_wave",
+    "metric_status": "measured",
+    "total_classified_items": 2,
+    "hard_excluded_items": 1,
+    "eligible_candidate_items": 1,
+    "successful_routed_items": 1,
+    "ingested_success_percent": 100.0,
+    "excluded_percent": 50.0
+  }
+}

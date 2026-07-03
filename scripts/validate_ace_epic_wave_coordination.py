@@ -501,6 +501,8 @@ def validate_approval_marker(marker_path: Path, issue: int, expected_plan: str) 
         key, value = line.split(":", 1)
         fields[f"{key.strip()}:"] = value.strip()
     for field in REQUIRED_APPROVAL_MARKER_FIELDS:
+        if field == "Reviewed commit:" and field not in fields and "reviewed_commit_sha:" in fields:
+            continue
         if field not in fields:
             errors.append(f"#{issue} approval marker missing {field}")
         elif field != "Review artifacts:" and not fields[field]:
@@ -509,7 +511,8 @@ def validate_approval_marker(marker_path: Path, issue: int, expected_plan: str) 
         errors.append(f"#{issue} approval marker issue URL must match issue")
     if fields.get("Plan path:", "") != expected_plan.strip("`"):
         errors.append(f"#{issue} approval marker plan path must match {expected_plan}")
-    if not re.fullmatch(r"[0-9a-f]{40}", fields.get("Reviewed commit:", "")):
+    reviewed_commit = fields.get("Reviewed commit:") or fields.get("reviewed_commit_sha:", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_commit):
         errors.append(f"#{issue} approval marker reviewed commit must be a 40-character SHA")
     artifact_paths = _approval_marker_artifact_paths(text)
     if not artifact_paths:
