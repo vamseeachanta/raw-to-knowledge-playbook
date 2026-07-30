@@ -1,0 +1,11 @@
+{
+  "issue": 52,
+  "wave_class": "ingestion_wave",
+  "metric_status": "measured",
+  "total_classified_items": 10,
+  "hard_excluded_items": 2,
+  "eligible_candidate_items": 8,
+  "successful_routed_items": 6,
+  "ingested_success_percent": 75.0,
+  "excluded_percent": 20.0
+}

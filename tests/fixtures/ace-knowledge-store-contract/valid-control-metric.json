@@ -1,0 +1,11 @@
+{
+  "issue": 61,
+  "wave_class": "storage_lifecycle_gate",
+  "metric_status": "not_applicable_control_plane",
+  "total_classified_items": 0,
+  "hard_excluded_items": 0,
+  "eligible_candidate_items": 0,
+  "measured_success_numerator": 0,
+  "measured_success_denominator": 0,
+  "success_threshold": 0
+}

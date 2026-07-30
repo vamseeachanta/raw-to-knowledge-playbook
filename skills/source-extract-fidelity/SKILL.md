@@ -67,6 +67,9 @@ metadata:
    committed extract contain this?* Anything beyond the extract (interpretation,
    conclusion, "this means…") must be labeled output/analysis, never presented as
    source. Unsupported source-claims → flag for correction.
+   For ACE wave-1 config/code-doc rows, claims must trace to the retained
+   metadata, docstring, comment, or schema key. Generated JSON exclusions must
+   not be converted into prose claims about source content.
 5. **Invariant + vocab check.** Confirm raw binary is not committed (only derived
    parts + pointer), private content hasn't crossed to public, and every status
    value is in the closed set (no invented labels).
@@ -82,6 +85,8 @@ metadata:
 - Every quoted span on every page resolves to an exact location in the committed
   extract (the traceability map is complete — no orphan quotes).
 - No derived/cross-referenced value is presented as a verbatim quote.
+- Config-derived and code-doc claims trace to retained metadata/docstrings; no
+  prose claim is inferred from excluded generated JSON.
 - Hash matches; invariants and closed-set vocab hold.
 - Defects cite a **specific falsifiable** location ("page says X, extract has Y"),
   not generic approval/disapproval.

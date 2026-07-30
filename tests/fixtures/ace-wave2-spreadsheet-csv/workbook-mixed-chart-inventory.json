@@ -1,0 +1,23 @@
+{
+  "workbook": "synthetic-mixed-chart.xlsx",
+  "file_extension": ".xlsx",
+  "workbook_protected": false,
+  "macro_presence": false,
+  "external_link_count": 0,
+  "summary": {
+    "formula_count": 3,
+    "table_count": 1,
+    "merged_range_count": 0,
+    "chart_count": 1,
+    "protected_sheet_count": 0
+  },
+  "sheets": [
+    {
+      "name": "Model",
+      "formulas": [{"cell": "C2", "formula": "=A2+B2", "cached_value": 3}],
+      "tables": ["Inputs"],
+      "merged_ranges": [],
+      "chart_count": 1
+    }
+  ]
+}

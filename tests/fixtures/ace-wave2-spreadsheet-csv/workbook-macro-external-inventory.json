@@ -1,0 +1,17 @@
+{
+  "workbook": "macro-external.xlsm",
+  "file_extension": ".xlsm",
+  "workbook_protected": false,
+  "macro_presence": true,
+  "external_link_count": 1,
+  "summary": {
+    "formula_count": 1,
+    "table_count": 0,
+    "merged_range_count": 0,
+    "chart_count": 0,
+    "protected_sheet_count": 0
+  },
+  "sheets": [
+    {"name": "Macro", "formulas": [{"cell": "B2", "formula": "=A2*2", "cached_value": 8}], "tables": [], "merged_ranges": [], "chart_count": 0}
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "case_id": "golden-synthetic-1",
+  "eval_tier": "golden",
+  "storage_form": "eval_case",
+  "outside_ingest_path": true,
+  "outside_chunk_store": true
+}

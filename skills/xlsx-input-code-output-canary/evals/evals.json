@@ -3,7 +3,7 @@
     {
       "name": "data_workbook_requires_normalized_output",
       "prompt": "Use the XLSX canary skill on a flat data workbook with no formulas.",
-      "expected": "The agent classifies the workbook as data, records source_id/url/sha256 evidence, generates parser/schema code, and emits normalized output proof without treating layout metadata as extracted facts."
+      "expected": "The agent classifies the workbook as data, records public_fixture_id/url/sha256 evidence, generates parser/schema code, and emits normalized output proof without treating layout metadata as extracted facts."
     },
     {
       "name": "formula_workbook_requires_code_or_evaluator_proof",
@@ -14,6 +14,26 @@
       "name": "guarded_workbook_defers_explicitly",
       "prompt": "Use the XLSX canary skill on a protected workbook or workbook with unsupported logic.",
       "expected": "The agent classifies the workbook as guarded or unsupported and records an explicit deferral reason instead of silently extracting tables."
+    },
+    {
+      "name": "ace_wave2_data_workbook_maps_without_route_collision",
+      "prompt": "Map an ACE wave-2 flat .xlsx inventory into the ingestion ledger.",
+      "expected": "The agent preserves original_canary_class=data, sets workbook_class=data_workbook, keeps route_target as a separate #65 route value, and records known spreadsheet losses."
+    },
+    {
+      "name": "ace_wave2_calculation_requires_triplet",
+      "prompt": "Map an ACE wave-2 workbook inventory with formulas and cached values.",
+      "expected": "The agent preserves the calculation or mixed canary class, sets workbook_class=calculation_workbook, refuses cached_values_only verification, and requires input_contract, code_artifact, and output_proof."
+    },
+    {
+      "name": "ace_wave2_report_inventory_is_metadata_only",
+      "prompt": "Map a chart-heavy workbook inventory with no formula proof lane.",
+      "expected": "The agent emits report_evidence from chart inventory fields and routes report_workbook as metadata_only unless a separate report-lane proof exists."
+    },
+    {
+      "name": "ace_wave2_legacy_and_macro_logic_defer",
+      "prompt": "Map .xls, .xlsb, .ods, protected, macro-enabled, or external-link workbook evidence.",
+      "expected": "The agent does not count those sources as content-ingestion successes without adapter or static-analysis approval, records macro/external/protection flags, and emits excluded_workbook or explicit deferral reasons."
     }
   ]
 }

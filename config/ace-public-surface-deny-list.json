@@ -1,0 +1,37 @@
+{
+  "contract_id": "ace-public-surface-deny-list",
+  "contract_version": "1.0.0",
+  "owner_issue": 63,
+  "mode": "publication_supplement",
+  "upstream_rule_owners": {
+    "public_surface_self_scan": 68,
+    "legal_security_scan": 69
+  },
+  "publication_deny_classes": [
+    {
+      "id": "media-metadata",
+      "description": "EXIF and GPS metadata must not cross into public outputs"
+    },
+    {
+      "id": "engineering-metadata",
+      "description": "Title-block, BOM, unsafe table, and unsafe field names require review before publication"
+    },
+    {
+      "id": "copied-private-snippet",
+      "description": "Copied private-source snippets are blocked from public outputs"
+    },
+    {
+      "id": "issue-comment-body",
+      "description": "GitHub issue comments that summarize ACE-derived content must be scanned before posting"
+    },
+    {
+      "id": "external-publication-summary",
+      "description": "External publication summaries require the same public-output canary"
+    }
+  ],
+  "optional_private_deny_inputs": {
+    "runtime_only": true,
+    "committed_config_allowed": false,
+    "env_var": "ACE_PRIVATE_DENY_LIST_PATH"
+  }
+}

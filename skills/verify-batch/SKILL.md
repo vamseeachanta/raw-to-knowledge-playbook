@@ -114,6 +114,9 @@ Is the rendered region a data table at all?
 - Every changed row has a verdict from the closed set + a verifier + (for
   non-VERIFIED) a defect class.
 - The PR report's totals reconcile with the queue's terminal-row count.
+- Public batch reports and review notes pass
+  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; use
+  `--diff-only` before committing verifier outputs.
 
 ## Cleanup
 

@@ -23,7 +23,57 @@
     {
       "name": "raw-source-firewall",
       "prompt": "Run /route-visibility on a staged diff that includes a raw licensed source PDF.",
-      "expect": ["blocks: only derived parts + a sources: sha256 pointer may be committed, never the raw source"]
+      "expect": ["blocks: only derived parts plus opaque source tokens or provenance bundle refs may be committed; raw source digest values stay private-sidecar only"]
+    },
+    {
+      "id": "ace-61-publication-gate",
+      "issue": 61,
+      "name": "ace-publication-stays-blocked-before-canary",
+      "prompt": "Run /route-visibility on a scan-clean ACE methodology contract that also tries to add docs navigation or wiki publication.",
+      "expect": [
+        "allows the scan-clean methodology artifact",
+        "blocks docs navigation, llm-wiki output, and public corpus summaries until the #63 canary has passing evidence"
+      ]
+    },
+    {
+      "id": "ace-63-public-output-canary",
+      "issue": 63,
+      "name": "ace-public-output-canary-required-before-publication",
+      "prompt": "Run /route-visibility on an ACE-derived public summary that is about to be posted to docs navigation, llm-wiki, or a GitHub issue closeout.",
+      "expect": [
+        "requires scripts/validate_ace_public_artifacts.py before publication",
+        "blocks raw private provenance fields, raw source digest values, personal identifiers, and public token literal assignments"
+      ]
+    },
+    {
+      "id": "ace-63-issue-comment-body-scan",
+      "issue": 63,
+      "name": "ace-issue-comment-body-scanned-before-posting",
+      "prompt": "Run /route-visibility on a planned ACE issue comment body that summarizes derived corpus output.",
+      "expect": [
+        "scans the exact issue-comment body file before posting",
+        "does not trust agent self-report for public/private cleanliness"
+      ]
+    },
+    {
+      "id": "ace-52-public-route-clearance",
+      "issue": 52,
+      "name": "ace-wave1-public-route-requires-clearance",
+      "prompt": "Run /route-visibility on a wave-1 text/config/code-doc row routed public_llm_wiki without affirmative clearance.",
+      "expect": [
+        "blocks the public route",
+        "requires #63 public-output canary evidence over the exact surface before publication"
+      ]
+    },
+    {
+      "id": "ace-52-private-fields-blocked",
+      "issue": 52,
+      "name": "ace-wave1-summary-private-fields-blocked",
+      "prompt": "Run /route-visibility on a public wave-1 methodology summary that includes private lookup material or raw source terms.",
+      "expect": [
+        "blocks private lookup material in public summaries",
+        "allows synthetic fixture method language without measured ACE source details"
+      ]
     }
   ]
 }

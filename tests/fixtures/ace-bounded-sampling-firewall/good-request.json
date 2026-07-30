@@ -1,0 +1,22 @@
+{
+  "target_issue": 67,
+  "manifest_source": "INDEX.md",
+  "seed_id": "ace_seed_issue_67_self_check_v1",
+  "sort_rule": {
+    "strategy": "stable_private_term_order",
+    "term_refs": [
+      "source_id"
+    ],
+    "direction": "ascending",
+    "tie_breaker": "public_manifest_row_ordinal"
+  },
+  "per_bucket_row_cap": 25,
+  "max_files_touched": 5,
+  "max_bytes_touched": 65536,
+  "request_class": "metadata_only_fixture",
+  "requires_manifest_snapshot_id": false,
+  "output_shape": "metadata_only_request_record",
+  "route_target": "metadata_only",
+  "logical_target_store": "metadata_ledger_store",
+  "fixture_scope": "firewall_validator_self_check"
+}

@@ -1,0 +1,68 @@
+{
+  "format": "json-subset-yaml",
+  "owner_issue": 69,
+  "private_runtime_config_owner_issue": 63,
+  "config_contract": "This file intentionally uses strict JSON text despite the .yaml extension. Do not add YAML comments, anchors, aliases, unquoted keys, or private literal inventories.",
+  "rules": [
+    {
+      "id": "private-root-shape",
+      "severity": "block",
+      "description": "private-root-like path shape",
+      "patterns": [
+        "(?i)(?:^|[\\s\\\"'=])(?:/mnt|/home)/(?:[^\\s`|)]+)"
+      ]
+    },
+    {
+      "id": "confidentiality-marker",
+      "severity": "block",
+      "description": "confidentiality marker",
+      "patterns": [
+        "\\b(?:PROPRIETARY\\s+CONFIDENTIAL|CONFIDENTIAL\\s+PROPRIETARY|DO\\s+NOT\\s+DISTRIBUTE)\\b"
+      ]
+    },
+    {
+      "id": "identifier-assignment",
+      "severity": "block",
+      "description": "client, customer, or project identifier assignment",
+      "patterns": [
+        "(?i)\\b(?:client|customer|project)[-_ ]?(?:id|name)\\s*[:=]\\s*[A-Za-z0-9_-]+"
+      ]
+    },
+    {
+      "id": "secret-assignment",
+      "severity": "block",
+      "description": "secret-like assignment",
+      "patterns": [
+        "(?i)\\b(?:api[_-]?key|api[_-]?token|access[_-]?token|secret|password)\\s*[:=]\\s*[A-Za-z0-9_./+=-]{8,}"
+      ]
+    },
+    {
+      "id": "raw-source-provenance-assignment",
+      "severity": "block",
+      "description": "raw source provenance assignment",
+      "patterns": [
+        "(?i)[\\\"']?\\b(?:source_id|source_sha256|private_lookup_key|private_lookup_map|share_relative_path_private_only|source_hash|provenance_pointer|public_source_token)\\b[\\\"']?\\s*[:=]\\s*(?!(?:str\\b|None\\b|[<{\\[`]))[\\\"']?[A-Za-z0-9_./+=:-]{6,}[\\\"']?"
+      ]
+    },
+    {
+      "id": "personal-identifier",
+      "severity": "block",
+      "description": "personal identifier shape",
+      "patterns": [
+        "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b",
+        "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+        "\\b(?:\\+?1[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]\\d{3}[-.\\s]\\d{4}\\b"
+      ]
+    },
+    {
+      "id": "unbounded-traversal-command",
+      "severity": "block",
+      "description": "unbounded manifest traversal command",
+      "patterns": [
+        "(?i)\\b(?:find|du|rg|fd|cat|sha256sum|wc|jq)\\b[^\\n`]*(?:ACE_SHARE_ROOT|assets\\.json|master-index\\.jsonl|index\\.db|_cad-index)",
+        "(?i)\\bls\\s+-R\\b[^\\n`]*(?:ACE_SHARE_ROOT|assets\\.json|master-index\\.jsonl|index\\.db|_cad-index)"
+      ]
+    }
+  ],
+  "allow_contexts": []
+}

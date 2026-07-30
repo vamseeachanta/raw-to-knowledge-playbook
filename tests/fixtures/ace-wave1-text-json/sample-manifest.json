@@ -1,0 +1,26 @@
+{
+  "target_issue": 52,
+  "manifest_source": "INDEX.md",
+  "seed_id": "ace_seed_issue_52_wave1_text_json_fixture_v1",
+  "sort_rule": {
+    "strategy": "stable_private_term_order",
+    "term_refs": ["source_id"],
+    "direction": "ascending",
+    "tie_breaker": "public_manifest_row_ordinal"
+  },
+  "per_bucket_row_cap": 25,
+  "max_files_touched": 9,
+  "max_bytes_touched": 20000,
+  "request_class": "downstream_manifest_backed_sampling",
+  "target_wave_class": "ingestion_wave",
+  "requires_manifest_snapshot_id": true,
+  "output_shape": "metadata_only_request_record",
+  "route_target": "metadata_only",
+  "logical_target_store": "metadata_ledger_store",
+  "snapshot_evidence": {
+    "evidence_mode": "shape_only_fixture",
+    "source_issue": 62,
+    "recorded_at": "2026-07-02T00:00:00Z",
+    "shape_only_artifact_ref": "tests/fixtures/ace-wave1-text-json/sample-manifest.json"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "workbook": "synthetic-report.xlsx",
+  "file_extension": ".xlsx",
+  "workbook_protected": false,
+  "macro_presence": false,
+  "external_link_count": 0,
+  "summary": {
+    "formula_count": 0,
+    "table_count": 0,
+    "merged_range_count": 2,
+    "chart_count": 1,
+    "protected_sheet_count": 0
+  },
+  "sheets": [
+    {"name": "Report", "formulas": [], "tables": [], "merged_ranges": ["A1:D1", "A3:D3"], "chart_count": 1}
+  ]
+}

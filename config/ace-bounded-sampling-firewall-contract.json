@@ -1,0 +1,173 @@
+{
+  "contract_id": "ace-bounded-sampling-firewall",
+  "contract_version": "1.0.1",
+  "owner_issue": 67,
+  "depends_on_schema_issue": 65,
+  "schema_path": "artifacts/ace-wave0-ledger-schema.json",
+  "manifest_evidence_contract_path": "config/ace-manifest-evidence-contract.json",
+  "method_issue_bindings": [
+    1,
+    12
+  ],
+  "allowed_manifest_sources": [
+    "INDEX.md",
+    "assets.json",
+    "docs/master-index.jsonl",
+    "_cad-index/index-summary.json",
+    "_cad-index/cad-readability-index.tsv",
+    ".ace-knowledge/index.db"
+  ],
+  "required_sampling_fields": [
+    "target_issue",
+    "manifest_source",
+    "seed_id",
+    "sort_rule",
+    "per_bucket_row_cap",
+    "max_files_touched",
+    "max_bytes_touched",
+    "request_class",
+    "requires_manifest_snapshot_id",
+    "output_shape",
+    "route_target",
+    "logical_target_store"
+  ],
+  "maximum_caps": {
+    "per_bucket_row_cap": 200,
+    "max_files_touched": 25,
+    "max_bytes_touched": 1048576
+  },
+  "request_classes": [
+    "control_plane_proof",
+    "downstream_manifest_backed_sampling",
+    "metadata_only_fixture"
+  ],
+  "metadata_fixture_scope": "firewall_validator_self_check",
+  "output_shape_route_store": {
+    "output_shape": "metadata_only_request_record",
+    "route_target": "metadata_only",
+    "logical_target_store": "metadata_ledger_store"
+  },
+  "sort_rule_shape": {
+    "strategy": "stable_private_term_order",
+    "direction_values": [
+      "ascending",
+      "descending"
+    ],
+    "tie_breaker": "public_manifest_row_ordinal"
+  },
+  "seed_rule": {
+    "prefix": "ace_seed_",
+    "forbidden_fragments": [
+      "random",
+      "clock",
+      "time",
+      "local",
+      "user",
+      "now"
+    ]
+  },
+  "snapshot_evidence_modes": [
+    "shape_only_fixture",
+    "trusted_62_pointer"
+  ],
+  "manifest_evidence_trust_registry_path": "artifacts/ace-manifest-freshness/trusted-evidence-registry.json",
+  "manifest_evidence_trust_script_path": "scripts/ace_manifest_evidence_trust.py",
+  "request_outcome_reasons": {
+    "control_plane": "CONTROL_PLANE_PROOF_NOT_SAMPLING_REQUEST",
+    "downstream_blocked": "MISSING_62_EVIDENCE_CONTRACT",
+    "missing_pointer": "MISSING_62_EVIDENCE_POINTER",
+    "self_attested_pointer": "SELF_ATTESTED_62_EVIDENCE",
+    "fixture_pointer": "FIXTURE_62_EVIDENCE_NOT_OPERATIONAL",
+    "invalid_pointer": "INVALID_62_EVIDENCE_POINTER",
+    "untrusted_pointer": "UNTRUSTED_62_EVIDENCE",
+    "non_authorizing_pointer": "62_EVIDENCE_NOT_AUTHORIZING",
+    "authorized_pointer": "AUTHORIZED_62_EVIDENCE",
+    "non_target": "NON_TARGET_SAMPLING_ISSUE"
+  },
+  "downstream_evidence_gate": {
+    "source_issue": 62,
+    "blocked_by_issue": 62,
+    "follow_on_issue": 70,
+    "reason_code": "MISSING_62_EVIDENCE_CONTRACT"
+  },
+  "control_plane_issue_classes": {
+    "51": "control_plane",
+    "61": "storage_lifecycle_gate",
+    "62": "manifest_freshness_gate",
+    "63": "public_canary_gate"
+  },
+  "downstream_issue_range": [
+    52,
+    60
+  ],
+  "non_target_issues": [
+    64,
+    66,
+    68,
+    69
+  ],
+  "json_executable_context_fields": [
+    "command_example",
+    "query_example",
+    "source_root_expression",
+    "manifest_operation_expression",
+    "sampling_expression"
+  ],
+  "executable_context_triggers": [
+    "markdown_fence",
+    "markdown_list_command",
+    "markdown_inline_command",
+    "workflow_run_block",
+    "python_string",
+    "json_request_field",
+    "markdown_policy_prose"
+  ],
+  "command_verb_classes": [
+    "traversal",
+    "broad_search_list",
+    "manifest_query",
+    "raw_manifest_read",
+    "full_file_fingerprint_count",
+    "full_materialization"
+  ],
+  "source_root_token_classes": [
+    "ace_root_abstraction",
+    "manifest_key_token",
+    "synthetic_fixture_token"
+  ],
+  "manifest_operation_classes": [
+    "bounded_metadata_probe",
+    "bounded_sample_selection",
+    "snapshot_evidence_check",
+    "denied_unbounded_operation"
+  ],
+  "denied_executable_classes": [
+    "recursive_traversal",
+    "broad_source_root_search",
+    "manifest_query",
+    "raw_manifest_read",
+    "full_file_count",
+    "full_file_digest",
+    "materialization"
+  ],
+  "denied_token_matrix": {
+    "source_root_operations": [
+      "recursive_traversal",
+      "broad_source_root_search"
+    ],
+    "manifest_operations": [
+      "manifest_query",
+      "raw_manifest_read",
+      "full_file_count",
+      "full_file_digest",
+      "materialization"
+    ],
+    "source_cross_product_required": true
+  },
+  "source_root_boundary_api": "guard_no_source_root_access(operation_name, env)",
+  "public_safety_notes": [
+    "This contract stores public metadata-only grammar and denial classes.",
+    "It does not authorize operational sampling, read ACE_SHARE_ROOT, or publish private source values.",
+    "Operational downstream sampling fails closed unless issue 70's trusted registry contains reviewed issue 62 evidence."
+  ]
+}

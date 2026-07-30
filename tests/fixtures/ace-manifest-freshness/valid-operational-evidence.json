@@ -1,0 +1,116 @@
+{
+  "record_schema_version": "1.0.0",
+  "record_id": "ace62-compatible-fixture",
+  "source_issue": 62,
+  "evidence_artifact_ref": "tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json",
+  "validator_ref": "scripts/validate_ace_manifest_freshness.py",
+  "validator_env": {
+    "UV_CACHE_DIR": ".claude/state/uv-cache"
+  },
+  "validator_command": [
+    "uv",
+    "run",
+    "python",
+    "scripts/validate_ace_manifest_freshness.py",
+    "--evidence",
+    "tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json"
+  ],
+  "validator_exit_status": 0,
+  "recorded_at_utc": "2026-07-01T00:00:00Z",
+  "reviewed_commit": "82497120488a9a10036b30c676637966ec300c27",
+  "authorization_status": "sampling_allowed",
+  "snapshot_ids_by_manifest_source": {
+    "INDEX.md": "ams_00000000000000000000000000000001",
+    "assets.json": "ams_00000000000000000000000000000002",
+    "docs/master-index.jsonl": "ams_00000000000000000000000000000003",
+    "_cad-index/index-summary.json": "ams_00000000000000000000000000000004",
+    "_cad-index/cad-readability-index.tsv": "ams_00000000000000000000000000000005",
+    ".ace-knowledge/index.db": "ams_00000000000000000000000000000006"
+  },
+  "source_status_by_manifest_source": {
+    "INDEX.md": {
+      "content_fingerprint_status": "available_under_cap",
+      "row_count_status": "available_under_cap",
+      "evidence_mode": "public_safe_summary",
+      "captured_at_utc": "2026-07-01T00:00:00Z"
+    },
+    "assets.json": {
+      "content_fingerprint_status": "available_under_cap",
+      "row_count_status": "available_under_cap",
+      "evidence_mode": "public_safe_summary",
+      "captured_at_utc": "2026-07-01T00:00:00Z"
+    },
+    "docs/master-index.jsonl": {
+      "content_fingerprint_status": "available_under_cap",
+      "row_count_status": "available_under_cap",
+      "evidence_mode": "public_safe_summary",
+      "captured_at_utc": "2026-07-01T00:00:00Z"
+    },
+    "_cad-index/index-summary.json": {
+      "content_fingerprint_status": "available_under_cap",
+      "row_count_status": "available_under_cap",
+      "evidence_mode": "public_safe_summary",
+      "captured_at_utc": "2026-07-01T00:00:00Z"
+    },
+    "_cad-index/cad-readability-index.tsv": {
+      "content_fingerprint_status": "available_under_cap",
+      "row_count_status": "available_under_cap",
+      "evidence_mode": "public_safe_summary",
+      "captured_at_utc": "2026-07-01T00:00:00Z"
+    },
+    ".ace-knowledge/index.db": {
+      "content_fingerprint_status": "available_under_cap",
+      "row_count_status": "available_under_cap",
+      "evidence_mode": "public_safe_summary",
+      "captured_at_utc": "2026-07-01T00:00:00Z"
+    }
+  },
+  "drift_verdicts_by_manifest_source_pair": {
+    "inventory_to_assets_presence": {
+      "left_source": "INDEX.md",
+      "right_source": "assets.json",
+      "left_snapshot_id": "ams_00000000000000000000000000000001",
+      "right_snapshot_id": "ams_00000000000000000000000000000002",
+      "drift_severity": "compatible",
+      "evidence_mode": "public_safe_summary",
+      "reconciliation_required": false
+    },
+    "assets_to_master_records": {
+      "left_source": "assets.json",
+      "right_source": "docs/master-index.jsonl",
+      "left_snapshot_id": "ams_00000000000000000000000000000002",
+      "right_snapshot_id": "ams_00000000000000000000000000000003",
+      "drift_severity": "compatible",
+      "evidence_mode": "public_safe_summary",
+      "reconciliation_required": false
+    },
+    "master_records_to_cad_summary": {
+      "left_source": "docs/master-index.jsonl",
+      "right_source": "_cad-index/index-summary.json",
+      "left_snapshot_id": "ams_00000000000000000000000000000003",
+      "right_snapshot_id": "ams_00000000000000000000000000000004",
+      "drift_severity": "compatible",
+      "evidence_mode": "public_safe_summary",
+      "reconciliation_required": false
+    },
+    "cad_summary_to_cad_readability": {
+      "left_source": "_cad-index/index-summary.json",
+      "right_source": "_cad-index/cad-readability-index.tsv",
+      "left_snapshot_id": "ams_00000000000000000000000000000004",
+      "right_snapshot_id": "ams_00000000000000000000000000000005",
+      "drift_severity": "compatible",
+      "evidence_mode": "public_safe_summary",
+      "reconciliation_required": false
+    },
+    "master_records_to_knowledge_store": {
+      "left_source": "docs/master-index.jsonl",
+      "right_source": ".ace-knowledge/index.db",
+      "left_snapshot_id": "ams_00000000000000000000000000000003",
+      "right_snapshot_id": "ams_00000000000000000000000000000006",
+      "drift_severity": "compatible",
+      "evidence_mode": "public_safe_summary",
+      "reconciliation_required": false
+    }
+  },
+  "reconciliation_refs": {}
+}

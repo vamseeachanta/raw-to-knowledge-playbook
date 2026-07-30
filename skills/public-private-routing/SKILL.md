@@ -41,11 +41,25 @@ metadata:
    produced the content** — run it independently (a subagent once declared its
    own output clean while it contained client folder names).
 4. **Raw-source firewall.** Assert no raw licensed/confidential source file is
-   being committed — only derived parts + `sources:` sha256 pointer.
+   being committed — only derived parts plus opaque public source tokens or
+   public-safe provenance bundle references.
+5. **ACE wave-1 JSON/config/code-derived output.** Before any text, config, or
+   code-doc candidate routes `public_llm_wiki`, require affirmative public
+   clearance and the #63 public-output canary over the exact surface. Without
+   clearance, demote to `private_sidecar`, `metadata_only`, or
+   `excluded_no_ingest`.
 
 ## Verification
 - Pre-commit hook + CI deny-list scan must pass (L3); a hit blocks the commit/merge.
 - The grep is run by the gate, not self-reported by the producing agent.
+- For ACE-derived public outputs, run
+  `uv run python scripts/validate_ace_public_artifacts.py --scan-public-path <surface> --issue-comment-body-file <planned-comment.md>`
+  over the exact docs, skill, workflow, review artifact, `mkdocs.yml`,
+  `llm-wiki`, GitHub-public summary, issue closeout summary, or external
+  publication surfaces before they cross the boundary.
+- For this repo, run `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`
+  before publishing or closing public-surface work; use `--diff-only` for local
+  staged/unstaged closeout checks.
 
 ## Cleanup
 - n/a (gate).

@@ -1,0 +1,91 @@
+{
+  "contract_id": "ace-public-token-fixture-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 66,
+  "mode": "fixture_only",
+  "depends_on_schema_issue": 65,
+  "schema_path": "artifacts/ace-wave0-ledger-schema.json",
+  "provisional_fixture_contract": false,
+  "public_token_policy_owner_issues": [
+    66,
+    63
+  ],
+  "durable_lookup_owner_issue": 61,
+  "publication_certification_owner_issue": 63,
+  "public_surface_scanner_consumer_issue": 68,
+  "public_token_field_name": "public_source_token",
+  "public_token_grammar": {
+    "prefix": "pst_",
+    "hex_characters": 32
+  },
+  "generation_request_marker": "public_source_token_request",
+  "generation_request_required_keys": [
+    "fixture_set_id",
+    "fixture_row_id",
+    "count"
+  ],
+  "fixture_set_ids": [
+    "wave0_public_token_good"
+  ],
+  "forbidden_request_keys": [
+    "source_name",
+    "source_path",
+    "source_hash",
+    "source_key",
+    "lookup_alias",
+    "display_name",
+    "original_name",
+    "raw_provenance",
+    "deterministic_seed"
+  ],
+  "private_source_terms": [
+    "source_id",
+    "source_sha256",
+    "private_lookup_key",
+    "private_lookup_map",
+    "share_relative_path_private_only"
+  ],
+  "source_like_raw_digest_terms": [
+    "source_hash",
+    "provenance_pointer"
+  ],
+  "placeholder_values": [
+    "ACE_PRIVATE_PLACEHOLDER_IDENTITY",
+    "ACE_PRIVATE_PLACEHOLDER_DIGEST",
+    "ACE_PRIVATE_PLACEHOLDER_LOOKUP_KEY",
+    "ACE_PRIVATE_PLACEHOLDER_LOOKUP_MAP",
+    "ACE_PRIVATE_PLACEHOLDER_PATH"
+  ],
+  "private_placeholder_mapping": [
+    {
+      "schema_term": "source_id",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_IDENTITY"
+    },
+    {
+      "schema_term": "source_sha256",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_DIGEST"
+    },
+    {
+      "schema_term": "private_lookup_key",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_LOOKUP_KEY"
+    },
+    {
+      "schema_term": "private_lookup_map",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_LOOKUP_MAP"
+    },
+    {
+      "schema_term": "share_relative_path_private_only",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_PATH"
+    }
+  ],
+  "boundary_owner_issues": {
+    "durable_token_lookup_persistence": 61,
+    "public_output_certification": 63,
+    "public_surface_self_scan": 68
+  },
+  "public_safety_notes": [
+    "This contract is fixture-only and does not allocate durable public tokens for ACE records.",
+    "Committed good fixtures contain generation request markers only, never concrete public token assignments.",
+    "Private source field names appear only as schema terms under neutral keys."
+  ]
+}

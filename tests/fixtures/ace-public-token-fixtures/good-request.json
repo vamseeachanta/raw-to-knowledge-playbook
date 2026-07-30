@@ -1,0 +1,30 @@
+{
+  "fixture_kind": "synthetic_good_public_token_request",
+  "public_source_token_request": {
+    "fixture_set_id": "wave0_public_token_good",
+    "fixture_row_id": "fixture_row_001",
+    "count": 3
+  },
+  "private_field_placeholders": [
+    {
+      "schema_term": "source_id",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_IDENTITY"
+    },
+    {
+      "schema_term": "source_sha256",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_DIGEST"
+    },
+    {
+      "schema_term": "private_lookup_key",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_LOOKUP_KEY"
+    },
+    {
+      "schema_term": "private_lookup_map",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_LOOKUP_MAP"
+    },
+    {
+      "schema_term": "share_relative_path_private_only",
+      "placeholder_value": "ACE_PRIVATE_PLACEHOLDER_PATH"
+    }
+  ]
+}

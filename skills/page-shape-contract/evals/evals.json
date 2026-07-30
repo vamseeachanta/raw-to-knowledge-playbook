@@ -27,6 +27,36 @@
         "fails the non-degenerate-identity check (incident B2)",
         "would otherwise let two distinct rows collapse and silently drop one"
       ]
+    },
+    {
+      "id": "ace-61-retrieval-chunk-metadata",
+      "issue": 61,
+      "name": "ace-retrieval-chunk-metadata-required",
+      "prompt": "Run /check-page-shape on an ACE retrieval chunk missing citation_id, edition, or lifecycle_state metadata.",
+      "expect": [
+        "blocks the page because #61 retrieval chunks require closed metadata",
+        "names the missing metadata fields instead of treating the chunk as verified"
+      ]
+    },
+    {
+      "id": "ace-52-wave1-row-shape",
+      "issue": 52,
+      "name": "ace-wave1-row-shape-required",
+      "prompt": "Run /check-page-shape on an ACE wave-1 text/config row missing route_target or extraction_yield.",
+      "expect": [
+        "blocks the row because wave-1 rows require candidate_id, candidate_class, route_target, logical_target_store, parse_status, visibility, public_clearance, signals, extraction_estimate, and extraction_yield",
+        "names the missing shape fields"
+      ]
+    },
+    {
+      "id": "ace-52-public-token-abstraction",
+      "issue": 52,
+      "name": "ace-wave1-public-token-abstraction-required",
+      "prompt": "Run /check-page-shape on a public-routed ACE wave-1 row with literal private lookup material.",
+      "expect": [
+        "blocks literal private lookup material",
+        "allows only abstract public tokens and private provenance bundle references"
+      ]
     }
   ]
 }

@@ -1,0 +1,26 @@
+{
+  "target_issue": 53,
+  "manifest_source": "assets.json",
+  "seed_id": "ace_seed_wave2_synthetic",
+  "sort_rule": {
+    "strategy": "stable_private_term_order",
+    "term_refs": ["source_id"],
+    "direction": "ascending",
+    "tie_breaker": "public_manifest_row_ordinal"
+  },
+  "per_bucket_row_cap": 200,
+  "max_files_touched": 25,
+  "max_bytes_touched": 1048576,
+  "request_class": "downstream_manifest_backed_sampling",
+  "requires_manifest_snapshot_id": true,
+  "output_shape": "metadata_only_request_record",
+  "route_target": "metadata_only",
+  "logical_target_store": "metadata_ledger_store",
+  "target_wave_class": "ingestion_wave",
+  "snapshot_evidence": {
+    "mode": "shape_only_fixture",
+    "source_issue": 62,
+    "snapshot_id": "ams_00000000000000000000000000000001",
+    "evidence_path": "tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json"
+  }
+}

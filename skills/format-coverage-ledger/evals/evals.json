@@ -30,6 +30,24 @@
       "given": "A docx is extracted faithfully but contains embedded figures the text dump omits.",
       "when": "The ledger names the image loss.",
       "then": "The page is not promoted to the trusted/complete set; it carries completeness:partial with the recorded gap."
+    },
+    {
+      "name": "ace-wave2-csv-dialect-and-sidecar-required",
+      "given": "A numeric CSV or semicolon-delimited engineering export is entering the ACE wave-2 ledger.",
+      "when": "The dialect probe runs.",
+      "then": "The ledger records delimiter, row-width validation, ragged-row status, content digest, and requires a units/sign/coordinate convention sidecar before the row can be treated as usable."
+    },
+    {
+      "name": "ace-wave2-ragged-delimited-excluded",
+      "given": "A delimited file has inconsistent row widths after dialect detection.",
+      "when": "The coverage ledger is written.",
+      "then": "The row uses ragged_delimited, routes excluded_no_ingest, and reports the hard exclusion outside the ingestion-success denominator."
+    },
+    {
+      "name": "ace-wave2-non-durable-classifier-row",
+      "given": "A #53 spreadsheet or CSV classifier record includes a target path, retrieval metadata, lifecycle state, private sidecar, or persistent metric.",
+      "when": "The validator checks the row.",
+      "then": "The row is rejected because durable-output fields belong to the #61 workflow, not the #53 classifier surface."
     }
   ]
 }

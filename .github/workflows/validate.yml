@@ -18,6 +18,371 @@ jobs:
       - name: Validate SKILL.md files (warn-only on-ramp; DENY rules block)
         run: uv run skills/validate_skill.py
 
+      - name: Legal/security sanity scan
+        run: bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces
+
+      - name: Validate ACE epic wave coordination
+        run: |
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path docs/plans/2026-06-29-issue-50-ace-share-raw-to-knowledge-ingestion-waves-epic.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path skills/adversarial-verify-loop/SKILL.md \
+            --scan-public-path skills/format-coverage-ledger/SKILL.md \
+            --scan-public-path .planning/plan-approved/50.md
+
+      - name: Validate ACE wave 0 schema contract
+        run: |
+          uv run python scripts/validate_ace_wave0_schema_contract.py
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path artifacts/ace-wave0-ledger-schema.json \
+            --scan-public-path scripts/validate_ace_wave0_schema_contract.py \
+            --scan-public-path tests/test_validate_ace_wave0_schema_contract.py \
+            --scan-public-path .planning/plan-approved/65.md
+
+      - name: Validate ACE manifest freshness contract
+        run: |
+          uv run python scripts/validate_ace_manifest_freshness.py \
+            --evidence tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path docs/plans/2026-06-29-issue-62-ace-manifest-freshness-and-drift-sentinel.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/62.md \
+            --scan-public-path config/ace-manifest-evidence-contract.json \
+            --scan-public-path scripts/validate_ace_manifest_freshness.py \
+            --scan-public-path scripts/ace_manifest_freshness_contract.py \
+            --scan-public-path scripts/ace_manifest_freshness_emit.py \
+            --scan-public-path scripts/ace_manifest_freshness_operational.py \
+            --scan-public-path tests/test_validate_ace_manifest_freshness.py \
+            --scan-public-path tests/test_validate_ace_manifest_freshness_runtime.py \
+            --scan-public-path tests/test_validate_ace_manifest_freshness_security.py \
+            --scan-public-path tests/fixtures/ace-manifest-freshness/valid-operational-evidence.json \
+            --scan-public-path docs/case-studies/ace-manifest-freshness-drift-sentinel.md \
+            --scan-public-path .github/workflows/validate.yml \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-claude-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-codex-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-gemini-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-disagreement-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-claude-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-codex-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-gemini-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-disagreement-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-claude-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-codex-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-gemini-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-62-disagreement-r3.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-62-contract-runtime-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-62-security-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-62-governance-r1.md
+
+      - name: Validate ACE knowledge-store and success metric contracts
+        run: |
+          uv run python scripts/validate_ace_knowledge_store_contract.py \
+            --chunk-record tests/fixtures/ace-knowledge-store-contract/valid-retrieval-chunk.json \
+            --eval-record tests/fixtures/ace-knowledge-store-contract/valid-eval-case.json
+          uv run python scripts/validate_ace_ingested_success_metric.py \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-ingestion-metric.json \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-control-metric.json \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-no-eligible-metric.json \
+            --record tests/fixtures/ace-knowledge-store-contract/valid-no-classified-metric.json
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-29-issue-61-ace-cross-wave-knowledge-store-retrieval-evaluation-lifecycle-contract.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/61.md \
+            --scan-public-path docs/case-studies/ace-share-knowledge-store-contract.md \
+            --scan-public-path config/ace-knowledge-store-contract.json \
+            --scan-public-path config/ace-ingested-success-metric-contract.json \
+            --scan-public-path scripts/validate_ace_knowledge_store_contract.py \
+            --scan-public-path scripts/validate_ace_ingested_success_metric.py \
+            --scan-public-path tests/test_validate_ace_knowledge_store_contract.py \
+            --scan-public-path tests/test_validate_ace_ingested_success_metric.py \
+            --scan-public-path tests/fixtures/ace-knowledge-store-contract/ \
+            --scan-public-path docs/14-chunking-and-embedding.md \
+            --scan-public-path docs/15-retrieval-evaluation.md \
+            --scan-public-path docs/16-corpus-lifecycle.md \
+            --scan-public-path docs/07-data-governance.md \
+            --scan-public-path docs/19-trust-boundary-and-private-mode.md \
+            --scan-public-path skills/page-shape-contract/evals/evals.json \
+            --scan-public-path skills/source-extraction-coverage/evals/evals.json \
+            --scan-public-path skills/source-extract-fidelity/evals/evals.json \
+            --scan-public-path skills/verify-batch/evals/evals.json \
+            --scan-public-path skills/independent-oracle-validation/evals/evals.json \
+            --scan-public-path skills/public-private-routing/evals/evals.json \
+            --scan-public-path skills/stacked-batch-prs/evals/evals.json \
+            --scan-public-path .github/workflows/validate.yml
+
+      - name: Validate ACE public token fixture contract
+        run: |
+          uv run python scripts/validate_ace_public_token_fixtures.py
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path docs/plans/2026-06-30-issue-66-ace-public-token-fixtures-private-field-placeholders.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/66.md \
+            --scan-public-path config/ace-public-token-fixture-contract.json \
+            --scan-public-path scripts/ace_public_token_fixtures.py \
+            --scan-public-path scripts/validate_ace_public_token_fixtures.py \
+            --scan-public-path tests/test_validate_ace_public_token_fixtures.py \
+            --scan-public-path tests/test_validate_ace_wave0_schema_contract.py \
+            --scan-public-path tests/fixtures/ace-public-token-fixtures/good-request.json \
+            --scan-public-path .github/workflows/validate.yml
+
+      - name: Validate ACE public-surface self-scan contract
+        run: |
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-30-issue-68-ace-public-surface-self-scan-control-plane.md \
+            --scan-public-path docs/plans/2026-07-02-issue-72-generalize-public-surface-review-selector-snapshot-modes.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/68.md \
+            --scan-public-path .planning/plan-approved/72.md \
+            --scan-public-path config/ace-public-surface-self-scan-contract.json \
+            --scan-public-path scripts/ace_public_surface_contract.py \
+            --scan-public-path scripts/ace_public_surface_review.py \
+            --scan-public-path scripts/ace_public_surface_rules.py \
+            --scan-public-path scripts/ace_public_surface_scan.py \
+            --scan-public-path scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path tests/ace_public_surface_test_helpers.py \
+            --scan-public-path tests/test_validate_ace_public_surface_contract.py \
+            --scan-public-path tests/test_validate_ace_public_surface_review.py \
+            --scan-public-path tests/test_validate_ace_public_surface_rules.py \
+            --scan-public-path tests/test_validate_ace_public_surface_snapshot_urls.py \
+            --scan-public-path tests/test_validate_ace_public_surface_scan.py \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-claude-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-claude-r2.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-codex-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-codex-r2.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-gemini-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-plan-72-gemini-r2.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-72-subagent-scanner-r1.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-72-subagent-workflow-r1.md \
+            --scan-public-path .github/workflows/validate.yml
+          for provider in claude codex gemini subagent-boundary subagent-scanner subagent-workflow; do
+            for round in r1 r2 r3; do
+              uv run python scripts/validate_ace_public_surface_scan.py \
+                --review-issue 68 \
+                --review-phase plan \
+                --review-provider "$provider" \
+                --review-round "$round" \
+                --include-sidecars
+            done
+          done
+          for provider in claude codex gemini; do
+            for round in r1 r2; do
+              uv run python scripts/validate_ace_public_surface_scan.py \
+                --review-issue 72 \
+                --review-phase plan \
+                --review-provider "$provider" \
+                --review-round "$round" \
+                --include-sidecars
+            done
+          done
+          for provider in subagent-scanner subagent-workflow; do
+            uv run python scripts/validate_ace_public_surface_scan.py \
+              --review-issue 72 \
+              --review-phase implementation \
+              --review-provider "$provider" \
+              --review-round r1 \
+              --include-sidecars
+          done
+
+      - name: Validate ACE public-output artifact canary
+        run: |
+          uv run python scripts/validate_ace_public_artifacts.py \
+            --scan-public-path docs/plans/2026-06-29-issue-63-ace-public-output-redaction-and-identifier-canary.md \
+            --scan-public-path docs/case-studies/ace-public-output-redaction-contract.md \
+            --scan-public-path artifacts/ace-source-hash-policy-sweep.md \
+            --scan-public-path config/ace-public-token-fixture-contract.json \
+            --scan-public-path config/ace-public-output-contract.json \
+            --scan-public-path config/ace-public-surface-deny-list.json \
+            --scan-public-path scripts/ace_public_output_contract.py \
+            --scan-public-path scripts/validate_ace_public_artifacts.py \
+            --scan-public-path tests/test_validate_ace_public_artifacts.py \
+            --scan-public-path tests/fixtures/ace-public-artifact-safety/ \
+            --scan-public-path docs/07-data-governance.md \
+            --scan-public-path docs/18-security-and-pii.md \
+            --scan-public-path docs/19-trust-boundary-and-private-mode.md \
+            --scan-public-path scripts/review/results/2026-07-02-implementation-63-contract-runtime-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-implementation-63-public-legal-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-implementation-63-governance-ci-r1.md \
+            --scan-public-path skills/public-private-routing/SKILL.md \
+            --scan-public-path skills/public-private-routing/evals/evals.json \
+            --scan-public-path .github/workflows/validate.yml \
+            --issue-comment-body-file tests/fixtures/ace-public-artifact-safety/safe-issue-closeout.md
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-29-issue-63-ace-public-output-redaction-and-identifier-canary.md \
+            --scan-public-path docs/case-studies/ace-public-output-redaction-contract.md \
+            --scan-public-path artifacts/ace-source-hash-policy-sweep.md \
+            --scan-public-path config/ace-public-token-fixture-contract.json \
+            --scan-public-path config/ace-public-output-contract.json \
+            --scan-public-path config/ace-public-surface-deny-list.json \
+            --scan-public-path scripts/ace_public_output_contract.py \
+            --scan-public-path scripts/validate_ace_public_artifacts.py \
+            --scan-public-path tests/test_validate_ace_public_artifacts.py \
+            --scan-public-path tests/fixtures/ace-public-artifact-safety/ \
+            --scan-public-path docs/07-data-governance.md \
+            --scan-public-path docs/18-security-and-pii.md \
+            --scan-public-path docs/19-trust-boundary-and-private-mode.md \
+            --scan-public-path scripts/review/results/2026-07-02-implementation-63-contract-runtime-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-implementation-63-public-legal-r1.md \
+            --scan-public-path scripts/review/results/2026-07-02-implementation-63-governance-ci-r1.md \
+            --scan-public-path skills/public-private-routing/SKILL.md \
+            --scan-public-path skills/public-private-routing/evals/evals.json \
+            --scan-public-path .github/workflows/validate.yml
+
+      - name: Validate ACE bounded sampling firewall contract
+        run: |
+          uv run python scripts/validate_ace_bounded_sampling_firewall.py
+          uv run python scripts/validate_ace_epic_wave_coordination.py \
+            --scan-public-path docs/plans/2026-06-30-issue-67-ace-wave-0-bounded-sampling-firewall.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/67.md \
+            --scan-public-path artifacts/ace-wave0-ledger-schema.json \
+            --scan-public-path config/ace-bounded-sampling-firewall-contract.json \
+            --scan-public-path artifacts/ace-manifest-freshness/trusted-evidence-registry.json \
+            --scan-public-path scripts/ace_bounded_sampling_firewall.py \
+            --scan-public-path scripts/ace_manifest_evidence_trust.py \
+            --scan-public-path scripts/validate_ace_bounded_sampling_firewall.py \
+            --scan-public-path tests/test_validate_ace_bounded_sampling_firewall.py \
+            --scan-public-path tests/test_validate_ace_manifest_evidence_integration.py \
+            --scan-public-path tests/fixtures/ace-bounded-sampling-firewall/good-request.json \
+            --scan-public-path tests/fixtures/ace-bounded-sampling-firewall/metadata-shape-only-evidence-request.json \
+            --scan-public-path .github/workflows/validate.yml \
+            --scan-public-path docs/plans/2026-07-01-issue-70-ace-67-62-manifest-evidence-contract-integration.md \
+            --scan-public-path .planning/plan-approved/70.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-claude-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-claude-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-codex-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-codex-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-gemini-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-plan-70-gemini-r2.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-70-security-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-70-ci-r1.md \
+            --scan-public-path scripts/review/results/2026-07-01-implementation-70-semantics-r1.md
+
+      - name: Validate ACE wave-1 text JSON bootstrap
+        run: |
+          uv run python scripts/validate_ace_wave1_text_json.py
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-29-issue-52-ace-wave-1-llm-native-text-markup-code-small-json-bootstrap.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/52.md \
+            --scan-public-path docs/case-studies/ace-wave-1-text-markup-code-json-bootstrap.md \
+            --scan-public-path config/ace-wave1-text-json-contract.json \
+            --scan-public-path skills/content-triage-and-exclusion/resources/text_json_triage.py \
+            --scan-public-path scripts/validate_ace_wave1_text_json.py \
+            --scan-public-path tests/test_validate_ace_wave1_text_json.py \
+            --scan-public-path tests/fixtures/ace-wave1-text-json/ \
+            --scan-public-path docs/01-document-taxonomy.md \
+            --scan-public-path docs/10-structured-data-and-model-files.md \
+            --scan-public-path docs/14-chunking-and-embedding.md \
+            --scan-public-path docs/15-retrieval-evaluation.md \
+            --scan-public-path docs/16-corpus-lifecycle.md \
+            --scan-public-path skills/content-triage-and-exclusion/SKILL.md \
+            --scan-public-path skills/content-triage-and-exclusion/evals/evals.json \
+            --scan-public-path skills/source-extraction-coverage/SKILL.md \
+            --scan-public-path skills/source-extraction-coverage/evals/evals.json \
+            --scan-public-path skills/source-extract-fidelity/SKILL.md \
+            --scan-public-path skills/source-extract-fidelity/evals/evals.json \
+            --scan-public-path skills/page-shape-contract/SKILL.md \
+            --scan-public-path skills/page-shape-contract/evals/evals.json \
+            --scan-public-path skills/public-private-routing/SKILL.md \
+            --scan-public-path skills/public-private-routing/evals/evals.json \
+            --scan-public-path .github/workflows/validate.yml
+          uv run python scripts/validate_ace_public_artifacts.py \
+            --scan-public-path docs/plans/2026-06-29-issue-52-ace-wave-1-llm-native-text-markup-code-small-json-bootstrap.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/52.md \
+            --scan-public-path docs/case-studies/ace-wave-1-text-markup-code-json-bootstrap.md \
+            --scan-public-path config/ace-wave1-text-json-contract.json \
+            --scan-public-path skills/content-triage-and-exclusion/resources/text_json_triage.py \
+            --scan-public-path scripts/validate_ace_wave1_text_json.py \
+            --scan-public-path tests/test_validate_ace_wave1_text_json.py \
+            --scan-public-path tests/fixtures/ace-wave1-text-json/ \
+            --scan-public-path docs/01-document-taxonomy.md \
+            --scan-public-path docs/10-structured-data-and-model-files.md \
+            --scan-public-path docs/14-chunking-and-embedding.md \
+            --scan-public-path docs/15-retrieval-evaluation.md \
+            --scan-public-path docs/16-corpus-lifecycle.md \
+            --scan-public-path skills/content-triage-and-exclusion/SKILL.md \
+            --scan-public-path skills/content-triage-and-exclusion/evals/evals.json \
+            --scan-public-path skills/source-extraction-coverage/SKILL.md \
+            --scan-public-path skills/source-extraction-coverage/evals/evals.json \
+            --scan-public-path skills/source-extract-fidelity/SKILL.md \
+            --scan-public-path skills/source-extract-fidelity/evals/evals.json \
+            --scan-public-path skills/page-shape-contract/SKILL.md \
+            --scan-public-path skills/page-shape-contract/evals/evals.json \
+            --scan-public-path skills/public-private-routing/SKILL.md \
+            --scan-public-path skills/public-private-routing/evals/evals.json \
+            --scan-public-path .github/workflows/validate.yml
+
+      - name: Validate ACE wave-2 spreadsheet CSV lane
+        run: |
+          uv run python scripts/validate_ace_wave2_spreadsheet_csv.py
+          uv run python scripts/validate_ace_public_surface_scan.py \
+            --scan-public-path docs/plans/2026-06-29-issue-53-ace-wave-2-spreadsheets-csv-calculation-workbook-ingestion-lane.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/53.md \
+            --scan-public-path scripts/validate_ace_wave2_spreadsheet_csv.py \
+            --scan-public-path tests/test_validate_ace_wave2_spreadsheet_csv.py \
+            --scan-public-path tests/fixtures/ace-wave2-spreadsheet-csv/ \
+            --scan-public-path skills/xlsx-input-code-output-canary/SKILL.md \
+            --scan-public-path skills/xlsx-input-code-output-canary/resources/xlsx_canary.py \
+            --scan-public-path skills/xlsx-input-code-output-canary/evals/evals.json \
+            --scan-public-path skills/format-coverage-ledger/SKILL.md \
+            --scan-public-path skills/format-coverage-ledger/resources/csv_dialect_probe.py \
+            --scan-public-path skills/format-coverage-ledger/evals/evals.json \
+            --scan-public-path docs/09-office-formats.md \
+            --scan-public-path docs/10-structured-data-and-model-files.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-53-runtime-r4.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-53-public-legal-r4.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-53-docs-skills-r4.md \
+            --scan-public-path .github/workflows/validate.yml
+          uv run python scripts/validate_ace_public_artifacts.py \
+            --scan-public-path docs/plans/2026-06-29-issue-53-ace-wave-2-spreadsheets-csv-calculation-workbook-ingestion-lane.md \
+            --scan-public-path docs/plans/README.md \
+            --scan-public-path docs/plans/ace-share-ingestion-wave-coordination.md \
+            --scan-public-path .planning/plan-approved/53.md \
+            --scan-public-path scripts/validate_ace_wave2_spreadsheet_csv.py \
+            --scan-public-path tests/test_validate_ace_wave2_spreadsheet_csv.py \
+            --scan-public-path tests/fixtures/ace-wave2-spreadsheet-csv/ \
+            --scan-public-path skills/xlsx-input-code-output-canary/SKILL.md \
+            --scan-public-path skills/xlsx-input-code-output-canary/resources/xlsx_canary.py \
+            --scan-public-path skills/xlsx-input-code-output-canary/evals/evals.json \
+            --scan-public-path skills/format-coverage-ledger/SKILL.md \
+            --scan-public-path skills/format-coverage-ledger/resources/csv_dialect_probe.py \
+            --scan-public-path skills/format-coverage-ledger/evals/evals.json \
+            --scan-public-path docs/09-office-formats.md \
+            --scan-public-path docs/10-structured-data-and-model-files.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-53-runtime-r4.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-53-public-legal-r4.md \
+            --scan-public-path scripts/review/results/2026-07-03-implementation-53-docs-skills-r4.md \
+            --scan-public-path .github/workflows/validate.yml
+
+      - name: Validator unit tests
+        run: |
+          uv run python -m unittest tests.test_legal_sanity_scan
+          uv run python -m unittest tests.test_validate_ace_epic_wave_coordination
+          uv run python -m unittest tests.test_validate_ace_wave0_schema_contract
+          uv run python -m unittest tests.test_validate_ace_manifest_freshness
+          uv run python -m unittest tests.test_validate_ace_manifest_freshness_runtime
+          uv run python -m unittest tests.test_validate_ace_manifest_freshness_security
+          uv run python -m unittest tests.test_validate_ace_knowledge_store_contract
+          uv run python -m unittest tests.test_validate_ace_ingested_success_metric
+          uv run python -m unittest tests.test_validate_ace_public_artifacts
+          uv run python -m unittest tests.test_validate_ace_public_token_fixtures
+          uv run python -m unittest tests.test_validate_ace_public_surface_scan
+          uv run python -m unittest tests.test_validate_ace_bounded_sampling_firewall
+          uv run python -m unittest tests.test_validate_ace_manifest_evidence_integration
+          uv run python -m unittest tests.test_validate_ace_wave1_text_json
+          uv run python -m unittest tests.test_validate_ace_wave2_spreadsheet_csv
+
       - name: Runnable example — verify the happy path promotes
         working-directory: examples/minimal-ingest
         run: uv run ingest.py --check

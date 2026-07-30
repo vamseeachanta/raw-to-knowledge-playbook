@@ -46,17 +46,23 @@ metadata:
 2. **Apply exclusions FIRST (fail-closed).** Before value-ranking, route any file
    matching the exclusion policy to an `EXCLUDED` bucket with a reason:
    - **PII** → exclude (W-9, payment/bank/wire threads, personal identifiers).
-   - **Third-party-confidential** → exclude (explicit "do not distribute"
+   - **Third-party-confidential** -> exclude (explicit redistribution-forbidden
      markers, another party's proprietary deliverable/deck). When in doubt that
      *we have the right to ingest it*, exclude — confidentiality is fail-closed.
    An excluded file is recorded (path + reason) but never extracted or copied.
 3. **Value-rank the remainder.** Score surviving candidates by knowledge value
    (unique engineering content, decisions, data) vs. redundancy/triviality.
    Low-value passes (cover sheets, empty templates, duplicated boilerplate) sink.
-4. **Dedup superseded versions.** Group near-duplicates (rev A/B/final/FINAL2,
+4. **Apply the ACE wave-1 text/JSON rule when relevant.** Hand-authored
+   text/markup may route to `private_sidecar` or, with affirmative clearance,
+   `public_llm_wiki`. Small hand-authored JSON/config routes `metadata_only`.
+   Generated/repetitive JSON, lockfile/cache-like JSON, minified code, vendored
+   source-tree noise, and bulk source trees route `excluded_no_ingest`. Never
+   decide by `.json`, `.md`, or source-folder extension alone.
+5. **Dedup superseded versions.** Group near-duplicates (rev A/B/final/FINAL2,
    email re-forwards) and keep the **authoritative latest**; mark the rest
    `superseded` so the corpus carries one canonical copy, not a version pile.
-5. **Emit the manifest.** Write one row per file: classification, value rank,
+6. **Emit the manifest.** Write one row per file: classification, value rank,
    keep | superseded | EXCLUDED(+reason). This manifest is the auditable input to
    the extraction lane — extraction only ever reads `keep` rows.
 
@@ -66,6 +72,11 @@ metadata:
 - No two `keep` rows are content-duplicate versions of the same artifact.
 - Extension/path was never the sole basis for a keep/drop decision (spot-check a
   sample of misfiled files).
+- ACE wave-1 rows use the closed route targets and record generated JSON/source
+  noise exclusions separately from extraction failures.
+- Public-surface manifests, reports, and review artifacts pass
+  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; local
+  closeout uses `--diff-only` before commit.
 
 ## Cleanup
 - The manifest persists; the raw archive is untouched (read-only). No excluded or

@@ -30,6 +30,30 @@
       "given": "The raw company repo includes source code, a venv/ directory, lockfiles, and agent scratch files.",
       "when": "Noise-class triage runs.",
       "then": "These are dropped wholesale and never reach the extraction lane; only knowledge-bearing documents survive to the keep set."
+    },
+    {
+      "id": "ace-52-manual-config-json",
+      "issue": 52,
+      "name": "ace-manual-config-json-routes-metadata-only",
+      "given": "A small hand-authored JSON config has stable keys and explanatory notes.",
+      "when": "Wave-1 text/JSON triage runs.",
+      "then": "It routes metadata_only with estimate/yield fields; the .json extension alone does not route it to prose ingest."
+    },
+    {
+      "id": "ace-52-generated-json-excluded",
+      "issue": 52,
+      "name": "ace-generated-json-excluded-by-shape",
+      "given": "A JSON file has repeated object templates and generated timestamp markers.",
+      "when": "Generatedness signals run before value ranking.",
+      "then": "It routes excluded_no_ingest with a generated/repetitive reason and is not counted as an extraction shortfall."
+    },
+    {
+      "id": "ace-52-source-tree-not-bulk-ingested",
+      "issue": 52,
+      "name": "ace-source-tree-no-bulk-ingest",
+      "given": "A source tree contains docstrings, vendored minified files, and dependency lockfiles.",
+      "when": "Wave-1 source-adjacent triage runs.",
+      "then": "Only durable documentation metadata is kept; source-tree noise and lockfile-like JSON route excluded_no_ingest."
     }
   ]
 }

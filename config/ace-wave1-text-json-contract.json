@@ -1,0 +1,101 @@
+{
+  "contract_id": "ace-wave1-text-json-contract",
+  "contract_version": "1.0.0",
+  "owner_issue": 52,
+  "imports_route_targets_from_issue": 65,
+  "imports_success_fields_from_issue": 65,
+  "uses_sampling_firewall_issue": 67,
+  "uses_manifest_evidence_issues": [62, 70],
+  "route_targets": [
+    "public_llm_wiki",
+    "private_sidecar",
+    "metadata_only",
+    "excluded_no_ingest"
+  ],
+  "candidate_classes": [
+    "hand_authored_markup",
+    "small_config_json",
+    "generated_repetitive_json",
+    "generated_lockfile_like_json",
+    "code_documentation",
+    "source_tree_noise",
+    "hard_excluded_material"
+  ],
+  "generated_json_signals": [
+    "generated_timestamp",
+    "lockfile",
+    "high_cardinality_list",
+    "high_cardinality_keys",
+    "near_duplicate_object_templates",
+    "package_cache_shape",
+    "minified_bulk_array"
+  ],
+  "kept_route_targets": [
+    "public_llm_wiki",
+    "private_sidecar",
+    "metadata_only"
+  ],
+  "kept_row_required_fields": [
+    "candidate_id",
+    "candidate_class",
+    "route_target",
+    "logical_target_store",
+    "parse_status",
+    "visibility",
+    "public_clearance",
+    "extraction_estimate",
+    "extraction_yield",
+    "signals"
+  ],
+  "excluded_row_required_fields": [
+    "candidate_id",
+    "candidate_class",
+    "route_target",
+    "logical_target_store",
+    "parse_status",
+    "visibility",
+    "public_clearance",
+    "hard_exclusion_reason",
+    "signals"
+  ],
+  "parse_status_values": ["synthetic_fixture"],
+  "visibility_values": ["public", "private", "none"],
+  "class_route_targets": {
+    "hand_authored_markup": ["private_sidecar", "public_llm_wiki"],
+    "small_config_json": ["metadata_only"],
+    "code_documentation": ["metadata_only"],
+    "generated_repetitive_json": ["excluded_no_ingest"],
+    "generated_lockfile_like_json": ["excluded_no_ingest"],
+    "source_tree_noise": ["excluded_no_ingest"],
+    "hard_excluded_material": ["excluded_no_ingest"]
+  },
+  "success_metric": {
+    "numerator_field": "successful_routed_items",
+    "denominator_field": "eligible_candidate_items",
+    "formula": "successful_routed_items / eligible_candidate_items * 100"
+  },
+  "sampling_gate": {
+    "target_issue": 52,
+    "target_wave_class": "ingestion_wave",
+    "request_class": "downstream_manifest_backed_sampling",
+    "requires_manifest_snapshot_id": true,
+    "synthetic_fixture_evidence_mode": "shape_only_fixture",
+    "operational_evidence_mode": "trusted_62_pointer"
+  },
+  "public_route_gate": {
+    "public_clearance_required": true,
+    "public_canary_issue": 63,
+    "demote_without_clearance": true
+  },
+  "durable_output_gate": {
+    "knowledge_store_issue": 61,
+    "default_policy": "reject_durable_fields_in_wave1_classifier_rows",
+    "field_names": ["target_path", "retrieval_metadata", "lifecycle_state", "persistent_metric"]
+  },
+  "public_safety_notes": [
+    "Committed fixtures are synthetic and contain no ACE source inventory or measured corpus result.",
+    "Any committed metric record must carry metric_scope=synthetic_fixture; operational measured metrics stay private-sidecar.",
+    "Generated JSON is excluded by content and schema signals, not by extension alone.",
+    "Public route selection requires affirmative clearance; otherwise candidates stay private-sidecar or metadata-only."
+  ]
+}

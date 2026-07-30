@@ -30,6 +30,14 @@
       "given": "The lane's extract carries a provenance header and a 'Subject: ' prefix, and the document body contains quoted-history lines that also start with 'Subject:'.",
       "when": "The ours-side text is prepared for comparison.",
       "then": "Only the positionally-identified scaffold lines are stripped; the look-alike body lines are preserved — pattern-based stripping that ate them is detected as a recall residual and fixed in the comparator."
+    },
+    {
+      "id": "ace-61-golden-eval-outside-ingest",
+      "issue": 61,
+      "name": "ace-golden-eval-kept-out-of-index",
+      "given": "A golden retrieval question is proposed as both an eval case and an ingestable chunk.",
+      "when": "The independent oracle validation gate checks the fixture.",
+      "then": "The case is rejected because #61 keeps golden eval cases outside ingest paths and chunk stores."
     }
   ]
 }
