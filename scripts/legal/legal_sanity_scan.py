@@ -16,7 +16,7 @@ from pathlib import Path
 CONFIG_PATH = Path(".legal-deny-list.yaml")
 TEXT_SUFFIXES = {".md", ".json", ".jsonl", ".yaml", ".yml", ".toml", ".txt", ".csv", ".tsv", ".py", ".sh"}
 TOP_LEVEL_TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".toml"}
-INCLUDE_PREFIXES = {"docs", "skills", "scripts", "tests", "artifacts", "config", "examples"}
+INCLUDE_PREFIXES = {"docs", "skills", "scripts", "tests", "artifacts", "config", "examples", "contrib"}
 EXCLUDED_PARTS = {"__pycache__", ".git", ".mypy_cache", ".pytest_cache"}
 FORBIDDEN_INVENTORY_KEYS = {
     "client_names",

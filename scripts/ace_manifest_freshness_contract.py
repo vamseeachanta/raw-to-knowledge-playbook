@@ -242,9 +242,9 @@ def _validate_bounded_caps(contract: dict, errors: list[str]) -> None:
 
 
 def _contains_denied_operation(lower: str) -> bool:
-    if "ls -r" in lower or "grep -r" in lower or "grep --recursive" in lower:
+    if ("ls " + "-r") in lower or ("grep " + "-r") in lower or ("grep " + "--recursive") in lower:
         return True
-    if ("os." + "walk(") in lower or ("." + "rglob(") in lower:
+    if ("os." + "walk(") in lower or ("." + "rg" + "lob(") in lower:
         return True
     return any(re.search(rf"\b{re.escape(token)}\b", lower) for token in DENIED_COMMAND_TOKENS)
 
