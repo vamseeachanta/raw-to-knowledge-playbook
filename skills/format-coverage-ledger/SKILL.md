@@ -18,10 +18,13 @@ metadata:
 
 # format-coverage-ledger
 
-> Template skill (doc 09, doc 02, complements `source-extraction-coverage`).
+> Template skill (doc 09, doc 10, doc 02, complements `source-extraction-coverage`).
 > Worked example: [docs/case-studies/format-coverage-audit.md](../../docs/case-studies/format-coverage-audit.md)
 > — a 53-document mixed-office archive scored a mean 63.8% text-only completeness,
-> with diagram decks and formula spreadsheets the most under-captured. Each
+> with diagram decks and formula spreadsheets the most under-captured.
+> Extended worked example: [docs/case-studies/structured-data-geospatial-coverage-sweep.md](../../docs/case-studies/structured-data-geospatial-coverage-sweep.md)
+> — the same coverage idea applied to CSV / solver / geospatial sources, where a
+> text-readable file is shown to be not an answer-bearing one. Each
 > office/email format hides its most valuable content in a layer that a naive
 > text dump silently discards. A faithful extract is **not** a complete one. This
 > skill pairs a deterministic per-format lane with an explicit **coverage ledger**
@@ -61,6 +64,10 @@ metadata:
    | msg | message thread text | **attachments** (dropped) |
    | docx | text + tables | **embedded images/figures** |
    | pdf | text layer | **images/figures/scanned regions** |
+   | solver **output listing** (ASCII) | result tables in the text block | nothing if it *is* a listing — but **a same-extension file may be a run-script** (report-definition that generates results elsewhere); classify by first lines, not suffix |
+   | solver export (`.dat`/`.txt`) | parsed values **if** plain ASCII | **UTF-16 / binary exports** read as binary (NUL bytes) — needs an encoding probe + transcode before any text lane touches it |
+   | bare-geometry point file (`x y z`) | the point coordinates | **units / datum / sign convention** (not in-band) → resolve to a sidecar before promoting past `partial` |
+   | KML | geospatial text (placemarks, tracks) | **a `.kmz` is zipped** — needs unzip first; and the name (e.g. "course") may misstate what the geometry is |
 
    (These are losses of *this lane*, not of the libraries — openpyxl can read
    formulas, extract-msg can read attachments, etc.; a richer lane recovers them.)

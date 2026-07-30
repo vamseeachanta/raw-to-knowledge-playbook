@@ -37,6 +37,23 @@ A tool earns **ADOPT** only if it clears all four gates:
 | **marker** | ⛔ GPL + revenue-gated weights | AVOID | License double-bind for integration |
 | **MegaParse** | Apache-2.0, stale (no release ~15 mo) | AVOID | Superseded by Docling/MinerU |
 
+**Rasterizer prerequisite (image/vision PDF lanes).** The table above vets
+PDF *extractors* but is light on the **rasterizer** that image/vision read
+paths silently depend on. Many "PDF→image" and VLM read paths shell out to
+**`pdftoppm` (Poppler)** to render pages, and many convenience wrappers do
+the same under the hood. Treat the rasterizer as a **HARD PREREQUISITE** for
+any image/vision PDF lane — Poppler (`pdftoppm`) or an equivalent must be on
+`PATH`. Field observation: on a box where Poppler was absent, every PDF was
+*reached* instantly (path resolved, bytes readable) and then failed at
+render — `pdftoppm failed: Command 'pdftoppm' not found or is in an unsafe
+location`. The whole corpus looked "unavailable," but storage was fine: a
+missing local binary, not connectivity. This is its own failure class —
+**reachable ≠ parseable**: a source can be located and opened yet remain
+unrenderable because a downstream binary is missing, distinct from
+not-found / permission / timeout (good-practice treatment in doc 05).
+License note: Poppler is **GPL-2/3** — process-isolated CLI use is fine;
+record it in the license register alongside the PyMuPDF/AGPL flag.
+
 ## Lane 2 — Table extraction (docs 02–03)
 
 | Tool | License | Verdict | Why |
@@ -161,6 +178,7 @@ models are CC-BY-NC and cannot ship.
 | Dependency | License | Containment |
 |---|---|---|
 | PyMuPDF | AGPL-3.0 | Internal-only; never distribute/serve; exit path = pdfplumber/Docling |
+| Poppler (`pdftoppm`) | GPL-2/3 | Rasterizer prerequisite for image/vision PDF lanes; separate-process CLI invocation only |
 | formulas | EUPL-1.1 | Arm's-length oracle use; no derivative redistribution |
 | ExifTool | GPL/Artistic | Separate-process invocation only |
 | pcodedmp (oletools extra) | GPL-3.0 | Excluded from installs |

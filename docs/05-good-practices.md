@@ -55,6 +55,35 @@ the careful lane. Treat > 10 % U+FFFD replacement characters in sampled text
 as an encoding failure — route to the OCR lane (doc 11), never publish the
 mojibake.
 
+**GP-55 — Probe source readability cheaply before planning extraction.**
+Why: a tiny connectivity+parse probe (read one representative file per format
+straight from real storage with the actual tools) collapsed weeks of
+assumptions into minutes and separated three states that look identical from a
+distance: **readable now** (a text/CSV file returned full content fast),
+**reachable-but-unparseable** (a PDF resolved instantly but failed for lack of
+a rasterizer binary `pdftoppm`; a solver export resolved but read as
+binary/UTF-16), and **unreachable** (path/permission/timeout). The middle
+state is the one teams misdiagnose as "storage down" or "re-fetch the source."
+Apply: before scoping a campaign, run the one-file-per-format probe; classify
+each format into the three states; the output seeds the tier model and the
+do-now worklist. Treat "reachable ≠ parseable" (missing downstream
+binary/renderer) as its own diagnosis, distinct from
+not-found/permission/timeout.
+
+**GP-56 — Sweep the existing inventory for the text tier before building heavy
+lanes.**
+Why: when a per-source inventory already exists, grepping it for text-tier
+signatures (`.csv`, `.kml`, `.txt`, text output-listings) enumerated all the
+zero-setup wins in one pass — instead of re-traversing slow/networked storage
+or standing up Office/solver/rasterizer tooling first. This banked real
+derivatives immediately and validated the pipeline end-to-end on cheap
+material before committing to expensive tiers.
+Apply: grep the inventory for text-tier extensions first; extract those now;
+scope the expensive tiers (PDF/Office/solver-binary) with evidence. Record the
+caveat: the text tier yields setup/geometry/scope/tracks, NOT the computed
+result tables (those are binary/Office) — so a big text-tier haul is progress,
+not completion (pair with the format-coverage-ledger skill).
+
 ## Verification
 
 **GP-06 — Select verification batches by data density.**
@@ -474,4 +503,4 @@ claim until its load-bearing facts are checked.
 
 ---
 
-*Next ID: GP-55.*
+*Next ID: GP-57.*
