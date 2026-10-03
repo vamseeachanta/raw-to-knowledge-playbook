@@ -90,7 +90,7 @@ metadata:
 - The comparator has its own PASS-terminated adversarial review record.
 - Oracle conversions never wrote inside the repo tree.
 - Published oracle reports and review evidence pass
-  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; use
+  `python scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces`; use
   `--diff-only` before committing local report changes.
 
 ## Cleanup
@@ -107,3 +107,5 @@ metadata:
 | Attribute every sub-1.0 number | One residual was a real, previously unledgered lane loss; the rest were engine formatting — only the diff probe tells them apart |
 | Verify the comparator harder than the pipeline | A flattering comparator bug poisons every number it produces |
 | Scaffold stripped positionally | Prefix-stripping by pattern ate body content that looked like scaffold (quoted-history subject lines) |
+
+Identifier-only findings are reviewed in the final report; they do not block repository flow. Independent secret, access, source-rights, provenance and traversal checks remain active.

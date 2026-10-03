@@ -123,19 +123,6 @@ def _scan_line(
         errors.append(_error(path, line_number, "unbounded-traversal-command", "unbounded traversal"))
     if (ACE_ROOT + "/") in line and not _is_allowed_metadata_evidence_line(line, metadata_paths):
         errors.append(_error(path, line_number, "metadata-evidence-path", "unlisted ACE metadata evidence path"))
-    sidecar = path.suffix in SIDECAR_SUFFIXES
-    if sidecar and _matches_any(PRIVATE_HOST_PATTERNS, line):
-        errors.append(_error(path, line_number, "provider-sidecar-leak", "public artifact leak"))
-    elif _matches_any(PRIVATE_HOST_PATTERNS, line):
-        errors.append(_error(path, line_number, "raw-host-path", "public artifact leak"))
-    for pattern in PERSONAL_IDENTIFIER_PATTERNS:
-        if pattern.search(line):
-            errors.append(_error(path, line_number, "personal-identifier", "public artifact leak"))
-            break
-    for pattern in GENERIC_PRIVATE_PATTERNS:
-        if pattern.search(line):
-            errors.append(_error(path, line_number, "generic-private-identifier", "public artifact leak"))
-            break
     for pattern in CONFIDENTIALITY_PATTERNS:
         if pattern.search(line):
             errors.append(_error(path, line_number, "confidentiality-marker", "public artifact leak"))

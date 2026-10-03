@@ -970,7 +970,7 @@ def _allowed_legal_scanner_policy_line(path: Path, line: str) -> bool:
         "public_" + "source_token",
     )
     return (
-        path.name == ".legal-deny-list.yaml"
+        path.name == ".public-surface-safety.json"
         and "raw-source-provenance-assignment" not in line
         and "|".join(policy_terms) in line
     )

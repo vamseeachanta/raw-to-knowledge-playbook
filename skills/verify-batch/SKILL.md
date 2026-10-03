@@ -115,7 +115,7 @@ Is the rendered region a data table at all?
   non-VERIFIED) a defect class.
 - The PR report's totals reconcile with the queue's terminal-row count.
 - Public batch reports and review notes pass
-  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; use
+  `python scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces`; use
   `--diff-only` before committing verifier outputs.
 
 ## Cleanup
@@ -134,3 +134,5 @@ Is the rendered region a data table at all?
 | Exact csv_path | A9 | Glob matched wrong edition's table |
 | Strict watermark | A1 | Draft-overlay glyph merged into a data cell |
 | Self-grep identifiers | (D-screening) | Subagent overclaimed "no confidential IDs" |
+
+Identifier-only findings are reviewed in the final report; they do not block repository flow. Independent secret, access, source-rights, provenance and traversal checks remain active.

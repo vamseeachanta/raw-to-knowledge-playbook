@@ -14,7 +14,7 @@
       "owner_issue": 68
     },
     "legal_security_scan": {
-      "path": ".legal-deny-list.yaml",
+      "path": ".public-surface-safety.json",
       "owner_issue": 69
     }
   },

@@ -13,15 +13,15 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_CONTRACT_PATH = Path("config/ace-public-output-contract.json")
 TOKEN_CONTRACT_PATH = Path("config/ace-public-token-fixture-contract.json")
 PUBLIC_SURFACE_CONTRACT_PATH = Path("config/ace-public-surface-self-scan-contract.json")
-LEGAL_CONFIG_PATH = Path(".legal-deny-list.yaml")
+SAFETY_CONFIG_PATH = Path(".public-surface-safety.json")
 DENY_LIST_PATH = Path("config/ace-public-surface-deny-list.json")
 SOURCE_HASH_SWEEP_PATH = Path("artifacts/ace-source-hash-policy-sweep.md")
 PUBLIC_SURFACE_HELPER_DIR = REPO_ROOT / "scripts"
 if str(PUBLIC_SURFACE_HELPER_DIR) not in sys.path:
     sys.path.insert(0, str(PUBLIC_SURFACE_HELPER_DIR))
-LEGAL_HELPER_DIR = REPO_ROOT / "scripts" / "legal"
-if str(LEGAL_HELPER_DIR) not in sys.path:
-    sys.path.insert(0, str(LEGAL_HELPER_DIR))
+SAFETY_HELPER_DIR = REPO_ROOT / "scripts" / "security"
+if str(SAFETY_HELPER_DIR) not in sys.path:
+    sys.path.insert(0, str(SAFETY_HELPER_DIR))
 
 from ace_public_surface_contract import (  # noqa: E402
     CONTRACT_PATH as ISSUE_68_CONTRACT_PATH,
@@ -36,7 +36,7 @@ from ace_public_surface_rules import (  # noqa: E402
     _scan_line,
     validate_public_artifact_paths as validate_issue_68_public_paths,
 )
-import legal_sanity_scan  # noqa: E402
+import public_surface_safety_scan  # noqa: E402
 
 
 SEMVER_RE = re.compile(r"^1\.0\.\d+$")
@@ -137,7 +137,7 @@ def validate_public_output_contract(contract: dict, *, token_contract: dict) -> 
     upstream = contract.get("upstream_contracts", {})
     _validate_upstream(upstream, "public_token_fixture_contract", TOKEN_CONTRACT_PATH, 66, errors)
     _validate_upstream(upstream, "public_surface_self_scan_contract", PUBLIC_SURFACE_CONTRACT_PATH, 68, errors)
-    _validate_upstream(upstream, "legal_security_scan", LEGAL_CONFIG_PATH, 69, errors)
+    _validate_upstream(upstream, "legal_security_scan", SAFETY_CONFIG_PATH, 69, errors)
     if contract.get("public_token_field_name") != token_contract.get("public_token_field_name"):
         errors.append("public output contract must import #66 public token field")
     if contract.get("public_token_grammar") != token_contract.get("public_token_grammar"):
@@ -270,7 +270,7 @@ def _source_hash_hit_key(rel_path: Path, line_number: int) -> str:
 def validate_public_output_paths(paths: Iterable[Path]) -> list[str]:
     path_list = [Path(path) for path in paths]
     errors = validate_issue_68_public_paths(path_list, contract_path=ISSUE_68_CONTRACT_PATH)
-    errors.extend(_validate_legal_public_paths(path_list))
+    errors.extend(_validate_safety_public_paths(path_list))
     for path in path_list:
         resolved = repo_path(path)
         if resolved.is_dir():
@@ -283,14 +283,14 @@ def validate_public_output_paths(paths: Iterable[Path]) -> list[str]:
     return errors
 
 
-def _validate_legal_public_paths(paths: list[Path]) -> list[str]:
+def _validate_safety_public_paths(paths: list[Path]) -> list[str]:
     try:
-        repo = legal_sanity_scan.git_root()
-        rules, allow_contexts = legal_sanity_scan.load_config(repo, None)
-        candidates = legal_sanity_scan.collect_explicit_candidates(repo, [str(path) for path in paths])
-        return legal_sanity_scan.scan_candidates(candidates, rules, allow_contexts)
-    except legal_sanity_scan.ScanError as exc:
-        return [legal_sanity_scan.redact(str(exc))]
+        repo = public_surface_safety_scan.git_root()
+        rules, allow_contexts = public_surface_safety_scan.load_config(repo, None)
+        candidates = public_surface_safety_scan.collect_explicit_candidates(repo, [str(path) for path in paths])
+        return public_surface_safety_scan.scan_candidates(candidates, rules, allow_contexts)
+    except public_surface_safety_scan.ScanError as exc:
+        return [public_surface_safety_scan.redact(str(exc))]
 
 
 def _uses_publication_text_scan(path: Path) -> bool:
@@ -336,18 +336,18 @@ def _line_assigns_any(line: str, pattern: re.Pattern[str]) -> bool:
 
 def validate_public_output_body_text(label: str, text: str) -> list[str]:
     errors = validate_public_output_text(label, text)
-    errors.extend(_validate_legal_public_text(label, text))
+    errors.extend(_validate_safety_public_text(label, text))
     return _dedupe_errors(errors)
 
 
-def _validate_legal_public_text(label: str, text: str) -> list[str]:
+def _validate_safety_public_text(label: str, text: str) -> list[str]:
     try:
-        repo = legal_sanity_scan.git_root()
-        rules, allow_contexts = legal_sanity_scan.load_config(repo, None)
-        candidate = legal_sanity_scan.Candidate(rel_path=Path(label), source_kind="issue-comment-body", content=text)
-        return legal_sanity_scan.scan_candidates([candidate], rules, allow_contexts)
-    except legal_sanity_scan.ScanError as exc:
-        return [legal_sanity_scan.redact(str(exc))]
+        repo = public_surface_safety_scan.git_root()
+        rules, allow_contexts = public_surface_safety_scan.load_config(repo, None)
+        candidate = public_surface_safety_scan.Candidate(rel_path=Path(label), source_kind="issue-comment-body", content=text)
+        return public_surface_safety_scan.scan_candidates([candidate], rules, allow_contexts)
+    except public_surface_safety_scan.ScanError as exc:
+        return [public_surface_safety_scan.redact(str(exc))]
 
 
 def _allowed_git_governance_sha(line: str) -> bool:
@@ -370,7 +370,7 @@ def _forbidden_inventory_errors(value, path: str = "root") -> list[str]:
 
 
 def _error(path: Path, line_number: int, rule_id: str, summary: str) -> str:
-    safe_path = legal_sanity_scan.redact(path.as_posix())
+    safe_path = public_surface_safety_scan.redact(path.as_posix())
     return f"{rule_id}: {summary} at {safe_path}:{line_number}; match=REDACTED"
 
 

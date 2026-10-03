@@ -338,7 +338,7 @@
   },
   "sibling_boundaries": {
     "legal_security_scan_owner_issue": 69,
-    "legal_scan_config_path": ".legal-deny-list.yaml"
+    "legal_scan_config_path": ".public-surface-safety.json"
   },
   "stock_ci_live_github_dependency": false
 }
