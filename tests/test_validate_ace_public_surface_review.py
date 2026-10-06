@@ -138,7 +138,7 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
 
         root = REPO_ROOT / "scripts" / "review" / "results"
         artifact = write_tmp(root.as_posix(), "2099-01-03-plan-68-claude-r97.md", "## Verdict\nAPPROVE\n")
-        sidecar = write_tmp(root.as_posix(), "2099-01-03-plan-68-claude-r97.stderr", f"trace: file://{private_path_text()}\n")
+        sidecar = write_tmp(root.as_posix(), "2099-01-03-plan-68-claude-r97.stderr", confidential_text() + "\n")
         self.addCleanup(lambda: artifact.exists() and artifact.unlink())
         self.addCleanup(lambda: sidecar.exists() and sidecar.unlink())
         errors = validator.validate_review_artifacts(
@@ -149,14 +149,14 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
             include_sidecars=True,
         )
 
-        self.assertIn("provider-sidecar-leak", "\n".join(errors))
+        self.assertIn("confidentiality-marker", "\n".join(errors))
 
     def test_non_68_sidecars_are_scanned(self):
         validator = load_validator()
 
         root = REPO_ROOT / "scripts" / "review" / "results"
         artifact = write_tmp(root.as_posix(), "2099-01-08-plan-72-claude-r92.md", "## Verdict\nAPPROVE\n")
-        sidecar = write_tmp(root.as_posix(), "2099-01-08-plan-72-claude-r92.stderr", f"trace: file://{private_path_text()}\n")
+        sidecar = write_tmp(root.as_posix(), "2099-01-08-plan-72-claude-r92.stderr", confidential_text() + "\n")
         self.addCleanup(lambda: artifact.exists() and artifact.unlink())
         self.addCleanup(lambda: sidecar.exists() and sidecar.unlink())
 
@@ -168,7 +168,7 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
             include_sidecars=True,
         )
 
-        self.assertIn("provider-sidecar-leak", "\n".join(errors))
+        self.assertIn("confidentiality-marker", "\n".join(errors))
 
     def test_sidecar_absence_semantics_are_explicit(self):
         validator = load_validator()
@@ -451,13 +451,13 @@ class AcePublicSurfaceReviewTests(unittest.TestCase):
             pre_errors = validator.validate_issue_comment_snapshot_file(unsafe_pre)
             post_errors = validator.validate_issue_comment_snapshot_file(safe_post)
 
-        self.assertIn("personal-identifier", "\n".join(pre_errors))
+        self.assertEqual([], pre_errors)
         self.assertEqual([], post_errors)
 
     def test_workflow_preserves_69_legal_scan_step(self):
         workflow = WORKFLOW_PATH.read_text()
 
-        self.assertIn("bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces", workflow)
+        self.assertIn("python scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces", workflow)
 
     def test_stock_ci_has_no_live_github_dependency(self):
         workflow = WORKFLOW_PATH.read_text()

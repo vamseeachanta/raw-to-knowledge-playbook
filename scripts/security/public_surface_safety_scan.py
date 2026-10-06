@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repo-local legal and security public-surface scanner."""
+"""Independent secret, source-rights, provenance and traversal safety scanner."""
 from __future__ import annotations
 
 import argparse
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-CONFIG_PATH = Path(".legal-deny-list.yaml")
+CONFIG_PATH = Path(".public-surface-safety.json")
 TEXT_SUFFIXES = {".md", ".json", ".jsonl", ".yaml", ".yml", ".toml", ".txt", ".csv", ".tsv", ".py", ".sh"}
 TOP_LEVEL_TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".toml"}
 INCLUDE_PREFIXES = {"docs", "skills", "scripts", "tests", "artifacts", "config", "examples", "contrib"}
@@ -39,13 +39,7 @@ TOP_LEVEL_KEYS = {
 }
 RULE_KEYS = {"id", "severity", "description", "patterns"}
 ALLOW_CONTEXT_KEYS = {"context_id", "path_globs", "rule_ids", "sentinel", "max_lines_per_file", "justification"}
-ALLOW_CONTEXT_POLICIES = {
-    "test-fixture-forensic-examples": {
-        "path_globs": {"tests/fixtures/.tmp-legal-allow-*.md"},
-        "rule_ids": {"private-root-shape"},
-        "line_pattern": r".*",
-    },
-}
+ALLOW_CONTEXT_POLICIES = {}
 
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 HOST_RE = re.compile(r"\b(?:[A-Za-z0-9-]+\.)+(?:com|net|org|io|ai|dev|co|edu|gov|mil|biz|info|internal)\b")
@@ -118,7 +112,7 @@ def load_config(repo: Path, config_arg: str | None) -> tuple[list[Rule], list[Al
     try:
         record = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise ScanError(f"config must be strict JSON text despite .yaml extension: {redact(str(exc))}") from exc
+        raise ScanError(f"config must be strict JSON text: {redact(str(exc))}") from exc
     validate_config_record(record)
     return build_rules(record), build_allow_contexts(record.get("allow_contexts", []))
 
@@ -266,7 +260,7 @@ def classify_path(rel_path: Path) -> str:
     rel = rel_path.as_posix()
     if suffix == ".pyc" or rel.startswith(".claude/state/"):
         return "exclude"
-    if rel == ".legal-deny-list.yaml":
+    if rel == ".public-surface-safety.json":
         return "include"
     if parts[0] == ".github":
         return "include" if len(parts) >= 3 and parts[1] == "workflows" and suffix in {".yaml", ".yml"} else "exclude"
@@ -376,7 +370,7 @@ def scan_candidates(candidates: list[Candidate], rules: list[Rule], allow_contex
     findings: list[str] = []
     allow_counts: dict[tuple[str, str], int] = {}
     for index, candidate in enumerate(candidates, start=1):
-        line_items = config_scan_lines(candidate.content) if candidate.rel_path.as_posix() == ".legal-deny-list.yaml" else list(enumerate(candidate.content.splitlines(), start=1))
+        line_items = config_scan_lines(candidate.content) if candidate.rel_path.as_posix() == ".public-surface-safety.json" else list(enumerate(candidate.content.splitlines(), start=1))
         for line_number, line in line_items:
             for rule in rules:
                 if any(pattern.search(line) for pattern in rule.patterns):

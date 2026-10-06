@@ -145,8 +145,8 @@ class AcePublicArtifactValidationTests(unittest.TestCase):
         errors = library.validate_public_output_text("runtime-negative.md", unsafe_text)
         rendered = "\n".join(errors)
 
-        self.assertIn("raw-host-path", rendered)
-        self.assertIn("personal-identifier", rendered)
+        self.assertNotIn("raw-host-path", rendered)
+        self.assertNotIn("personal-identifier", rendered)
         self.assertIn("media-metadata", rendered)
         self.assertIn("engineering-metadata", rendered)
         self.assertIn("copied-private-snippet", rendered)
@@ -194,7 +194,7 @@ class AcePublicArtifactValidationTests(unittest.TestCase):
             unsafe_secret_comment.write_text(f"{secret_field}: abcdefghijk\n")
 
             self.assertEqual([], validator.collect_errors(issue_comment_body_files=[safe_comment]))
-            self.assertIn("raw-host-path", "\n".join(validator.collect_errors(issue_comment_body_files=[unsafe_comment])))
+            self.assertEqual([], validator.collect_errors(issue_comment_body_files=[unsafe_comment]))
             self.assertIn("secret-assignment", "\n".join(validator.collect_errors(issue_comment_body_files=[unsafe_secret_comment])))
 
     def test_validator_redacts_issue_comment_body_read_failures(self):

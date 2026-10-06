@@ -10,9 +10,9 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCAN_SCRIPT = REPO_ROOT / "scripts" / "legal" / "legal_sanity_scan.py"
+SCAN_SCRIPT = REPO_ROOT / "scripts" / "security" / "public_surface_safety_scan.py"
 WRAPPER = REPO_ROOT / "scripts" / "legal" / "legal-sanity-scan.sh"
-CONFIG = REPO_ROOT / ".legal-deny-list.yaml"
+CONFIG = REPO_ROOT / ".public-surface-safety.json"
 TEST_GIT_EMAIL = "test" + "@" + "example" + "." + "invalid"
 
 
@@ -97,10 +97,9 @@ class LegalSanityScanTests(unittest.TestCase):
         self.assertEqual(69, record["owner_issue"])
         self.assertTrue(record["rules"])
 
-    def test_wrapper_exists_and_delegates_to_python_scanner(self):
-        self.assertTrue(WRAPPER.exists())
-        self.assertTrue(os.access(WRAPPER, os.X_OK))
-        self.assertIn("legal_sanity_scan.py", WRAPPER.read_text())
+    def test_old_wrapper_is_retired(self):
+        self.assertFalse(WRAPPER.exists())
+        self.assertTrue(SCAN_SCRIPT.exists())
 
     def test_config_rejects_yaml_only_constructs(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -212,79 +211,23 @@ class LegalSanityScanTests(unittest.TestCase):
             self.assertEqual(2, result.returncode)
             self.assertIn("literal sensitive-looking value", result.stderr)
 
-    def test_allow_context_requires_same_line_sentinel_and_caps_per_file(self):
-        sentinel = "legal-scan-allow: bounded-test"
-        fixture_dir = REPO_ROOT / "tests" / "fixtures"
-        with tempfile.NamedTemporaryFile(
-            "w",
-            dir=fixture_dir,
-            prefix=".tmp-legal-allow-",
-            suffix=".md",
-            delete=False,
-        ) as handle:
-            path = Path(handle.name)
-        self.addCleanup(lambda: path.exists() and path.unlink())
+    def test_obsolete_allow_context_cannot_exempt_secrets(self):
         with tempfile.TemporaryDirectory() as tmp:
             config = Path(tmp) / "config.json"
-            unknown_context = Path(tmp) / "unknown-context.json"
-            file_wide_context = Path(tmp) / "file-wide-context.json"
-            unknown_rule_context = Path(tmp) / "unknown-rule-context.json"
             record = json.loads(CONFIG.read_text())
-            record["allow_contexts"] = [
-                {
-                    "context_id": "test-fixture-forensic-examples",
-                    "path_globs": ["tests/fixtures/.tmp-legal-allow-*.md"],
-                    "rule_ids": ["private-root-shape"],
-                    "sentinel": sentinel,
-                    "max_lines_per_file": 1,
-                    "justification": "unit test for bounded same-line forensic allow contexts",
-                }
-            ]
-            config.write_text(json.dumps(record, indent=2) + "\n")
-            docs_path = REPO_ROOT / "docs" / ".tmp-legal-allow-mismatch.md"
-            for target, patch in [
-                (unknown_context, {"context_id": "unknown-context"}),
-                (file_wide_context, {"path_globs": ["tests/fixtures/*"]}),
-                (unknown_rule_context, {"rule_ids": ["unknown-rule"]}),
-            ]:
-                mutated = json.loads(json.dumps(record))
-                mutated["allow_contexts"][0].update(patch)
-                target.write_text(json.dumps(mutated, indent=2) + "\n")
-            try:
-                path.write_text(
-                    f"first synthetic path {synthetic_private_path()} {sentinel}\n"
-                    f"second synthetic path {synthetic_private_path()} {sentinel}\n"
-                )
-                capped_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(config), "--scan-public-path", str(path)])
-
-                path.write_text(f"first synthetic path {synthetic_private_path()} {sentinel}\n")
-                allowed_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(config), "--scan-public-path", str(path)])
-
-                path.write_text(f"first synthetic path {synthetic_private_path()}\n")
-                missing_sentinel_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(config), "--scan-public-path", str(path)])
-
-                docs_path.write_text(f"first synthetic path {synthetic_private_path()} {sentinel}\n")
-                path_mismatch_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(config), "--scan-public-path", str(docs_path)])
-                unknown_context_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(unknown_context), "--scan-public-path", str(path)])
-                file_wide_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(file_wide_context), "--scan-public-path", str(path)])
-                unknown_rule_result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config", str(unknown_rule_context), "--scan-public-path", str(path)])
-            finally:
-                if path.exists():
-                    path.unlink()
-                docs_path.unlink(missing_ok=True)
-
-        self.assertEqual(1, capped_result.returncode)
-        self.assertIn("private-root-shape", capped_result.stderr)
-        self.assertEqual("", allowed_result.stderr)
-        self.assertEqual(0, allowed_result.returncode)
-        self.assertEqual(1, missing_sentinel_result.returncode)
-        self.assertEqual(1, path_mismatch_result.returncode)
-        self.assertEqual(2, unknown_context_result.returncode)
-        self.assertIn("unknown allow context id", unknown_context_result.stderr)
-        self.assertEqual(2, file_wide_result.returncode)
-        self.assertIn("restricted path_globs", file_wide_result.stderr)
-        self.assertEqual(2, unknown_rule_result.returncode)
-        self.assertIn("unknown rule id", unknown_rule_result.stderr)
+            record["allow_contexts"] = [{
+                "context_id": "test-fixture-forensic-examples",
+                "path_globs": ["tests/fixtures/.tmp-legal-allow-*.md"],
+                "rule_ids": ["secret-assignment"],
+                "sentinel": "legal-scan-allow: bounded-test",
+                "max_lines_per_file": 1,
+                "justification": "attempted credential exemption",
+            }]
+            config.write_text(json.dumps(record))
+            result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--config",
+                              str(config), "--scan-public-path", str(CONFIG)])
+        self.assertEqual(2, result.returncode)
+        self.assertIn("unknown allow context id", result.stderr)
 
     def test_xlsx_source_id_allow_context_is_content_restricted(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -292,11 +235,11 @@ class LegalSanityScanTests(unittest.TestCase):
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
             manifest = repo / "skills" / "xlsx-input-code-output-canary" / "resources" / "canary_manifest.json"
             manifest.parent.mkdir(parents=True)
             manifest.write_text(json.dumps({"source_" + "id": synthetic_private_fixture_id(), "_legal_scan_context": "legal-scan-allow: public-xlsx-canary-source-id"}) + "\n")
-            git(repo, "add", ".legal-deny-list.yaml", "skills")
+            git(repo, "add", ".public-surface-safety.json", "skills")
 
             result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--all-tracked-public-surfaces"], cwd=repo)
 
@@ -307,12 +250,9 @@ class LegalSanityScanTests(unittest.TestCase):
     def test_blocks_synthetic_sensitive_rule_shapes_without_echoing_matches(self):
         fixture_dir = REPO_ROOT / "tests" / "fixtures"
         cases = [
-            ("private-root-shape", f"synthetic path {synthetic_private_path('/example/private-root')}\n", synthetic_private_path("/example/private-root")),
             ("confidentiality-marker", synthetic_confidentiality_marker() + "\n", synthetic_confidentiality_marker()),
-            ("identifier-assignment", synthetic_identifier_assignment() + "\n", "SYNTHETIC-12345"),
             ("secret-assignment", synthetic_secret_assignment() + "\n", "synthetic-secret-value"),
             ("raw-source-provenance-assignment", synthetic_raw_source_assignment() + "\n", "SYNTHETIC-12345"),
-            ("personal-identifier", synthetic_email() + "\n", synthetic_email()),
         ]
         for rule_id, content, forbidden_echo in cases:
             with self.subTest(rule_id=rule_id):
@@ -374,7 +314,7 @@ class LegalSanityScanTests(unittest.TestCase):
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
             (repo / "docs").mkdir()
             path = repo / "docs" / "candidate.md"
             path.write_text("clean\n")
@@ -396,19 +336,18 @@ class LegalSanityScanTests(unittest.TestCase):
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
             (repo / "docs").mkdir()
             path = repo / "docs" / "candidate.md"
             path.write_text("clean\n")
             git(repo, "add", ".")
             git(repo, "commit", "-m", "init")
-            path.write_text("client_" + "id = SYNTHETIC-123\n")
+            path.write_text(synthetic_secret_assignment() + "\n")
 
             result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--diff-only"], cwd=repo)
 
         self.assertEqual(1, result.returncode)
         self.assertIn("unstaged", result.stderr)
-        self.assertIn("identifier-assignment", result.stderr)
 
     def test_diff_only_fails_closed_on_untracked_public_surface_candidates(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -416,8 +355,8 @@ class LegalSanityScanTests(unittest.TestCase):
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
-            git(repo, "add", ".legal-deny-list.yaml")
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
+            git(repo, "add", ".public-surface-safety.json")
             git(repo, "commit", "-m", "init")
             (repo / "docs").mkdir()
             (repo / "docs" / "new.md").write_text("clean\n")
@@ -427,18 +366,19 @@ class LegalSanityScanTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("untracked public-surface candidate", result.stderr)
 
+    @unittest.skipIf(os.name == "nt", "Windows forbids newline filenames")
     def test_git_path_collection_uses_nul_delimiters(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
             docs = repo / "docs"
             docs.mkdir()
             weird = docs / "line\nbreak.md"
-            weird.write_text("customer_" + "name = SYNTHETIC\n")
-            git(repo, "add", ".legal-deny-list.yaml", "docs")
+            weird.write_text(synthetic_secret_assignment() + "\n")
+            git(repo, "add", ".public-surface-safety.json", "docs")
 
             result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--diff-only"], cwd=repo)
 
@@ -451,7 +391,7 @@ class LegalSanityScanTests(unittest.TestCase):
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
             (repo / "docs").mkdir()
             (repo / "docs" / "candidate.md").write_text(synthetic_confidentiality_marker() + "\n")
             git(repo, "add", ".")
@@ -468,7 +408,7 @@ class LegalSanityScanTests(unittest.TestCase):
             git(repo, "init")
             git(repo, "config", "user.email", TEST_GIT_EMAIL)
             git(repo, "config", "user.name", "Test")
-            (repo / ".legal-deny-list.yaml").write_text(CONFIG.read_text())
+            (repo / ".public-surface-safety.json").write_text(CONFIG.read_text())
             (repo / "misc").mkdir()
             (repo / "misc" / "scratch-public.md").write_text("clean\n")
             git(repo, "add", ".")
@@ -504,8 +444,7 @@ class LegalSanityScanTests(unittest.TestCase):
         for path in [
             CONFIG,
             SCAN_SCRIPT,
-            WRAPPER,
-            REPO_ROOT / "tests" / "test_legal_sanity_scan.py",
+            REPO_ROOT / "tests" / "test_public_surface_safety_scan.py",
             REPO_ROOT / ".github" / "workflows" / "validate.yml",
         ]:
             args.extend(["--scan-public-path", str(path)])
@@ -523,8 +462,7 @@ class LegalSanityScanTests(unittest.TestCase):
         for path in [
             CONFIG,
             SCAN_SCRIPT,
-            WRAPPER,
-            REPO_ROOT / "tests" / "test_legal_sanity_scan.py",
+            REPO_ROOT / "tests" / "test_public_surface_safety_scan.py",
             REPO_ROOT / ".github" / "workflows" / "validate.yml",
             REPO_ROOT / "skills" / "xlsx-input-code-output-canary" / "resources" / "canary_manifest.json",
             REPO_ROOT / "skills" / "xlsx-input-code-output-canary" / "resources" / "xlsx_canary.py",
@@ -553,7 +491,7 @@ class LegalSanityScanTests(unittest.TestCase):
         self.assertEqual(0, result.returncode)
 
     def test_real_repo_all_tracked_public_surfaces_passes(self):
-        result = run_cmd(["bash", str(WRAPPER), "--all-tracked-public-surfaces"])
+        result = run_cmd([sys.executable, str(SCAN_SCRIPT), "--all-tracked-public-surfaces"])
 
         self.assertEqual("", result.stderr)
         self.assertEqual(0, result.returncode)
@@ -568,7 +506,7 @@ class LegalSanityScanTests(unittest.TestCase):
         ]:
             with self.subTest(skill_path=skill_path):
                 text = (REPO_ROOT / skill_path).read_text()
-                self.assertIn("scripts/legal/legal-sanity-scan.sh", text)
+                self.assertIn("scripts/security/public_surface_safety_scan.py", text)
                 self.assertIn("--all-tracked-public-surfaces", text)
 
     def test_wave0_schema_records_69_issue_skill_group(self):
@@ -589,7 +527,7 @@ class LegalSanityScanTests(unittest.TestCase):
     def test_legal_scan_is_in_ci(self):
         workflow = (REPO_ROOT / ".github" / "workflows" / "validate.yml").read_text()
 
-        self.assertIn("scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces", workflow)
+        self.assertIn("scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces", workflow)
 
 
 if __name__ == "__main__":

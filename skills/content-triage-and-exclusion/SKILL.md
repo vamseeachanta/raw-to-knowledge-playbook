@@ -75,7 +75,7 @@ metadata:
 - ACE wave-1 rows use the closed route targets and record generated JSON/source
   noise exclusions separately from extraction failures.
 - Public-surface manifests, reports, and review artifacts pass
-  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; local
+  `python scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces`; local
   closeout uses `--diff-only` before commit.
 
 ## Cleanup
@@ -89,3 +89,5 @@ metadata:
 | Exclusions applied first, fail-closed | PII (W-9/payment) and third-party-confidential ("do NOT send" vendor deliverable, another party's deck) must never enter the corpus |
 | Dedup superseded versions | One canonical copy beats a rev-A/B/FINAL2 pile; supersession is recorded, not guessed |
 | Manifest, not copies | Triage is an auditable decision record; extraction reads only `keep` rows |
+
+Identifier-only findings are reviewed in the final report; they do not block repository flow. Independent secret, access, source-rights, provenance and traversal checks remain active.

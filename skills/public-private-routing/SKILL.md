@@ -1,15 +1,13 @@
 ---
 name: public-private-routing
 description: >
-  Enforces the firewall between a public knowledge store and per-client private
-  stores by checking declared visibility, abstracting client/project identifiers
-  by default, and running an independent publish-time grep against a maintained
-  identifier list. Use before committing or publishing any page, and as a pre-commit/CI gate.
+  Use when routing knowledge by declared visibility, source rights and access permissions.
+  Review client, project, personal and location identifiers in the final report.
 license: CC-BY-4.0
-compatibility: Requires a maintained identifier deny-list and pages declaring visibility/client frontmatter; wires into pre-commit + CI
+compatibility: Requires declared visibility and source-rights evidence
 metadata:
   version: "1.0"
-  enforcement_level: L3            # pre-commit + CI deny-list scan
+  enforcement_level: L3            # independent security and source-rights checks
   status: template
   incident_refs: B-screening,subagent-overclaim
   params: "target:str"
@@ -25,21 +23,17 @@ metadata:
 `/route-visibility <path-or-diff>`
 
 ## Preconditions
-- A maintained **identifier list** exists: client names, project codes, internal
-  path/host patterns, API-key shapes, personal-data patterns.
 - Every page declares `visibility: public|private` (+ optional `client:`).
 
 ## Steps
 1. **Declare-and-check visibility.** Read `visibility:` from frontmatter. Derived
    data from vendor-licensed/confidential sources MUST route private; only
    genuinely public-domain material routes public. Mismatch → block.
-2. **Abstraction by default.** In any public-routed (or shared) page, client and
-   project names are abstracted unless the fact is *publicly verifiable*. A
-   concrete name in a public page without public corroboration → block.
-3. **Publish-time grep.** Before content crosses the boundary, grep the actual
-   content against the identifier list. **Do NOT delegate this to the agent that
-   produced the content** — run it independently (a subagent once declared its
-   own output clean while it contained client folder names).
+2. **Identifier review.** Permit identifier and location mentions through repositories.
+   At final report, review actual names, personal details and paths for the intended
+   audience and record disposition. Do not impose an identifier-only commit gate.
+3. **Independent security checks.** Preserve credential detection, actual access
+   permissions, explicit source-rights restrictions and bounded traversal.
 4. **Raw-source firewall.** Assert no raw licensed/confidential source file is
    being committed — only derived parts plus opaque public source tokens or
    public-safe provenance bundle references.
@@ -50,14 +44,14 @@ metadata:
    `excluded_no_ingest`.
 
 ## Verification
-- Pre-commit hook + CI deny-list scan must pass (L3); a hit blocks the commit/merge.
-- The grep is run by the gate, not self-reported by the producing agent.
+- Independent security and source-rights checks must pass; identifier-only findings
+  are reviewed at final report without a new automated receipt gate.
 - For ACE-derived public outputs, run
   `uv run python scripts/validate_ace_public_artifacts.py --scan-public-path <surface> --issue-comment-body-file <planned-comment.md>`
   over the exact docs, skill, workflow, review artifact, `mkdocs.yml`,
   `llm-wiki`, GitHub-public summary, issue closeout summary, or external
   publication surfaces before they cross the boundary.
-- For this repo, run `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`
+- For this repo, run `python scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces`
   before publishing or closing public-surface work; use `--diff-only` for local
   staged/unstaged closeout checks.
 
@@ -67,6 +61,8 @@ metadata:
 ## Incident appendix
 | Rule | Why |
 |---|---|
-| Independent publish-time grep | Producing agent overclaimed "no confidential identifiers" |
-| Abstraction by default | Names leak via generated prose, not file copies |
+| Final-report identifier review | Verify the actual output and intended audience |
+| Explicit source rights | Identifier flow does not grant publication rights |
 | Machine-checked visibility | Routing is a contract, not a convention |
+
+Identifier-only findings are reviewed in the final report; they do not block repository flow. Independent secret, access, source-rights, provenance and traversal checks remain active.

@@ -94,7 +94,7 @@ metadata:
   `skill-eval-update`, or `follow-on-issue`; no reusable gap remains only in
   session notes.
 - Review artifacts and publication-facing summaries pass
-  `bash scripts/legal/legal-sanity-scan.sh --all-tracked-public-surfaces`; use
+  `python scripts/security/public_surface_safety_scan.py --all-tracked-public-surfaces`; use
   `--diff-only` before committing reviewer outputs.
 
 ## Cleanup
@@ -114,3 +114,5 @@ metadata:
 | Post the round table on the PR | The verification record is part of the deliverable — confidence must be auditable later |
 | Close method gaps into durable artifacts | ACE child waves must improve the playbook or file a follow-on issue instead of burying reusable lessons in a transcript |
 | Hostile selector probes | #72 review found that mixed issue tokens, invalid snapshot phase/source pairs, and default-only CI can make a generalized gate look green while non-default paths fail open |
+
+Identifier-only findings are reviewed in the final report; they do not block repository flow. Independent secret, access, source-rights, provenance and traversal checks remain active.
